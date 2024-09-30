@@ -247,7 +247,7 @@ function HotelSearch() {
       setAutoCompleteKeywords(null);
     }
   };
-
+  // 배포 테스트
   /* useEffect(() => {
     console.log(prevKeywordRef.current);
   }, [prevKeywordRef.current]); */
