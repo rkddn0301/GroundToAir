@@ -85,7 +85,7 @@ interface HotelOffer {
 
 function HotelSearch() {
   // input 작성 키워드
-  const [searchKeyword, setSearchKeyword] = useState(""); // 검색 키워드 (보여지는 데이터)
+  const [writeKeyword, setWriteKeyword] = useState(""); // 작성 키워드 (보여지는 데이터)
   const [checkInDate, setCheckInDate] = useState(""); // 체크인
   const [checkOutDate, setCheckOutDate] = useState(""); // 체크아웃
   const [adults, setAdults] = useState(1); // 인원
@@ -106,8 +106,33 @@ function HotelSearch() {
   const timeoutRef = useRef<number | undefined>(undefined); // API 요청에 딜레이를 주는 훅
   const prevKeywordRef = useRef(""); // 이전 작성기록 저장하는 훅
 
+  // 체크인 & 체크아웃 초기값 설정
+  useEffect(() => {
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 1);
+    const initCheckInDate = currentDate.toISOString().split("T")[0]; // "YYYY-MM-DD" 형식
+    currentDate.setDate(currentDate.getDate() + 1);
+    const initCheckOutDate = currentDate.toISOString().split("T")[0];
+    setCheckInDate(initCheckInDate); // 렌더링 후에 1일 뒤 날짜 설정
+    setCheckOutDate(initCheckOutDate); // 렌더링 후에 2일 뒤 날짜 설정
+  }, []);
+
   // 조회 버튼 클릭 시 동작
   function handleSearch() {
+    if (writeKeyword === "") {
+      alert("호텔명을 입력해주세요.");
+      return;
+    } else if (checkInDate === "") {
+      alert("체크인 날짜를 입력해주세요.");
+      return;
+    } else if (checkOutDate === "") {
+      alert("체크아웃 날짜를 입력해주세요.");
+      return;
+    } else if (roomQuantity < 1) {
+      alert("객실 수는 하나 이상이어야 합니다.");
+      return;
+    }
+
     setHotelOffers(null);
     setIsLoading(true);
 
@@ -153,7 +178,7 @@ function HotelSearch() {
   // 호텔명 작성 도중 동작하는 함수
   const keywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSearchKeyword(value);
+    setWriteKeyword(value);
 
     // 작성한 글자 수가 세 글자 이상일 때 동작
     // ! (요청 수를 줄이기 위해 작성) 작성한 글을 지울 때는 이전글을 저장한 prevKeywordRef를 통해 api가 동작하지 않도록 설정
@@ -237,13 +262,14 @@ function HotelSearch() {
             }
           })
           .catch((error) => console.error(error));
-      }, 300); // 입력할 때 300ms이 지날 때 동작되도록 설정
+      }, 500); // 입력할 때 500ms이 지날 때 동작되도록 설정
     }
     prevKeywordRef.current = value; // 이전 작성 값을 저장
 
     // 두 글자 미만으로 지웠을 경우 자동완성 기록 삭제
     if (value.length <= 2) {
       prevKeywordRef.current = "";
+      setDetailKeyword("");
       setAutoCompleteKeywords(null);
     }
   };
@@ -262,7 +288,7 @@ function HotelSearch() {
       <InputField>
         <InputBox>
           <label>호텔명</label>
-          <input type="text" value={searchKeyword} onChange={keywordChange} />
+          <input type="text" value={writeKeyword} onChange={keywordChange} />
           {autoCompleteKeywords !== null && (
             <ul>
               {/* 도시 키워드 추가 */}
@@ -271,7 +297,7 @@ function HotelSearch() {
                   <li
                     key={`iataCode-${searchIataCode}`}
                     onClick={() => {
-                      setSearchKeyword(searchCityName);
+                      setWriteKeyword(searchCityName);
                       prevKeywordRef.current = searchCityName;
                       setDetailKeyword(searchIataCode);
                       setAutoCompleteKeywords(null);
@@ -290,7 +316,7 @@ function HotelSearch() {
                 <li
                   key={keywords.id}
                   onClick={() => {
-                    setSearchKeyword(keywords.name);
+                    setWriteKeyword(keywords.name);
                     prevKeywordRef.current = keywords.name;
 
                     // hotelIds를 문자열로 변환하여 detailKeyword에 설정 후 저장

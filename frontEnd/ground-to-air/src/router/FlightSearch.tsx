@@ -75,22 +75,49 @@ interface FlightOffersResponse {
 }
 
 function FlightSearch() {
-  const [originLocationCode, setOriginLocationCode] = useState("");
-  const [destinationLocationCode, setDestinationLocationCode] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [adults, setAdults] = useState(1);
+  // input 작성 키워드
+  const [originLocationCode, setOriginLocationCode] = useState(""); // 출발지
+  const [destinationLocationCode, setDestinationLocationCode] = useState(""); // 도착지
+  const [departureDate, setDepartureDate] = useState(""); // 가는날
+  const [returnDate, setReturnDate] = useState(""); // 오는날
+  const [adults, setAdults] = useState(1); // 인원
+
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
-  );
+  ); // 항공편 추출
 
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
   const [suggestions, setSuggestions] = useState<IataCodes[]>([]); // 출발지 테스트
   const [suggestionss, setSuggestionss] = useState<IataCodes[]>([]); // 도착지 테스트
 
+  // 가는날 & 오는날 초기값 설정
+  useEffect(() => {
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 3);
+    const initDepartureDate = currentDate.toISOString().split("T")[0]; // "YYYY-MM-DD" 형식
+    currentDate.setDate(currentDate.getDate() + 1);
+    const initReturnDate = currentDate.toISOString().split("T")[0];
+    setDepartureDate(initDepartureDate); // 렌더링 후에 3일 뒤 날짜 설정
+    setReturnDate(initReturnDate); // 렌더링 후에 4일 뒤 날짜 설정
+  }, []);
+
   function handleSearch() {
-    const currencyCode = "KRW"; // 통화 단위 (한국 원)
+    if (originLocationCode === "") {
+      alert("출발지는 입력해주세요.");
+      return;
+    } else if (destinationLocationCode === "") {
+      alert("도착지는 입력해주세요.");
+      return;
+    } else if (departureDate === "") {
+      alert("출국일을 입력해주세요.");
+      return;
+    } else if (returnDate === "") {
+      alert("입국일을 입력해주세요.");
+      return;
+    }
+
+    setFlightOffers(null);
     setIsLoading(true);
     const apiUrl = `http://localhost:8080/air/flightOffers`;
     const params = {
@@ -99,17 +126,8 @@ function FlightSearch() {
       departureDate,
       returnDate,
       adults,
-      currencyCode,
+      currencyCode: "KRW",
     };
-
-    console.log(
-      originLocationCode,
-      destinationLocationCode,
-      departureDate,
-      returnDate,
-      adults,
-      currencyCode
-    );
 
     axios
       .get(apiUrl, { params })
@@ -222,6 +240,7 @@ function FlightSearch() {
         <InputBox>
           <label>인원</label>
           <input
+            id="human"
             type="number"
             value={adults}
             onChange={(e) => setAdults(Number(e.target.value))}
