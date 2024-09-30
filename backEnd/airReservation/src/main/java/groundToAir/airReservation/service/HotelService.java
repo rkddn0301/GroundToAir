@@ -96,7 +96,7 @@ public class HotelService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
         // git 배포 테스트
-        System.out.println("배포");
+        System.out.println("배포2");
 
         HttpEntity<String> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(fullUrl, HttpMethod.GET, request, String.class);
