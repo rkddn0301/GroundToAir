@@ -4,24 +4,53 @@ import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Layout from "./components/Layout";
 import HotelSearch from "./router/HotelSearch";
 import ChoiceButton from "./components/ChoiceButton";
+import Join from "./router/Join";
+import styled from "styled-components";
+import Footer from "./components/Footer";
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: skyblue;
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
+`;
+
+const MainContent = styled.main`
+  flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
+`;
 
 function App() {
   return (
-    <Router>
-      <Layout />
-      {/* ChoiceButton의 경우 항공, 호텔 조회 페이지에만 보여야함 */}
-      <Route path={["/hotels", "/"]} exact>
-        <ChoiceButton />
-      </Route>
-      <Switch>
-        <Route path="/hotels">
-          <HotelSearch />
+    <Container>
+      <Router>
+        <MainContent>
+          <Route path={["/hotels", "/"]} exact>
+            <Layout />
+          </Route>
+
+          {/* ChoiceButton의 경우 항공, 호텔 조회 페이지에만 보여야함 */}
+          <Route path={["/hotels", "/"]} exact>
+            <ChoiceButton />
+          </Route>
+          <Switch>
+            <Route path="/join">
+              <Join />
+            </Route>
+            <Route path="/hotels">
+              <HotelSearch />
+            </Route>
+            <Route exact path="/">
+              <FlightSearch />
+            </Route>
+          </Switch>
+        </MainContent>
+        <Route path={["/hotels", "/"]} exact>
+          <Footer />
         </Route>
-        <Route exact path="/">
-          <FlightSearch />
-        </Route>
-      </Switch>
-    </Router>
+      </Router>
+    </Container>
   );
 }
 
