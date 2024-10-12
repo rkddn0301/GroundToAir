@@ -9,8 +9,8 @@ const Nav = styled.nav`
   justify-content: space-between;
   padding: 20px;
   margin-bottom: 20px;
-  background-color: #595959;
-  color: #f7fcfc;
+  background-color: ${(props) => props.theme.black.bg};
+  color: ${(props) => props.theme.black.font};
 `;
 
 const LeftMenu = styled.div``;
@@ -35,7 +35,7 @@ function Layout() {
   return (
     <Nav>
       <LeftMenu>
-        <Title />
+        <Title parentBgColor="black" />
       </LeftMenu>
       <RightMenu>
         {/* 회원가입 */}

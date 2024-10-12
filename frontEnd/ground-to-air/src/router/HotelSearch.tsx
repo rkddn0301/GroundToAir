@@ -1,3 +1,5 @@
+// 호텔 조회 페이지
+
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";

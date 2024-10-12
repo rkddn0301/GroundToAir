@@ -1,3 +1,5 @@
+// 메인 & 항공 조회 페이지
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import styled from "styled-components";

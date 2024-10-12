@@ -7,14 +7,14 @@ import ChoiceButton from "./components/ChoiceButton";
 import Join from "./router/Join";
 import styled from "styled-components";
 import Footer from "./components/Footer";
+import JoinInfo from "./router/JoinInfo";
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: skyblue;
-  width: 100%;
+  //width: 100%;
   height: 100vh;
-  margin: 0 auto;
 `;
 
 const MainContent = styled.main`
@@ -35,6 +35,9 @@ function App() {
             <ChoiceButton />
           </Route>
           <Switch>
+            <Route path="/join/info">
+              <JoinInfo />
+            </Route>
             <Route path="/join">
               <Join />
             </Route>

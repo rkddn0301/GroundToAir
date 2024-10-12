@@ -6,8 +6,8 @@ const Footers = styled.div`
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background-color: #595959;
-  color: #f7fcfc;
+  background-color: ${(props) => props.theme.black.bg};
+  color: ${(props) => props.theme.black.font};
 `;
 
 function Footer() {
