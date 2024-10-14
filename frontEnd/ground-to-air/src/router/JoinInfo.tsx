@@ -4,6 +4,8 @@ import styled from "styled-components";
 import Title from "../components/Title";
 import InfoBox from "../components/InfoBox";
 import { useState } from "react";
+import axios from "axios";
+import { useHistory } from "react-router-dom";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -17,13 +19,31 @@ function JoinInfo() {
   const [gender, setGender] = useState(""); // 성별
   const [email, setEmail] = useState(""); // 이메일
 
+  const history = useHistory();
+
   const genderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setGender(e.target.value);
   };
 
-  const infoSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const infoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 새로고침 방지
     console.log(userId, password, userName, birth, gender, email);
+
+    try {
+      await axios.post(`http://localhost:8080/user/register`, {
+        userId,
+        password,
+        userName,
+        birth,
+        gender,
+        email,
+      });
+      alert("회원가입이 완료되었습니다.");
+      history.push("/");
+    } catch (error) {
+      console.error("회원가입 실패: ", error);
+      alert("회원가입에 실패했습니다.");
+    }
   };
 
   return (
