@@ -60,4 +60,20 @@ public class UserService {
 
     }
 
+    // GroundToAir 로그인 진행
+    public boolean loginUser(UserEntity loginEntity) {
+        // userId로 사용자를 조회하고 비밀번호 확인
+        UserEntity userEntity = userRepository.findByUserId(loginEntity.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 이미 암호화된 비밀번호와 사용자가 입력한 비밀번호 비교
+        return passwordEncoder.matches(loginEntity.getPassword(), userEntity.getPassword());
+    }
+
+    // JWT 토큰 생성 (Optional)
+    public String createJwtToken(String userId) {
+        // JWT 생성 로직
+        return "generated-jwt-token"; // 예시로 반환
+    }
+
 }

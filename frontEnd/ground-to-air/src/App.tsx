@@ -8,6 +8,7 @@ import Join from "./router/Join";
 import styled from "styled-components";
 import Footer from "./components/Footer";
 import JoinInfo from "./router/JoinInfo";
+import Login from "./router/Login";
 
 const Container = styled.div`
   display: flex;
@@ -35,6 +36,9 @@ function App() {
             <ChoiceButton />
           </Route>
           <Switch>
+            <Route path="/login">
+              <Login />
+            </Route>
             <Route path="/join/info">
               <JoinInfo />
             </Route>
