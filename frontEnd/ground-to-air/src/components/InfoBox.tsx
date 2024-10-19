@@ -24,9 +24,18 @@ const Icon = styled.svg`
   cursor: pointer;
 `;
 
+const BoxFooter = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px 15px 15px 15px; // 순서 : 위 오른 아래 왼
+`;
+
 // children : 상위컴포넌트에서 InfoBox 안에 무언가 넣은 값을 의미함
 function InfoBox({ children }: any) {
   const history = useHistory();
+  const currentRoute = history.location.pathname; // 현재 Route 위치 파악
+
   return (
     <Box>
       <BoxHeader>
@@ -57,6 +66,24 @@ function InfoBox({ children }: any) {
       </BoxHeader>
 
       {children}
+
+      <BoxFooter>
+        {/* 회원가입 페이지일 경우 */}
+        {currentRoute === "/join" && (
+          <div>
+            <Link to="/login">로그인 페이지로 이동</Link>
+          </div>
+        )}
+
+        {/* 로그인 페이지일 경우 */}
+        {currentRoute === "/login" && (
+          <div>
+            <Link to="/join">회원가입</Link> {" | "}
+            <Link to="/idFind">아이디찾기</Link> {" | "}
+            <Link to="/pwFind">비밀번호 찾기</Link>
+          </div>
+        )}
+      </BoxFooter>
     </Box>
   );
 }
