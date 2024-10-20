@@ -62,6 +62,16 @@ a {
   text-decoration: none; // 밑줄 제거
   color: inherit; // 부모 요소의 텍스트 색상을 상속받음
 }
+
+   /* SweetAlert2 팝업에 대한 스타일 조정 */
+   .swal2-popup {
+    padding: 20px; // 팝업창 내부 공간 확보
+  }
+
+  .swal2-icon {
+    margin: 0 auto; // 아이콘 중앙 정렬
+  }
+
 `;
 
 const root = ReactDOM.createRoot(

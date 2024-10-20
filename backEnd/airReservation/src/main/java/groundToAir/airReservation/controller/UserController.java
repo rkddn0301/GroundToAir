@@ -18,6 +18,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    // 아이디 중복 체크
+    @GetMapping("/idCheck")
+    public int idCheck(@RequestParam("userId") String userId) {
+        return userService.idCheck(userId);
+    }
+
     // 회원가입 진행
     @PostMapping("/register")
     public void registerUser(@RequestBody UserEntity userEntity) {
@@ -31,6 +37,8 @@ public class UserController {
 
         userService.registerUser(userEntity); // UserEntity를 직접 서비스에 전달
     }
+
+
 
     // 로그인 진행
     @PostMapping("/login")

@@ -27,6 +27,19 @@ public class UserService {
         this.userRoleRepository = userRoleRepository;
     }
 
+    // 아이디 중복 체크
+    public int idCheck(String userId) {
+        boolean checkResult = userRepository.existsByUserId(userId);
+        System.out.println(checkResult);
+
+        // checkResult가 true면 아이디가 중복이므로 0, 아니면 1로 전달
+        if (checkResult) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
     // GroundToAir 회원가입 진행(DIRECT)
     // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
     @Transactional
