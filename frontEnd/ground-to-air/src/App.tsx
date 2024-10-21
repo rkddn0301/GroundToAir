@@ -9,6 +9,7 @@ import styled from "styled-components";
 import Footer from "./components/Footer";
 import JoinInfo from "./router/JoinInfo";
 import Login from "./router/Login";
+import PassportInfo from "./router/PassportInfo";
 
 const Container = styled.div`
   display: flex;
@@ -38,6 +39,9 @@ function App() {
           <Switch>
             <Route path="/login">
               <Login />
+            </Route>
+            <Route path="/join/info/passportInfo">
+              <PassportInfo />
             </Route>
             <Route path="/join/info">
               <JoinInfo />

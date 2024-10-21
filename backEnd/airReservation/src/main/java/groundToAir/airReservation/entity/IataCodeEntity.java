@@ -25,9 +25,6 @@ public class IataCodeEntity {
     @Column(name="AIRPORT_KOR", nullable = false)
     private String airport_kor;
 
-    @Column(name="COUNTRY", nullable = false)
-    private String country;
-
     @Column(name="COUNTRY_KOR", nullable = false)
     private String country_kor;
 
@@ -36,5 +33,11 @@ public class IataCodeEntity {
 
     @Column(name="CITY", nullable = false)
     private String city;
+
+    // 외래키 설정 (ManyToOne: N:1 관계)
+    // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COUNTRY", referencedColumnName = "COUNTRY", nullable = false)
+    private CountryEntity country;
 
 }

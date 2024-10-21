@@ -1,8 +1,9 @@
-// atom 유틸 (설치는 하였으나 현재 미사용중)
+// atom 유틸
 
 import { atom } from "recoil";
 
-const currentRoute = atom({
-  key: "currentRoute",
-  default: "", // 기본 경로 상태
+// 회원가입이 완료된 계정 정보를 여권정보로 넘기기위한 atom
+export const JoinUserNo = atom({
+  key: "userNo",
+  default: null, // 기본 경로 상태
 });

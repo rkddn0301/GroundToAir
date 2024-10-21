@@ -1,6 +1,7 @@
 package groundToAir.airReservation.controller;
 
 import groundToAir.airReservation.entity.UserEntity;
+import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,9 +25,15 @@ public class UserController {
         return userService.idCheck(userId);
     }
 
+    // 이메일 중복 체크
+    @GetMapping("/emailCheck")
+    public int emailCheck(@RequestParam("email") String email) {
+        return userService.emailCheck(email);
+    }
+
     // 회원가입 진행
     @PostMapping("/register")
-    public void registerUser(@RequestBody UserEntity userEntity) {
+    public int registerUser(@RequestBody UserEntity userEntity) {
         log.info(String.format("아이디: %s, 비밀번호: %s, 성명: %s, 생년월일: %s, 성별: %s, 이메일: %s",
                 userEntity.getUserId(),
                 userEntity.getPassword(),
@@ -35,8 +42,24 @@ public class UserController {
                 userEntity.getGender(),
                 userEntity.getEmail()));
 
-        userService.registerUser(userEntity); // UserEntity를 직접 서비스에 전달
+
+        return userService.registerUser(userEntity);  // UserEntity를 직접 서비스에 전달
     }
+
+    // 여권정보 입력
+    @PostMapping("/passportRegister")
+    public void registerPassport(@RequestBody UserPassportEntity userPassportEntity) {
+        log.info(String.format("회원번호: %s, 여권번호 : %s, 회원영문명 : %s, 국적 : %s, 여권만료일 : %s, 여권발행국 : %s",
+                userPassportEntity.getUserNo(),
+                userPassportEntity.getPassportNo(),
+                userPassportEntity.getEngName(),
+                userPassportEntity.getNationality(), // 문자열로 확인
+                userPassportEntity.getExpirationDate(),
+                userPassportEntity.getCountryOfIssue()));
+
+        userService.registerPassport(userPassportEntity);
+    }
+
 
 
 

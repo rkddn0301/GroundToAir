@@ -7,7 +7,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 */
 module.exports = function (app: any) {
   app.use(
-    ["/air", "/hotel", "/user"],
+    ["/air", "/hotel", "/user", "/country"],
     createProxyMiddleware({
       target: "http://localhost:8080",
       changeOrigin: true,

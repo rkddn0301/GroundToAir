@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Swal, { SweetAlertIcon } from "sweetalert2";
+import { useSetRecoilState } from "recoil";
+import { JoinUserNo } from "../atom";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -18,7 +20,14 @@ const Container = styled.div`
 
 const GuideLine = styled.div`
   color: red;
-  font-size: 14px;
+  font-size: 11px;
+  display: flex;
+  justify-content: center;
+`;
+
+const SuccessLine = styled.div`
+  color: skyblue;
+  font-size: 11px;
   display: flex;
   justify-content: center;
 `;
@@ -32,7 +41,7 @@ const Form = styled.form`
   gap: 15px;
 `;
 
-const Filed = styled.div`
+const Field = styled.div`
   position: relative;
   width: 80%;
   border: 1px solid ${(props) => props.theme.white.font};
@@ -47,10 +56,11 @@ const GenderMenu = styled.div`
 
 const Label = styled.label`
   position: absolute;
-  top: -5px;
-  left: 10px;
+  top: -7px;
+  left: 8px;
   padding: 0 5px;
   font-size: 12px;
+  font-weight: 600;
   background-color: ${(props) => props.theme.white.bg};
 `;
 
@@ -94,25 +104,6 @@ const CalendarInput = styled.div`
   }
 `;
 
-const IdCheckField = styled.div`
-  display: flex;
-`;
-
-const IdCheckBtn = styled.button`
-  background-color: skyblue;
-  color: ${(props) => props.theme.white.font};
-  border: 1px solid ${(props) => props.theme.white.font};
-  width: 30%;
-  margin: 5px 0 0 0;
-
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${(props) => props.theme.black.bg};
-    color: ${(props) => props.theme.black.font};
-  }
-`;
-
 const SubmitField = styled.div`
   width: 50%;
 `;
@@ -148,7 +139,15 @@ function JoinInfo() {
     email: "",
   }); // 오류 메시지 표시 state
 
+  const [successMsg, setSuccessMsg] = useState({
+    userId: "",
+    email: "",
+  }); // 성공 메시지 표시 state
+
   const [idChecking, setIdChecking] = useState(false); // 아이디 체크 여부 스위칭
+  const [emailChecking, setEmailChecking] = useState(false); // 이메일 체크 여부 스위칭
+
+  const setUserNo = useSetRecoilState(JoinUserNo); // 가입한 회원번호 저장
 
   const history = useHistory();
 
@@ -164,6 +163,10 @@ function JoinInfo() {
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // 아이디 변경 시 기존 중복체크 내용은 자동으로 비활성화
     setIdChecking(false);
+    setSuccessMsg({
+      ...successMsg,
+      userId: "",
+    });
 
     const value = e.target.value;
     setInputData({ ...inputData, userId: value });
@@ -228,6 +231,11 @@ function JoinInfo() {
 
   // 이메일 입력란 변경 시 동작
   const emailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmailChecking(false);
+    setSuccessMsg({
+      ...successMsg,
+      email: "",
+    });
     const value = e.target.value;
     setInputData({ ...inputData, email: value });
 
@@ -243,27 +251,9 @@ function JoinInfo() {
     }
   };
 
-  // 아이디 중복체크 클릭 시 동작
-  const IdCheckHandle = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // 새로고침 방지
-
-    // 아이디 비어 있을 경우
-    if (inputData.userId === "") {
-      document.getElementById("userId")?.focus();
-      setErrorMsg((prev) => ({ ...prev, userId: "아이디를 입력해주세요." }));
-
-      return;
-    } else if (!/^[a-zA-Z0-9]{6,15}$/.test(inputData.userId)) {
-      setErrorMsg({
-        ...errorMsg,
-        userId: "아이디는 영문자 및 숫자로 6~15자여야 합니다.",
-      });
-      return;
-    } else {
-      setErrorMsg({ ...errorMsg, userId: "" });
-    }
-
-    try {
+  // 아이디 입력란 벗어날 시 동작
+  const userIdBlur = async () => {
+    if (inputData.userId && !idChecking && !errorMsg.userId) {
       const response = await axios.get(`http://localhost:8080/user/idCheck`, {
         params: {
           userId: inputData.userId,
@@ -272,16 +262,63 @@ function JoinInfo() {
 
       if (response.data > 0) {
         setIdChecking(true);
-        Alert("사용 가능한 아이디입니다.", "success");
+        setErrorMsg({
+          ...errorMsg,
+          userId: "",
+        });
+
+        setSuccessMsg({
+          ...successMsg,
+          userId: "사용 가능한 아이디입니다.",
+        });
       } else {
         setIdChecking(false);
+        setSuccessMsg({
+          ...successMsg,
+          userId: "",
+        });
+
         setErrorMsg({
           ...errorMsg,
           userId: "이미 존재하는 아이디입니다.",
         });
       }
-    } catch (error) {
-      console.error(error);
+    }
+  };
+
+  // 이메일 작성란을 벗어날 시 동작
+  const emailBlur = async () => {
+    if (inputData.email && !emailChecking && !errorMsg.email) {
+      const response = await axios.get(
+        `http://localhost:8080/user/emailCheck`,
+        {
+          params: {
+            email: inputData.email,
+          },
+        }
+      );
+
+      if (response.data > 0) {
+        setEmailChecking(true);
+        setErrorMsg({
+          ...errorMsg,
+          email: "",
+        });
+        setSuccessMsg({
+          ...successMsg,
+          email: "사용 가능한 이메일입니다.",
+        });
+      } else {
+        setEmailChecking(false);
+        setSuccessMsg({
+          ...successMsg,
+          email: "",
+        });
+        setErrorMsg({
+          ...errorMsg,
+          email: "이미 존재하는 이메일입니다.",
+        });
+      }
     }
   };
 
@@ -338,14 +375,8 @@ function JoinInfo() {
       return;
     }
 
-    // 3. 중복체크 확인
-    if (!idChecking) {
-      Alert("아이디 중복체크 버튼을 클릭하십시오.", "warning");
-      return;
-    }
-
     try {
-      await axios.post(`http://localhost:8080/user/register`, {
+      const response = await axios.post(`http://localhost:8080/user/register`, {
         userId: inputData.userId,
         password: inputData.password,
         userName: inputData.userName,
@@ -353,17 +384,14 @@ function JoinInfo() {
         gender: inputData.gender,
         email: inputData.email,
       });
-      alert("회원가입이 완료되었습니다.");
-      history.push("/");
+      Alert("회원가입이 완료되었습니다.", "success");
+      setUserNo(response.data);
+      history.push("/join/info/passportInfo");
     } catch (error) {
       console.error("회원가입 실패: ", error);
-      alert("회원가입에 실패했습니다.");
+      Alert("알 수 없는 오류로 인하여 회원가입에 실패하였습니다.", "error");
     }
   };
-
-  useEffect(() => {
-    console.log(idChecking);
-  }, [idChecking]);
 
   return (
     <Container>
@@ -371,24 +399,23 @@ function JoinInfo() {
         <Title parentBgColor="white" />
         <GuideLine>*은 필수 입력란입니다.</GuideLine>
         <Form>
-          <Filed>
+          <Field>
             <Label htmlFor="userId">*아이디</Label>
-            <IdCheckField>
-              <WriteInput
-                type="text"
-                id="userId"
-                placeholder="gildong1231"
-                value={inputData.userId}
-                onChange={userIdChange}
-                minLength={6}
-                maxLength={15}
-              />
-              <IdCheckBtn onClick={IdCheckHandle}>중복체크</IdCheckBtn>
-            </IdCheckField>
-          </Filed>
+            <WriteInput
+              type="text"
+              id="userId"
+              placeholder="gildong1231"
+              value={inputData.userId}
+              onChange={userIdChange}
+              minLength={6}
+              maxLength={15}
+              onBlur={userIdBlur}
+            />
+          </Field>
           {errorMsg.userId && <GuideLine>{errorMsg.userId}</GuideLine>}
+          {successMsg.userId && <SuccessLine>{successMsg.userId}</SuccessLine>}
 
-          <Filed>
+          <Field>
             <Label htmlFor="password">*비밀번호</Label>
             <WriteInput
               type="password"
@@ -398,10 +425,10 @@ function JoinInfo() {
               minLength={8}
               maxLength={15}
             />
-          </Filed>
+          </Field>
           {errorMsg.password && <GuideLine>{errorMsg.password}</GuideLine>}
 
-          <Filed>
+          <Field>
             <Label htmlFor="userName">*성명</Label>
             <WriteInput
               type="text"
@@ -412,9 +439,9 @@ function JoinInfo() {
               minLength={1}
               maxLength={15}
             />
-          </Filed>
+          </Field>
           {errorMsg.userName && <GuideLine>{errorMsg.userName}</GuideLine>}
-          <Filed>
+          <Field>
             <Label htmlFor="gender">성별</Label>
             <GenderMenu>
               <label>
@@ -446,9 +473,9 @@ function JoinInfo() {
                 비공개
               </label>
             </GenderMenu>
-          </Filed>
+          </Field>
 
-          <Filed>
+          <Field>
             <Label>생년월일</Label>
             <CalendarInput>
               <DatePicker
@@ -466,9 +493,9 @@ function JoinInfo() {
                 showMonthDropdown // 월 선택 기능
               />
             </CalendarInput>
-          </Filed>
+          </Field>
 
-          <Filed>
+          <Field>
             <Label htmlFor="email">*이메일</Label>
             <WriteInput
               type="email"
@@ -478,9 +505,11 @@ function JoinInfo() {
               onChange={emailChange}
               minLength={1}
               maxLength={30}
+              onBlur={emailBlur}
             />
-          </Filed>
+          </Field>
           {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
+          {successMsg.email && <SuccessLine>{successMsg.email}</SuccessLine>}
 
           <SubmitField>
             <SubmitBtn onClick={infoSubmit}>회원가입</SubmitBtn>

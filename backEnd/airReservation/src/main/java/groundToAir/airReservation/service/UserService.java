@@ -1,8 +1,12 @@
 package groundToAir.airReservation.service;
 
+import groundToAir.airReservation.entity.CountryEntity;
 import groundToAir.airReservation.entity.UserEntity;
+import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.entity.UserRoleEntity;
 import groundToAir.airReservation.enumType.SocialType;
+import groundToAir.airReservation.repository.CountryRepository;
+import groundToAir.airReservation.repository.UserPassportRepository;
 import groundToAir.airReservation.repository.UserRepository;
 import groundToAir.airReservation.repository.UserRoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,20 +21,24 @@ import java.time.format.DateTimeFormatter;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserPassportRepository userPassportRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final UserRoleRepository userRoleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository) {
+    private final CountryRepository countryRepository;
+
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository,PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository) {
         this.userRepository = userRepository;
+        this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRoleRepository = userRoleRepository;
+        this.countryRepository = countryRepository;
     }
 
     // 아이디 중복 체크
     public int idCheck(String userId) {
         boolean checkResult = userRepository.existsByUserId(userId);
-        System.out.println(checkResult);
 
         // checkResult가 true면 아이디가 중복이므로 0, 아니면 1로 전달
         if (checkResult) {
@@ -40,17 +48,23 @@ public class UserService {
         }
     }
 
+    // 이메일 중복 체크
+    public int emailCheck(String email) {
+        boolean checkResult = userRepository.existsByEmail(email);
+
+        // checkResult가 true면 이메일이 중복이므로 0, 아니면 1로 전달
+        if (checkResult) {
+            return 0;
+        } else {
+            return 1;
+        }
+
+    }
+
     // GroundToAir 회원가입 진행(DIRECT)
     // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
     @Transactional
-    public void registerUser(UserEntity userEntity) {
-        // 중복 검사
-        if (userRepository.existsByUserId(userEntity.getUserId())) {
-            throw new IllegalArgumentException("중복된 사용자 ID입니다.");
-        }
-        if (userRepository.existsByEmail(userEntity.getEmail())) {
-            throw new IllegalArgumentException("중복된 이메일입니다.");
-        }
+    public int registerUser(UserEntity userEntity) {
 
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(userEntity.getPassword());
@@ -71,7 +85,38 @@ public class UserService {
 
         userRepository.save(userEntity);
 
+        // 여권정보 입력 사이트 이동에 필요한 userNo를 가져옴
+        return userEntity.getUserNo();
+
     }
+
+    // 여권 입력 진행
+    @Transactional
+    public void registerPassport(UserPassportEntity userPassportEntity) {
+
+        // UserPassportEntity의 경우 UserEntity에 있는 기본키(userNo), CountryEntity에 있는 컬럼(country)을 가져와 기본키 및 외래키로 사용하기 때문에 추가하는 작업 시 userCheck, nationalityCheck와 같은 작업이 필요하다.
+
+        // userNo를 이용해 UserEntity를 조회
+        UserEntity userCheck = userRepository.findById(userPassportEntity.getUserNo())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 회원번호입니다."));
+
+        // nationality를 CountryEntity로 설정
+        CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+        // expirationDate String -> Date 변환
+        LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+
+        // UserPassportEntity에 설정
+        // ! 위에서 check하고 넣는 이유는 불일치 했던 형식(int, String)을 올바른 형식(UserEntity, CountryEntity)으로 삽입하기 위함이다.
+        userPassportEntity.setUser(userCheck);
+        userPassportEntity.setNationality(nationalityCheck); // 외래키로 설정
+        userPassportEntity.setExpirationDate(expirationDate);
+
+        userPassportRepository.save(userPassportEntity);
+    }
+
+
 
     // GroundToAir 로그인 진행
     public boolean loginUser(UserEntity loginEntity) {
