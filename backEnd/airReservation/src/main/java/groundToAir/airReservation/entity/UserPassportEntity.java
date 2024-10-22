@@ -36,8 +36,11 @@ public class UserPassportEntity {
     private LocalDate expirationDate;
 
     // 여권발행국
-    @Column(name = "PASSPORT_COUNTRY_OF_ISSUE")
-    private String countryOfIssue;
+    // 외래키 설정 (ManyToOne: N:1 관계)
+    // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PASSPORT_COUNTRY_OF_ISSUE", referencedColumnName = "COUNTRY")
+    private CountryEntity countryOfIssue;
 
     // 외래키 설정 (OneToOne: 1:1 관계)
     // MapsId : 외래키로 가져온걸 기본키로 설정

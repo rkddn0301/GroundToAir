@@ -53,11 +53,6 @@ const HalfField = styled.div`
   padding: 15px;
 `;
 
-const GenderMenu = styled.div`
-  display: flex;
-  justify-content: space-around;
-`;
-
 const Label = styled.label`
   position: absolute;
   top: -7px;
@@ -108,6 +103,19 @@ const CalendarInput = styled.div`
   }
 `;
 
+const SelectMenu = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const SelectInput = styled.select`
+  width: 80%;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 14px;
+  // text-align: center;
+`;
+
 const SubmitField = styled.div`
   width: 50%;
 `;
@@ -156,6 +164,17 @@ function PassportInfo() {
     });
   };
 
+  const Confirm = async (textAlert: string, type: SweetAlertIcon) => {
+    const result = await Swal.fire({
+      text: textAlert,
+      icon: type,
+      confirmButtonText: "확인",
+      showCancelButton: true,
+      cancelButtonText: "취소",
+    });
+    return result;
+  };
+
   // 초기에 필요한 데이터 가져오기
   useEffect(() => {
     countryCode();
@@ -198,7 +217,7 @@ function PassportInfo() {
       setInputData({
         ...inputData,
         passportExDate: format(date, "yyyy-MM-dd"),
-      }); // Date --> String 변환하여 birth에 삽입
+      }); // Date --> String 변환하여 passPortExDate에 삽입
     } else {
       setInputData({ ...inputData, passportExDate: "" });
     }
@@ -214,40 +233,36 @@ function PassportInfo() {
   const infoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 새로고침 방지
 
-    /*  // 1. 작성란이 비어있을 경우 확인
-    if (inputData.userId === "") {
-      document.getElementById("userId")?.focus();
-      setErrorMsg((prev) => ({ ...prev, userId: "아이디를 입력해주세요." }));
+    // 1. 작성란이 전부 비어있을 경우
+    // confirm 창을 켜서 안내문
+    if (!inputData.userEngFN && !inputData.userEngLN && !inputData.passportNo) {
+      const Confirmation = await Confirm(
+        "다음에 입력하시겠습니까?",
+        "question"
+      );
 
-      return;
-    } else if (inputData.password === "") {
-      document.getElementById("password")?.focus();
-      setErrorMsg((prev) => ({
-        ...prev,
-        password: "비밀번호를 입력해주세요.",
-      }));
-      return;
-    } else if (inputData.userName === "") {
-      document.getElementById("userName")?.focus();
-      setErrorMsg((prev) => ({ ...prev, userName: "성명을 입력해주세요." }));
-      return;
-    }
-
-    // 2. 오류 메시지가 존재할 경우 확인
-    if (errorMsg.userId !== "") {
-      document.getElementById("userId")?.focus();
-
-      return;
-    } else if (errorMsg.password !== "") {
-      document.getElementById("password")?.focus();
-
-      return;
-    } else if (errorMsg.userName !== "") {
-      document.getElementById("userName")?.focus();
+      // 확인 선택 시
+      if (Confirmation.isConfirmed) {
+        history.push("/");
+      }
 
       return;
     }
-*/
+
+    // 2. 여권번호가 작성된 상태에서 국적, 여권만료일, 여권발행국 중 비어있을 경우
+    if (
+      inputData.passportNo &&
+      (!inputData.nationality ||
+        !inputData.passportExDate ||
+        !inputData.passportCOI)
+    ) {
+      Alert(
+        "여권번호가 입력된 경우 국적, 여권만료일, 여권발행국이 모두 작성되어야 합니다.",
+        "warning"
+      );
+      return;
+    }
+
     const engFullName = inputData.userEngFN + " " + inputData.userEngLN;
 
     console.log(
@@ -266,9 +281,11 @@ function PassportInfo() {
           userNo: userNoData,
           passportNo: inputData.passportNo,
           engName: engFullName,
-          nationality: inputData.nationality,
+          nationality:
+            inputData.nationality === "" ? null : inputData.nationality, // null은 외래키 무결성 위반이 되지 않아 변환 후 전송
           expirationDate: inputData.passportExDate,
-          countryOfIssue: inputData.passportCOI,
+          countryOfIssue:
+            inputData.passportCOI === "" ? null : inputData.passportCOI,
         }
       );
       console.log(response.data);
@@ -332,14 +349,20 @@ function PassportInfo() {
 
           <Field>
             <Label htmlFor="password">국적</Label>
-            <select value={inputData.nationality} onChange={nationalityChange}>
-              <option value="">-- 선택 --</option>
-              {countryCodes.map((code) => (
-                <option key={code.codeNo} value={code.country}>
-                  {code.countryKor}
-                </option>
-              ))}
-            </select>
+            <SelectMenu>
+              <SelectInput
+                value={inputData.nationality}
+                onChange={nationalityChange}
+                disabled={!inputData.passportNo}
+              >
+                <option value="">-- 국적을 선택해주세요. --</option>
+                {countryCodes.map((code) => (
+                  <option key={code.codeNo} value={code.country}>
+                    {code.countryKor}
+                  </option>
+                ))}
+              </SelectInput>
+            </SelectMenu>
           </Field>
 
           <Field>
@@ -352,42 +375,51 @@ function PassportInfo() {
                     : null
                 }
                 showIcon // 달력 아이콘 활성화
+                isClearable // 초기화
                 locale={ko} // 한국어로 변경
                 onChange={passPortExDateChange}
                 dateFormat="yyyy-MM-dd"
                 placeholderText="YYYY-MM-DD"
                 showYearDropdown // 연도 선택 기능
                 scrollableYearDropdown // 연도 선택 스크롤 기능
-                minDate={new Date(1900, 0, 1)} // 1900년 1월 1일
-                maxDate={new Date()} // 현재 날짜
-                yearDropdownItemNumber={new Date().getFullYear() - 1900 + 1} // 1900년 ~ 현재년도 까지 표시
+                minDate={new Date()} // 현재 날짜
+                maxDate={
+                  new Date(
+                    new Date().setFullYear(new Date().getFullYear() + 10)
+                  )
+                } // 10년 뒤
+                yearDropdownItemNumber={
+                  new Date().getFullYear() + 10 - new Date().getFullYear()
+                } // 현재년도 ~ 10년 뒤 현재일 까지 표시
                 showMonthDropdown // 월 선택 기능
+                disabled={!inputData.passportNo}
               />
             </CalendarInput>
           </Field>
 
           <Field>
             <Label htmlFor="gender">여권발행국</Label>
-            <GenderMenu>
-              <select
+            <SelectMenu>
+              <SelectInput
                 value={inputData.passportCOI}
                 onChange={passportCOIChange}
+                disabled={!inputData.passportNo}
               >
-                <option value="">-- 선택 --</option>
+                <option value="">-- 국적을 선택해주세요. --</option>
                 {countryCodes.map((code) => (
                   <option key={code.codeNo} value={code.country}>
                     {code.countryKor}
                   </option>
                 ))}
-              </select>
-            </GenderMenu>
+              </SelectInput>
+            </SelectMenu>
           </Field>
 
           <SubmitField>
             <SubmitBtn onClick={infoSubmit}>작성 완료</SubmitBtn>
           </SubmitField>
           <SubmitField>
-            <SubmitBtn>나중에 작성</SubmitBtn>
+            <SubmitBtn onClick={() => history.push("/")}>나중에 작성</SubmitBtn>
           </SubmitField>
         </Form>
       </InfoBox>

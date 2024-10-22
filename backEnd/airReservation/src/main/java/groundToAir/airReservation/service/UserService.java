@@ -101,8 +101,20 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 회원번호입니다."));
 
         // nationality를 CountryEntity로 설정
+        if (userPassportEntity.getNationality() != null) {
         CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+            userPassportEntity.setNationality(nationalityCheck); // 외래키로 설정
+        }
+
+        // countryOfIssue를 CountryEntity로 설정
+        if (userPassportEntity.getCountryOfIssue() != null) {
+            CountryEntity countryOfIssueCheck = countryRepository.findByCountry(userPassportEntity.getCountryOfIssue().getCountry())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+            userPassportEntity.setCountryOfIssue(countryOfIssueCheck); // 외래키로 설정
+        }
 
         // expirationDate String -> Date 변환
         LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
@@ -110,7 +122,7 @@ public class UserService {
         // UserPassportEntity에 설정
         // ! 위에서 check하고 넣는 이유는 불일치 했던 형식(int, String)을 올바른 형식(UserEntity, CountryEntity)으로 삽입하기 위함이다.
         userPassportEntity.setUser(userCheck);
-        userPassportEntity.setNationality(nationalityCheck); // 외래키로 설정
+
         userPassportEntity.setExpirationDate(expirationDate);
 
         userPassportRepository.save(userPassportEntity);

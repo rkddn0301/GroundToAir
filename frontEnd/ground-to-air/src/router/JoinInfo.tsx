@@ -481,6 +481,7 @@ function JoinInfo() {
               <DatePicker
                 selected={inputData.birth ? new Date(inputData.birth) : null}
                 showIcon // 달력 아이콘 활성화
+                isClearable // 초기화
                 locale={ko} // 한국어로 변경
                 onChange={birthChange}
                 dateFormat="yyyy-MM-dd"
