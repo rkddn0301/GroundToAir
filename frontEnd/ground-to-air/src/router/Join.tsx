@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Title from "../components/Title";
 import styled from "styled-components";
 import InfoBox from "../components/InfoBox";
+import KakaoAuth from "../components/KakaoAuth";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -31,7 +32,6 @@ const Btn = styled.button`
     color: ${(props) => props.theme.black.font};
   }
 `;
-
 function Join() {
   return (
     <Container>
@@ -41,9 +41,7 @@ function Join() {
           <Link to="/join/info">
             <Btn>GroundToAir 회원가입</Btn>
           </Link>
-          <Link to="/join/info">
-            <Btn>카카오로 시작하기</Btn>
-          </Link>
+          <KakaoAuth />
           <Link to="/join/info">
             <Btn>구글로 회원가입</Btn>
           </Link>

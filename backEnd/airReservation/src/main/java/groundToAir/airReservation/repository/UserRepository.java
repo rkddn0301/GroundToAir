@@ -17,4 +17,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     // 로그인 하는 아이디가 일치하는지 확인
     Optional<UserEntity> findByUserId(String userId);
+
+    // 타사 인증 과정 (Kakao)
+    Optional<UserEntity> findBySocialId(String socialId);
 }

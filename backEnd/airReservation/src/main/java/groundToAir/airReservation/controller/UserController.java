@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 // 회원 정보 관련 Controller
 @RestController
 @Slf4j
@@ -31,6 +33,14 @@ public class UserController {
         return userService.emailCheck(email);
     }
 
+    // 카카오 인증
+    @PostMapping("/kakao")
+    public void kakaoUser(@RequestBody Map<String, Object> userInfo) {
+
+        log.info(userInfo.toString());
+        userService.kakaoUser(userInfo);
+    }
+
     // 회원가입 진행
     @PostMapping("/register")
     public int registerUser(@RequestBody UserEntity userEntity) {
@@ -45,6 +55,7 @@ public class UserController {
 
         return userService.registerUser(userEntity);  // UserEntity를 직접 서비스에 전달
     }
+
 
     // 여권정보 입력
     @PostMapping("/passportRegister")

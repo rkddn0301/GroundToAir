@@ -128,7 +128,7 @@ function JoinInfo() {
     password: "",
     userName: "",
     birth: "",
-    gender: "",
+    gender: "N",
     email: "",
   }); // input 입력 state
 
