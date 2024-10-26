@@ -29,7 +29,7 @@ const JAVASCRIPT_KEY = "33a797010560d5db7db69acabb0b6211"; // JAVASCRIPT API
 const ADMIN_KEY = "60efc8f10fa79f2fdf81e6b50da66afc"; // ADMIN
 
 // 카카오 로그인 인가 URL(GET 방식)
-const IMPRESSION_KAKAO_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}`;
+const IMPRESSION_KAKAO_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&scope=account_email`;
 
 // 카카오 액세스 토큰 URL(POST 방식)
 const ACCESS_TOKEN_KAKAO_URL = "https://kauth.kakao.com/oauth/token";

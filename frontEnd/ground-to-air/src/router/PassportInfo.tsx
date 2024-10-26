@@ -8,9 +8,9 @@ import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
-import Swal, { SweetAlertIcon } from "sweetalert2";
 import { useRecoilValue } from "recoil";
-import { JoinUserNo } from "../atom";
+import { JoinUserNo } from "../utils/atom";
+import { Alert, Confirm } from "../utils/sweetAlert";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -155,25 +155,6 @@ function PassportInfo() {
   const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]);
 
   const history = useHistory();
-
-  const Alert = (textAlert: string, type: SweetAlertIcon) => {
-    Swal.fire({
-      text: textAlert,
-      icon: type,
-      confirmButtonText: "확인",
-    });
-  };
-
-  const Confirm = async (textAlert: string, type: SweetAlertIcon) => {
-    const result = await Swal.fire({
-      text: textAlert,
-      icon: type,
-      confirmButtonText: "확인",
-      showCancelButton: true,
-      cancelButtonText: "취소",
-    });
-    return result;
-  };
 
   // 초기에 필요한 데이터 가져오기
   useEffect(() => {

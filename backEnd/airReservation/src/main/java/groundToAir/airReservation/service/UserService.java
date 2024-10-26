@@ -9,6 +9,8 @@ import groundToAir.airReservation.repository.CountryRepository;
 import groundToAir.airReservation.repository.UserPassportRepository;
 import groundToAir.airReservation.repository.UserRepository;
 import groundToAir.airReservation.repository.UserRoleRepository;
+import groundToAir.airReservation.utils.JwtUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,8 +23,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 
 // 회원 정보 관련 Service
 @Service
@@ -37,14 +41,16 @@ public class UserService {
 
     private final CountryRepository countryRepository;
     private final RestTemplate restTemplate;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRoleRepository = userRoleRepository;
         this.countryRepository = countryRepository;
         this.restTemplate = restTemplate;
+        this.jwtUtil = jwtUtil;
     }
 
     // 아이디 중복 체크
@@ -72,25 +78,46 @@ public class UserService {
 
     }
 
+    // JWT를 전체적으로 추출하는 메서드
+    public Map<String, Object> getJwtToken(String userId) {
+        // JWT 생성
+        Map<String, Object> accessToken = jwtUtil.generateAccessToken(userId);
+        Map<String, Object> refreshToken = jwtUtil.generateRefreshToken(userId);
+
+        // 두 토큰을 맵으로 묶어 반환
+        Map<String, Object> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken.get("token"));
+        tokens.put("accessTokenExpiration", accessToken.get("expiration"));
+        tokens.put("refreshToken", refreshToken.get("token"));
+        tokens.put("refreshTokenExpiration", refreshToken.get("expiration"));
+
+        return tokens;
+
+    }
+
+
     // 2. 카카오에서 받은 인가 코드로 액세스 토큰 요청 (SpringBoot)
     public String getKakaoAccessToken(Map<String, Object> userInfo) {
 
-
-
         // 요청에 필요한 파라미터 설정
-      String requestBody = "grant_type="+ userInfo.get("grant_type") +
-              "&client_id=" + userInfo.get("client_id") +
-              "&redirect_uri=" + userInfo.get("redirect_uri") +
-              "&code=" + userInfo.get("code");
+        String requestBody = "grant_type=" + userInfo.get("grant_type") +
+                "&client_id=" + userInfo.get("client_id") +
+                "&redirect_uri=" + userInfo.get("redirect_uri") +
+                "&code=" + userInfo.get("code");
 
-      // 헤더 설정
+        // 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
+        // HttpEntity : HTTP 요청 또는 응답을 나타내는 클래스로 아래 코드는 요청할 때 사용.
         // POST 방식으로 추출할 때는 requestBody도 넣어줌.
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
 
-        // 액세스 토큰 요청
+        log.info("{}", request);
+
+        // ResponseEntity : 서버로부터 받은 응답을 처리하는 객체.
+        // restTemplate.exchange(URL, HttpMethod, HttpEntity, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(HttpEntity)하여 원하는 타입(ResponseType)으로 받아오는 역할
+        // 액세스 토큰 응답 처리
         ResponseEntity<Map> response = restTemplate.exchange((String) userInfo.get("access_token_url"), HttpMethod.POST, request, Map.class);
 
         log.info("{}", response);
@@ -106,7 +133,7 @@ public class UserService {
     }
 
     // 3. 카카오 로그인
-    public void kakaoUser(Map<String, Object> userInfo) {
+    public void kakaoUser(Map<String, Object> userInfo, HttpSession session) {
         String accessToken = getKakaoAccessToken(userInfo);
 
         log.info(accessToken);
@@ -125,6 +152,7 @@ public class UserService {
 
         // 사용자 정보 처리
         Map<String, Object> kakaoUserInfo = response.getBody();
+        log.info("{}", kakaoUserInfo);
         if (kakaoUserInfo != null) {
             String socialId = kakaoUserInfo.get("id").toString();
             log.info("Kakao User ID : " + socialId);
@@ -133,6 +161,7 @@ public class UserService {
 
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
+
 
             } else {
                 // 새 사용자로 등록
@@ -147,6 +176,8 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
+
+
             }
         }
     }
@@ -193,8 +224,8 @@ public class UserService {
 
         // nationality를 CountryEntity로 설정
         if (userPassportEntity.getNationality() != null) {
-        CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+            CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
 
             userPassportEntity.setNationality(nationalityCheck); // 외래키로 설정
         }
@@ -220,21 +251,21 @@ public class UserService {
     }
 
 
-
     // GroundToAir 로그인 진행
-    public boolean loginUser(UserEntity loginEntity) {
-        // userId로 사용자를 조회하고 비밀번호 확인
-        UserEntity userEntity = userRepository.findByUserId(loginEntity.getUserId())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    public Map<String, Object> loginUser(UserEntity loginEntity) {
+        // 입력한 userId가 회원 테이블에 존재하는지 확인
+        UserEntity userEntity = userRepository.findByUserId(loginEntity.getUserId()).orElse(null);
 
-        // 이미 암호화된 비밀번호와 사용자가 입력한 비밀번호 비교
-        return passwordEncoder.matches(loginEntity.getPassword(), userEntity.getPassword());
+        // 비밀번호 비교 (암호화된 비밀번호와 비교)
+        // passwordEncoder.matches(매개변수 password, 암호화된 비교대상 password) : 입력한 password와 실제 Entity에 있는 password와 비교하여 일치 여부를 추출하는 메서드
+        if (userEntity != null && passwordEncoder.matches(loginEntity.getPassword(), userEntity.getPassword())) {
+
+            return getJwtToken(userEntity.getUserId());  // 로그인 성공, 토큰 반환
+        } else {
+            return null;  // 로그인 실패 (비밀번호 틀림)
+        }
     }
 
-    // JWT 토큰 생성 (Optional)
-    public String createJwtToken(String userId) {
-        // JWT 생성 로직
-        return "generated-jwt-token"; // 예시로 반환
-    }
+
 
 }

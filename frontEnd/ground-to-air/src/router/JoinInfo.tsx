@@ -10,9 +10,9 @@ import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
-import Swal, { SweetAlertIcon } from "sweetalert2";
 import { useSetRecoilState } from "recoil";
-import { JoinUserNo } from "../atom";
+import { JoinUserNo } from "../utils/atom";
+import { Alert } from "../utils/sweetAlert";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -150,14 +150,6 @@ function JoinInfo() {
   const setUserNo = useSetRecoilState(JoinUserNo); // 가입한 회원번호 저장
 
   const history = useHistory();
-
-  const Alert = (textAlert: string, type: SweetAlertIcon) => {
-    Swal.fire({
-      text: textAlert,
-      icon: type,
-      confirmButtonText: "확인",
-    });
-  };
 
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {

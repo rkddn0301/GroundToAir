@@ -15,11 +15,11 @@ const Home = styled.div`
 /*  ! theme은 객체인데 'theme[parentBgColor].font'로 사용되는 이유는 
  parentBgColor 자체가 props로 전달받는 문자열 변수이기 때문에 
  객체 지정하듯이 'theme.parentBgColor.font'로 사용하면 안된다. */
-const Circle = styled.div<{ parentBgColor: "black" | "white" }>`
+const Circle = styled.div<{ parentbgcolor: "black" | "white" }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid ${({ theme, parentBgColor }) => theme[parentBgColor].font};
+  border: 1px solid ${({ theme, parentbgcolor }) => theme[parentbgcolor].font};
   border-radius: 50%;
 
   width: 60px;
@@ -32,22 +32,22 @@ const Flight = styled.img`
   height: 35px;
 `;
 
-const TitleFont = styled.h3<{ parentBgColor: "black" | "white" }>`
+const TitleFont = styled.h3<{ parentbgcolor: "black" | "white" }>`
   font-size: 35px;
   margin-left: -10px;
   z-index: 1;
   font-weight: 600;
-  color: ${({ theme, parentBgColor }) => theme[parentBgColor].font};
+  color: ${({ theme, parentbgcolor }) => theme[parentbgcolor].font};
 `;
 
 function Title({ parentBgColor }: { parentBgColor: "black" | "white" }) {
   return (
     <Home>
       <Link to="/" style={{ display: "flex", alignItems: "center" }}>
-        <Circle parentBgColor={parentBgColor}>
+        <Circle parentbgcolor={parentBgColor}>
           <Flight src={FlightImg} alt="Flight"></Flight>
         </Circle>
-        <TitleFont parentBgColor={parentBgColor}>GroundToAir</TitleFont>
+        <TitleFont parentbgcolor={parentBgColor}>GroundToAir</TitleFont>
       </Link>
     </Home>
   );

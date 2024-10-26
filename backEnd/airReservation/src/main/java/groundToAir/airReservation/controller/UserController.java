@@ -3,11 +3,14 @@ package groundToAir.airReservation.controller;
 import groundToAir.airReservation.entity.UserEntity;
 import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.service.UserService;
+import groundToAir.airReservation.utils.JwtUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 // 회원 정보 관련 Controller
@@ -17,8 +20,11 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    public UserController(UserService userService) {
+    private final JwtUtil jwtUtil;
+
+    public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     // 아이디 중복 체크
@@ -35,10 +41,10 @@ public class UserController {
 
     // 카카오 인증
     @PostMapping("/kakao")
-    public void kakaoUser(@RequestBody Map<String, Object> userInfo) {
+    public void kakaoUser(@RequestBody Map<String, Object> userInfo, HttpSession session) {
 
         log.info(userInfo.toString());
-        userService.kakaoUser(userInfo);
+        userService.kakaoUser(userInfo, session);
     }
 
     // 회원가입 진행
@@ -72,22 +78,41 @@ public class UserController {
     }
 
 
-
-
     // 로그인 진행
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody UserEntity userEntity) {
-        boolean isAuthenticated = userService.loginUser(userEntity);
+    public Map<String, Object> loginUser(@RequestBody UserEntity userEntity) {
+        log.info(String.format("아이디 : %s, 비밀번호 : %s", userEntity.getUserId(), userEntity.getPassword()));
 
-        if (isAuthenticated) {
-            // 로그인 성공 시 JWT 토큰을 반환하거나 세션 생성
-            String token = userService.createJwtToken(userEntity.getUserId());
-            return ResponseEntity.ok(token);
+        Map<String, Object> tokens = userService.loginUser(userEntity);
 
+        if (tokens != null) {
+            log.info(tokens.toString());
+            return tokens; // 로그인 성공으로 간주하여 토큰을 반환
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+
+            return null; // 로그인 실패로 간주하여 null을 반환
+        }
+    }
+
+    // 리프레시 토큰 추출 메서드(보안적으로 인한 교체용)
+    @PostMapping("/refresh")
+    public Map<String, Object> refreshToken(@RequestHeader("Authorization") String AuthRefreshToken) {
+
+        // 받아온 데이터에서 "Bearer " 부분 제거 후 리프레시 토큰 데이터만 남김
+        String refreshToken = AuthRefreshToken.substring(7);
+
+        // 리프레시 토큰이 만료되었는지 확인
+        if (jwtUtil.isTokenExpired(refreshToken)) {
+            return null; // 만료되었으면 리프레시 토큰이 없다고 반환시킴
         }
 
+        // 리프레시 토큰 유효하면 소유자 ID를 추출
+        String userId = jwtUtil.extractUserId(refreshToken);
+        log.info("소유자 추출 : " + userId);
+
+        return userService.getJwtToken(userId); // 새로운 토큰들을 반환
     }
+
+
 
 }

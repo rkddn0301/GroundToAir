@@ -7,3 +7,9 @@ export const JoinUserNo = atom({
   key: "userNo",
   default: null, // 기본 경로 상태
 });
+
+// 로그인 세션을 위한 스위칭 atom
+export const isLoggedInState = atom<boolean>({
+  key: "isLoggedInState",
+  default: false,
+});

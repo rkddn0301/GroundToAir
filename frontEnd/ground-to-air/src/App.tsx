@@ -10,6 +10,9 @@ import Footer from "./components/Footer";
 import JoinInfo from "./router/JoinInfo";
 import Login from "./router/Login";
 import PassportInfo from "./router/PassportInfo";
+import { resetInactivityTimer } from "./utils/jwtActivityTimer";
+import { useRecoilState } from "recoil";
+import { isLoggedInState } from "./utils/atom";
 
 const Container = styled.div`
   display: flex;
@@ -23,7 +26,33 @@ const MainContent = styled.main`
   flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
 `;
 
+let debounceTimer: NodeJS.Timeout; // 타이머 연속 호출 방지 타이머
+
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState);
+
+  // 전체 사이트에서 활동/비활동에 따라 세션 유지 여부를 결정
+  useEffect(() => {
+    if (!isLoggedIn) return; // 로그인 된 상태에서만 동작
+    const events = ["click", "keydown", "scroll"]; // 클릭, 키보드, 스크롤
+    const resetTimer = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        resetInactivityTimer();
+      }, 10000); // 10초 후 리셋
+
+      console.log("동작");
+    };
+
+    // 이벤트 리스너 추가
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+
+    return () => {
+      // 브라우저에서 사이트를 닫거나 새로고침 시 이벤트 리스너 제거
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [isLoggedIn]);
+
   return (
     <Container>
       <Router>
