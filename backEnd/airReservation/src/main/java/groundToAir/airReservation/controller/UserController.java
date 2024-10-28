@@ -41,10 +41,10 @@ public class UserController {
 
     // 카카오 인증
     @PostMapping("/kakao")
-    public void kakaoUser(@RequestBody Map<String, Object> userInfo, HttpSession session) {
+    public Map<String, Object> kakaoUser(@RequestBody Map<String, Object> userInfo) {
 
         log.info(userInfo.toString());
-        userService.kakaoUser(userInfo, session);
+        return userService.kakaoUser(userInfo);
     }
 
     // 회원가입 진행

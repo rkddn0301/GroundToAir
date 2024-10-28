@@ -9,6 +9,7 @@ import { useSetRecoilState } from "recoil";
 import { isLoggedInState } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
+import KakaoAuth from "../components/KakaoAuth";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -89,6 +90,7 @@ function Login() {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState);
 
   const history = useHistory();
+  console.log(history.location.pathname);
 
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,6 +195,7 @@ function Login() {
           <SubmitField>
             <SubmitBtn onClick={infoSubmit}>로그인</SubmitBtn>
           </SubmitField>
+          <KakaoAuth props={history.location.pathname} />
         </Form>
       </InfoBox>
     </Container>

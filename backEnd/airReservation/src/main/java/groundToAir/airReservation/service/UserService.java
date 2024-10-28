@@ -133,7 +133,7 @@ public class UserService {
     }
 
     // 3. 카카오 로그인
-    public void kakaoUser(Map<String, Object> userInfo, HttpSession session) {
+    public Map<String, Object> kakaoUser(Map<String, Object> userInfo) {
         String accessToken = getKakaoAccessToken(userInfo);
 
         log.info(accessToken);
@@ -162,7 +162,7 @@ public class UserService {
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
 
-
+               return getJwtToken(socialId);
             } else {
                 // 새 사용자로 등록
 
@@ -176,10 +176,12 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
-
+                return getJwtToken(socialId);
 
             }
         }
+
+        return null;
     }
 
 

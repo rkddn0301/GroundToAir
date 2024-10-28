@@ -13,7 +13,7 @@ import Swal, { SweetAlertIcon } from "sweetalert2";
 
 // 단순한 확인 팝업창 띄울 시
 export const Alert = (textAlert: string, type: SweetAlertIcon) => {
-  Swal.fire({
+  return Swal.fire({
     text: textAlert,
     icon: type,
     confirmButtonText: "확인",

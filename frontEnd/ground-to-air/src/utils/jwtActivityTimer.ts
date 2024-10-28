@@ -56,6 +56,7 @@ const logout = () => {
   clearInterval(refreshInterval); // 리프레시 토큰 타이머 삭제
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  Alert("세션이 만료되었습니다. 다시 로그인 해주세요.", "info");
-  window.location.href = "/login"; // 로그인 페이지로 이동
+  Alert("세션이 만료되었습니다. 다시 로그인 해주세요.", "info").then(() => {
+    window.location.href = "/login"; // 로그인 페이지로 이동
+  });
 };

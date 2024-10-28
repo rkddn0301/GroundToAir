@@ -1,5 +1,5 @@
 // 회원가입 페이지
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Title from "../components/Title";
 import styled from "styled-components";
 import InfoBox from "../components/InfoBox";
@@ -33,6 +33,9 @@ const Btn = styled.button`
   }
 `;
 function Join() {
+  const history = useHistory();
+  console.log(history.location.pathname);
+
   return (
     <Container>
       <InfoBox>
@@ -41,7 +44,7 @@ function Join() {
           <Link to="/join/info">
             <Btn>GroundToAir 회원가입</Btn>
           </Link>
-          <KakaoAuth />
+          <KakaoAuth props={history.location.pathname} />
           <Link to="/join/info">
             <Btn>구글로 회원가입</Btn>
           </Link>
