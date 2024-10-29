@@ -5,6 +5,7 @@ import styled from "styled-components";
 import Title from "./Title";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../utils/atom";
+import { logout } from "../utils/jwtActivityTimer";
 
 const Nav = styled.nav`
   display: flex;
@@ -27,6 +28,7 @@ const Menus = styled.div`
   justify-content: center;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
 `;
 
 const Icon = styled.svg`
@@ -34,7 +36,7 @@ const Icon = styled.svg`
 `;
 
 function Layout() {
-  const isLoggedIn = useRecoilValue(isLoggedInState);
+  const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 확인 atom
 
   return (
     <Nav>
@@ -87,7 +89,42 @@ function Layout() {
           </>
         ) : (
           <>
-            <div>로그아웃</div>
+            <Link to="#">
+              <Menus>
+                <Icon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                  />
+                </Icon>
+                찜
+              </Menus>
+            </Link>
+            <Menus onClick={logout}>
+              <Icon
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
+                />
+              </Icon>
+              로그아웃
+            </Menus>
           </>
         )}
 

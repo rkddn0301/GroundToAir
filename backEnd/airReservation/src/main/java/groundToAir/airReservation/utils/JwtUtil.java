@@ -29,8 +29,8 @@ public class JwtUtil {
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
 
-    private final long accessTokenExpirationTime = 1000 * 30; // 액세스 토큰 만료시간: 30초
-    private final long refreshTokenExpirationTime = 1000 * 60; // 리프레시 토큰 만료시간: 1분
+    private final long accessTokenExpirationTime = 1000 * 60 * 60; // 액세스 토큰 만료시간: 1시간
+    private final long refreshTokenExpirationTime = 1000 * 60 * 60 * 3; // 리프레시 토큰 만료시간: 3시간
 
     // 액세스 토큰 생성 메서드
     // 생성을 위해 createToken 메서드에 필요한 데이터를 넘겨서 JWT 토큰을 받아냄

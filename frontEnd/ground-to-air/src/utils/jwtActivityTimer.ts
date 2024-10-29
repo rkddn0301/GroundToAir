@@ -1,22 +1,23 @@
 // JWT 활동 타이머 유틸
 import axios from "axios";
-import { Alert } from "./sweetAlert";
+import { Alert, Confirm } from "./sweetAlert";
 
 let inactivityTimer: NodeJS.Timeout; // 비활동 타이머
 let refreshInterval: NodeJS.Timeout; // 리프레시 토큰 타이머
 
 // 로그인 시 비활동 타이머, 리프레시 토큰 타이머가 동시에 동작되는 함수
-export const startSessionTimeout = () => {
-  resetInactivityTimer(); // 세션 타이머 초기화
-  refreshInterval = setInterval(refreshAccessToken, 25000); // 25초마다 토큰 갱신
+export const startSessionTimeout = (tokenExpiration: number) => {
+  console.log(tokenExpiration);
+  resetInactivityTimer(tokenExpiration); // 세션 타이머 초기화
+  refreshInterval = setInterval(refreshAccessToken, tokenExpiration - 300000); // 1시간 - 5분 = 55분 마다 토큰 갱신
 };
 
 // 비활동 타이머 리셋 함수
 // 활동 시 이 함수가 계속 호출되어 갱신되는 로직
-export const resetInactivityTimer = () => {
+export const resetInactivityTimer = (tokenExpiration: number) => {
   console.log("비활동 타이머 작동");
   clearTimeout(inactivityTimer); // 기존 비활동 타이머 삭제
-  inactivityTimer = setTimeout(logout, 30000); // 30초 후 로그아웃
+  inactivityTimer = setTimeout(sessionOut, tokenExpiration); // 1시간 후 로그아웃
 };
 
 // 토큰 갱신 요청
@@ -24,7 +25,7 @@ export const resetInactivityTimer = () => {
 export const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   console.log(refreshToken);
-  if (!refreshToken) return logout(); // 기존 리프레시 토큰이 없으면 로그아웃
+  if (!refreshToken) return sessionOut(); // 기존 리프레시 토큰이 없으면 로그아웃
 
   try {
     const response = await axios.post<{
@@ -46,17 +47,38 @@ export const refreshAccessToken = async () => {
     localStorage.setItem("refreshToken", newRefreshToken);
   } catch (error) {
     console.error("토큰 갱신 실패:", error);
-    logout();
+    sessionOut();
   }
 };
 
-// 로그아웃 처리 함수
-const logout = () => {
+// 세션이 만료되었을 때 처리되는 함수
+const sessionOut = async () => {
   clearTimeout(inactivityTimer); // 비활동 타이머 삭제
   clearInterval(refreshInterval); // 리프레시 토큰 타이머 삭제
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  Alert("세션이 만료되었습니다. 다시 로그인 해주세요.", "info").then(() => {
+  const sessionOutAlert = await Alert(
+    "세션이 만료되었습니다. 다시 로그인 해주세요.",
+    "info"
+  );
+  console.log(sessionOutAlert);
+
+  if (sessionOutAlert.isConfirmed) {
     window.location.href = "/login"; // 로그인 페이지로 이동
-  });
+  }
+};
+
+// 로그아웃 되었을 때 처리되는 함수
+export const logout = async () => {
+  const logoutConfirm = await Confirm("로그아웃 하시겠습니까?", "question");
+
+  // 확인 선택 시
+  if (logoutConfirm.isConfirmed) {
+    clearTimeout(inactivityTimer); // 비활동 타이머 삭제
+    clearInterval(refreshInterval); // 리프레시 토큰 타이머 삭제
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
+    window.location.href = "/"; // 로그인 페이지로 이동
+  }
 };

@@ -6,7 +6,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
-import { isLoggedInState } from "../utils/atom";
+import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
 import KakaoAuth from "../components/KakaoAuth";
@@ -87,10 +87,10 @@ function Login() {
     password: "",
   }); // 오류 메시지 표시 state
 
-  const setIsLoggedIn = useSetRecoilState(isLoggedInState);
+  const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
+  const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
 
   const history = useHistory();
-  console.log(history.location.pathname);
 
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,14 +142,22 @@ function Login() {
         userId: inputData.userId,
         password: inputData.password,
       });
-      console.log(response.data);
       if (response.data) {
         Alert("로그인 되었습니다.", "success");
-        const { accessToken, refreshToken } = response.data;
+        const { accessToken, accessTokenExpiration, refreshToken } =
+          response.data;
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
+
         setIsLoggedIn(true);
-        startSessionTimeout();
+
+        // 만료시간 변환작업
+        const expirationTime =
+          new Date(accessTokenExpiration).getTime() - Date.now();
+
+        setTokenExpiration(expirationTime);
+        startSessionTimeout(expirationTime);
+
         history.push("/");
       } else {
         Alert(
@@ -175,7 +183,6 @@ function Login() {
               placeholder="gildong1231"
               value={inputData.userId}
               onChange={userIdChange}
-              required
             />
           </Field>
           {errorMsg.userId && <GuideLine>{errorMsg.userId}</GuideLine>}
@@ -187,7 +194,6 @@ function Login() {
               id="password"
               value={inputData.password}
               onChange={passwordChange}
-              required
             />
           </Field>
           {errorMsg.password && <GuideLine>{errorMsg.password}</GuideLine>}
@@ -195,8 +201,8 @@ function Login() {
           <SubmitField>
             <SubmitBtn onClick={infoSubmit}>로그인</SubmitBtn>
           </SubmitField>
-          <KakaoAuth props={history.location.pathname} />
         </Form>
+        <KakaoAuth props={history.location.pathname} />
       </InfoBox>
     </Container>
   );

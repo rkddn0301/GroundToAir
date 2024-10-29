@@ -4,7 +4,7 @@ import KakaoStartImg from "../img/kakaoStart.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import { isLoggedInState } from "../utils/atom";
+import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
@@ -39,15 +39,14 @@ function KakaoAuth({ props }: { props: string }) {
   // 카카오 액세스 토큰 URL(POST 방식)
   const ACCESS_TOKEN_KAKAO_URL = "https://kauth.kakao.com/oauth/token";
 
-  const setIsLoggedIn = useSetRecoilState(isLoggedInState);
-
+  const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
+  const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
   const history = useHistory();
 
   useEffect(() => {
     // 카카오 페이지에서 로그인 후 Redirect로 돌아올 시 재동작을 위함
     // 1. 카카오에서 로그인 후 인가 코드를 받음
     const code = new URL(window.location.href).searchParams.get("code");
-
     if (code) {
       console.log("인가 코드:", code);
       kakaoAuthentication(code);
@@ -70,11 +69,19 @@ function KakaoAuth({ props }: { props: string }) {
       });
 
       if (response.data) {
-        const { accessToken, refreshToken } = response.data;
+        console.log(response.data);
+        const { accessToken, refreshToken, accessTokenExpiration } =
+          response.data;
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         setIsLoggedIn(true);
-        startSessionTimeout();
+        // 만료시간 변환작업
+        const expirationTime =
+          new Date(accessTokenExpiration).getTime() - Date.now();
+
+        setTokenExpiration(expirationTime);
+        startSessionTimeout(expirationTime);
+
         history.push("/");
       }
     } catch (error) {

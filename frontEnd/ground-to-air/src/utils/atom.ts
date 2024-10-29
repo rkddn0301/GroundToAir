@@ -9,7 +9,14 @@ export const JoinUserNo = atom({
 });
 
 // 로그인 세션을 위한 스위칭 atom
+// !! 연산자 : 부정+부정=긍정으로 결국 localStorage로 출력될 값을 boolean 타입으로 변환한 것
 export const isLoggedInState = atom<boolean>({
   key: "isLoggedInState",
-  default: false,
+  default: !!localStorage.getItem("accessToken"),
+});
+
+// 토큰 만료시간 데이터 atom
+export const tokenExpirationTime = atom<number>({
+  key: "tokenExpirationTime",
+  default: 0,
 });

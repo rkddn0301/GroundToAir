@@ -11,8 +11,8 @@ import JoinInfo from "./router/JoinInfo";
 import Login from "./router/Login";
 import PassportInfo from "./router/PassportInfo";
 import { resetInactivityTimer } from "./utils/jwtActivityTimer";
-import { useRecoilState } from "recoil";
-import { isLoggedInState } from "./utils/atom";
+import { useRecoilValue } from "recoil";
+import { isLoggedInState, tokenExpirationTime } from "./utils/atom";
 
 const Container = styled.div`
   display: flex;
@@ -29,16 +29,19 @@ const MainContent = styled.main`
 let debounceTimer: NodeJS.Timeout; // 타이머 연속 호출 방지 타이머
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState);
+  const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 atom
+  const tokenExpiration = useRecoilValue(tokenExpirationTime); // 토큰 만료시간 atom
 
   // 전체 사이트에서 활동/비활동에 따라 세션 유지 여부를 결정
   useEffect(() => {
     if (!isLoggedIn) return; // 로그인 된 상태에서만 동작
+
+    // 활동 시 동작
     const events = ["click", "keydown", "scroll"]; // 클릭, 키보드, 스크롤
     const resetTimer = () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        resetInactivityTimer();
+        resetInactivityTimer(tokenExpiration);
       }, 10000); // 10초 후 리셋
 
       console.log("동작");
