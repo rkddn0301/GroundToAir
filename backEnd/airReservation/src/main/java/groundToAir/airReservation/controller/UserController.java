@@ -47,6 +47,14 @@ public class UserController {
         return userService.kakaoUser(userInfo);
     }
 
+    // 구글 인증
+    @PostMapping("/google")
+    public Map<String, Object> googleUser(@RequestBody Map<String, Object> userInfo) {
+
+        log.info(userInfo.toString());
+        return userService.googleUser(userInfo);
+    }
+
     // 회원가입 진행
     @PostMapping("/register")
     public int registerUser(@RequestBody UserEntity userEntity) {

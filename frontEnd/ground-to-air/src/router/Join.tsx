@@ -4,6 +4,7 @@ import Title from "../components/Title";
 import styled from "styled-components";
 import InfoBox from "../components/InfoBox";
 import KakaoAuth from "../components/KakaoAuth";
+import GoogleAuth from "../components/GoogleAuth";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -13,7 +14,7 @@ const Menus = styled.div`
   height: 50vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
   gap: 15px;
   margin-top: 50px;
@@ -44,10 +45,15 @@ function Join() {
           <Link to="/join/info">
             <Btn>GroundToAir 회원가입</Btn>
           </Link>
-          <KakaoAuth props={history.location.pathname} />
-          <Link to="/join/info">
-            <Btn>구글로 회원가입</Btn>
-          </Link>
+          <KakaoAuth
+            redirectRoute={history.location.pathname}
+            title={"카카오 시작하기"}
+          />
+
+          <GoogleAuth
+            redirectRoute={history.location.pathname}
+            title={"구글 시작하기"}
+          />
         </Menus>
       </InfoBox>
     </Container>

@@ -10,6 +10,7 @@ import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
 import KakaoAuth from "../components/KakaoAuth";
+import GoogleAuth from "../components/GoogleAuth";
 
 const Container = styled.div`
   padding-top: 50px;
@@ -74,6 +75,12 @@ const SubmitBtn = styled.button`
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
   }
+`;
+
+const FederationField = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
 `;
 
 function Login() {
@@ -202,7 +209,16 @@ function Login() {
             <SubmitBtn onClick={infoSubmit}>로그인</SubmitBtn>
           </SubmitField>
         </Form>
-        <KakaoAuth props={history.location.pathname} />
+        <FederationField>
+          <KakaoAuth
+            redirectRoute={history.location.pathname}
+            title={"카카오 로그인"}
+          />
+          <GoogleAuth
+            redirectRoute={history.location.pathname}
+            title={"구글 로그인"}
+          />
+        </FederationField>
       </InfoBox>
     </Container>
   );

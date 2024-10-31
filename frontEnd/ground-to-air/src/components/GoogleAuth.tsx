@@ -1,6 +1,6 @@
-// 카카오 인증 컴포넌트
+// 구글 인증 컴포넌트
 import axios from "axios";
-import KakaoStartImg from "../img/kakaotalk_sharing_btn_small.png";
+import GoogleStartImg from "../img/g-logo.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
@@ -27,46 +27,39 @@ const Img = styled.img`
   margin: 0 5px -5px 0;
 `;
 
-function KakaoAuth(props: { redirectRoute: string; title: string }) {
-  // Redirect URI
-  const REDIRECT_URI = `http://localhost:3000${props.redirectRoute}`;
-
-  // 앱키 저장
-  const NATIVE_APP_KEY = "4a2a80ec447b5aba692b394f50d37557"; // 네이티브 앱
-  const REST_API_KEY = "20624702d5a29dd8501b4a3f25a70d87"; // REST API
-  const JAVASCRIPT_KEY = "33a797010560d5db7db69acabb0b6211"; // JAVASCRIPT API
-  const ADMIN_KEY = "60efc8f10fa79f2fdf81e6b50da66afc"; // ADMIN
-
+function GoogleAuth(props: { redirectRoute: string; title: string }) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
   const history = useHistory();
 
   useEffect(() => {
-    // 카카오 페이지에서 로그인 후 Redirect로 돌아올 시 재동작을 위함
-    // state는 카카오 로그인이라는걸 확인하기 위함
-    // 1. 카카오에서 로그인 후 인가 코드를 받음
+    console.log(`${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`);
+    // 구글 페이지에서 로그인 후 Redirect로 돌아올 시 재동작을 위함
+    // state는 구글 로그인이라는걸 확인하기 위함
+    // 1. 구글에서 로그인 후 인가 코드를 받음
     const urlParams = new URL(window.location.href).searchParams;
     const code = urlParams.get("code");
     const state = urlParams.get("state");
-    if (code && state === "kakao") {
+    if (code && state === "google") {
       console.log("인가 코드:", code);
-      kakaoAuthentication(code);
+      googleAuthentication(code);
     }
   }, []);
 
-  // 카카오 인증
+  // 구글 인증
   const impression = () => {
-    window.location.href = `${process.env.REACT_APP_KAKAO_IMPRESSION_URL}?response_type=code&client_id=${process.env.REACT_APP_KAKAO_REST_API_KEY}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}&scope=account_email&state=kakao`;
+    window.location.href = `${process.env.REACT_APP_GOOGLE_IMPRESSION_URL}?client_id=${process.env.REACT_APP_GOOGLE_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}&response_type=code&scope=openid email&state=google`;
   };
 
-  const kakaoAuthentication = async (code: string) => {
+  const googleAuthentication = async (code: string) => {
     try {
-      const response = await axios.post("http://localhost:8080/user/kakao", {
-        access_token_url: process.env.REACT_APP_KAKAO_ACCESS_TOKEN_URL, // 액세스 토큰 요청 URL
-        grant_type: "authorization_code", // grant_type
-        client_id: process.env.REACT_APP_KAKAO_REST_API_KEY, // REST API 키
-        redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`, // 리다이렉트 URI
-        code: code, // 인가 코드
+      const response = await axios.post("http://localhost:8080/user/google", {
+        access_token_url: process.env.REACT_APP_GOOGLE_ACCESS_TOKEN_URL,
+        grant_type: "authorization_code",
+        client_secret: process.env.REACT_APP_GOOGLE_SECRET,
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`,
+        code: code,
       });
 
       if (response.data) {
@@ -86,16 +79,16 @@ function KakaoAuth(props: { redirectRoute: string; title: string }) {
         history.push("/");
       }
     } catch (error) {
-      console.error("인증 도중 오류:", error);
+      console.error("인증 도중 오류: ", error);
     }
   };
 
   return (
     <Btn onClick={impression}>
-      <Img src={KakaoStartImg} />
+      <Img src={GoogleStartImg} />
       {props.title}
     </Btn>
   );
 }
 
-export default KakaoAuth;
+export default GoogleAuth;

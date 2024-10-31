@@ -113,14 +113,14 @@ public class UserService {
         // POST 방식으로 추출할 때는 requestBody도 넣어줌.
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
 
-        log.info("{}", request);
+        log.info("tokenRequest : {}", request);
 
         // ResponseEntity : 서버로부터 받은 응답을 처리하는 객체.
         // restTemplate.exchange(URL, HttpMethod, HttpEntity, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(HttpEntity)하여 원하는 타입(ResponseType)으로 받아오는 역할
         // 액세스 토큰 응답 처리
         ResponseEntity<Map> response = restTemplate.exchange((String) userInfo.get("access_token_url"), HttpMethod.POST, request, Map.class);
 
-        log.info("{}", response);
+        log.info("tokenResponse : {}", response);
 
         // 응답에서 액세스 토큰 추출
         Map<String, Object> responseBody = response.getBody();
@@ -136,7 +136,6 @@ public class UserService {
     public Map<String, Object> kakaoUser(Map<String, Object> userInfo) {
         String accessToken = getKakaoAccessToken(userInfo);
 
-        log.info(accessToken);
 
         // 사용자 정보를 가져오기 위한 카카오 API URL
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
@@ -152,7 +151,7 @@ public class UserService {
 
         // 사용자 정보 처리
         Map<String, Object> kakaoUserInfo = response.getBody();
-        log.info("{}", kakaoUserInfo);
+        log.info("kakaoUserInfo : {}", kakaoUserInfo);
         if (kakaoUserInfo != null) {
             String socialId = kakaoUserInfo.get("id").toString();
             log.info("Kakao User ID : " + socialId);
@@ -173,6 +172,94 @@ public class UserService {
                 userEntity.setRoleName(userRole); // 권한 설정
                 userEntity.setSocialId(socialId);
                 userEntity.setSocialType(SocialType.KAKAO);
+                userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
+
+                userRepository.save(userEntity);
+                return getJwtToken(socialId);
+
+            }
+        }
+
+        return null;
+    }
+
+    // 2. 구글에서 받은 인가 코드로 액세스 토큰 요청 (SpringBoot)
+    public String getGoogleAccessToken(Map<String, Object> userInfo) {
+
+        // 요청에 필요한 파라미터 설정
+        String requestBody = "grant_type=" + userInfo.get("grant_type") +
+                "&client_id=" + userInfo.get("client_id") +
+                "&client_secret=" + userInfo.get("client_secret") +
+                "&redirect_uri=" + userInfo.get("redirect_uri") +
+                "&code=" + userInfo.get("code");
+
+        // 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        // HttpEntity : HTTP 요청 또는 응답을 나타내는 클래스로 아래 코드는 요청할 때 사용.
+        // POST 방식으로 추출할 때는 requestBody도 넣어줌.
+        HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
+
+        log.info("tokenRequest : {}", request);
+
+        // ResponseEntity : 서버로부터 받은 응답을 처리하는 객체.
+        // restTemplate.exchange(URL, HttpMethod, HttpEntity, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(HttpEntity)하여 원하는 타입(ResponseType)으로 받아오는 역할
+        // 액세스 토큰 응답 처리
+        ResponseEntity<Map> response = restTemplate.exchange((String) userInfo.get("access_token_url"), HttpMethod.POST, request, Map.class);
+
+        log.info("tokenResponse : {}", response);
+
+        // 응답에서 액세스 토큰 추출
+        Map<String, Object> responseBody = response.getBody();
+        if (responseBody != null) {
+            // 모든 데이터 중 access_token만 추출
+            return (String) responseBody.get("access_token");
+        }
+        throw new RuntimeException("액세스 토큰을 가져오는 데 실패했습니다.");
+
+    }
+
+    // 3. 구글 로그인
+    public Map<String, Object> googleUser(Map<String, Object> userInfo) {
+        String accessToken = getGoogleAccessToken(userInfo);
+
+
+        // 사용자 정보를 가져오기 위한 카카오 API URL
+        String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+        // 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        // 사용자 정보 요청
+        HttpEntity<String> request = new HttpEntity<>(headers);
+        ResponseEntity<Map> response = restTemplate.exchange(userInfoUrl, HttpMethod.POST, request, Map.class);
+
+        // 사용자 정보 처리
+        Map<String, Object> googleUserInfo = response.getBody();
+        log.info("googleUserInfo : {}", googleUserInfo);
+        if (googleUserInfo != null) {
+            String socialId = googleUserInfo.get("sub").toString();
+            log.info("Google User ID : " + socialId);
+
+            Optional<UserEntity> existingUser = userRepository.findBySocialId(socialId);
+
+            if (existingUser.isPresent()) {
+                log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
+
+                return getJwtToken(socialId);
+            } else {
+                // 새 사용자로 등록
+
+                // USER 권한 부여를 위해 UserRoleEntity 조회
+                UserRoleEntity userRole = userRoleRepository.findByRoleName("USER");
+
+                UserEntity userEntity = new UserEntity();
+                userEntity.setRoleName(userRole); // 권한 설정
+                userEntity.setSocialId(socialId);
+                userEntity.setSocialType(SocialType.GOOGLE);
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
