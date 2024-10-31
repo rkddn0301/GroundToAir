@@ -2,6 +2,7 @@ package groundToAir.airReservation.repository;
 
 import groundToAir.airReservation.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -18,6 +19,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     // 로그인 하는 아이디가 일치하는지 확인
     Optional<UserEntity> findByUserId(String userId);
 
-    // 타사 인증 과정 (Kakao)
+    // 타사 인증 과정 (Kakao, Google)
     Optional<UserEntity> findBySocialId(String socialId);
+
+    // 아이디 찾기 과정에서 성명, 이메일이 일치하는 아이디 확인
+    @Query("SELECT u.userId FROM UserEntity u WHERE u.userName =?1 AND u.email = ?2")
+    String findUserIdByUserNameAndEmail(String userName, String email);
 }

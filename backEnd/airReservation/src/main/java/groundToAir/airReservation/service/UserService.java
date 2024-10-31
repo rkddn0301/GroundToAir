@@ -16,9 +16,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -43,7 +46,10 @@ public class UserService {
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil) {
+    // 이메일 이용
+    private JavaMailSender mailSender;
+
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
@@ -51,6 +57,7 @@ public class UserService {
         this.countryRepository = countryRepository;
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
+        this.mailSender = mailSender;
     }
 
     // 아이디 중복 체크
@@ -353,6 +360,35 @@ public class UserService {
         } else {
             return null;  // 로그인 실패 (비밀번호 틀림)
         }
+    }
+
+    // 아이디 찾기
+    public boolean idFind(String userName,
+           String email) {
+
+        // 사용자 아이디 찾기
+        String userId = userRepository.findUserIdByUserNameAndEmail(userName, email);
+
+        if (userId != null) {
+            // 아이디가 존재할 경우 이메일로 전송
+            sendEmail(email, userId);
+            return true;
+        } else {
+            // 아이디가 없을 경우
+           return false;
+        }
+
+
+
+        }
+
+        // 이메일 전송 메서드
+    private void sendEmail(String toEmail, String userId) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("아이디 찾기");
+        message.setText("귀하의 아이디는 " + userId + " 입니다.");
+        mailSender.send(message);
     }
 
 

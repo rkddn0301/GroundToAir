@@ -13,6 +13,8 @@ import PassportInfo from "./router/PassportInfo";
 import { resetInactivityTimer } from "./utils/jwtActivityTimer";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState, tokenExpirationTime } from "./utils/atom";
+import PwFind from "./router/PwFind";
+import IdFind from "./router/IdFind";
 
 const Container = styled.div`
   display: flex;
@@ -69,6 +71,12 @@ function App() {
             <ChoiceButton />
           </Route>
           <Switch>
+            <Route path="/pwFind">
+              <PwFind />
+            </Route>
+            <Route path="/idFind">
+              <IdFind />
+            </Route>
             <Route path="/login">
               <Login />
             </Route>

@@ -121,6 +121,17 @@ public class UserController {
         return userService.getJwtToken(userId); // 새로운 토큰들을 반환
     }
 
+    // 아이디 찾기
+    @GetMapping("/idFind")
+    public boolean idFind(@RequestParam("userName") String userName,
+                                      @RequestParam("email") String email) {
+        log.info("성명 : " + userName + ", 이메일 : " + email);
+
+        return userService.idFind(userName, email);
+
+
+    }
+
 
 
 }
