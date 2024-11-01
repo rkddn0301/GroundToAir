@@ -58,5 +58,8 @@ public class UserEntity {
     @JoinColumn(name = "ROLE_NAME", referencedColumnName = "ROLE_NAME", nullable = false)
     private UserRoleEntity roleName;
 
+    // 양방향 설정: UserEntity와 UserPassportEntity 간의 관계
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private UserPassportEntity passport;
 
 }

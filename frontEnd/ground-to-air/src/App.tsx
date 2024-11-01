@@ -15,6 +15,7 @@ import { useRecoilValue } from "recoil";
 import { isLoggedInState, tokenExpirationTime } from "./utils/atom";
 import PwFind from "./router/PwFind";
 import IdFind from "./router/IdFind";
+import MyInfo from "./router/MyInfo";
 
 const Container = styled.div`
   display: flex;
@@ -58,6 +59,10 @@ function App() {
     };
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    console.log(isLoggedIn);
+  }, []);
+
   return (
     <Container>
       <Router>
@@ -71,6 +76,9 @@ function App() {
             <ChoiceButton />
           </Route>
           <Switch>
+            <Route path="/myInfo">
+              <MyInfo />
+            </Route>
             <Route path="/pwFind">
               <PwFind />
             </Route>

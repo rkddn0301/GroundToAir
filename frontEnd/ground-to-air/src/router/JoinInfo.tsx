@@ -126,6 +126,7 @@ function JoinInfo() {
   const [inputData, setInputData] = useState({
     userId: "",
     password: "",
+    passwordChk: "",
     userName: "",
     birth: "",
     gender: "N",
@@ -135,6 +136,7 @@ function JoinInfo() {
   const [errorMsg, setErrorMsg] = useState({
     userId: "",
     password: "",
+    passwordChk: "",
     userName: "",
     email: "",
   }); // 오류 메시지 표시 state
@@ -146,6 +148,7 @@ function JoinInfo() {
 
   const [idChecking, setIdChecking] = useState(false); // 아이디 체크 여부 스위칭
   const [emailChecking, setEmailChecking] = useState(false); // 이메일 체크 여부 스위칭
+  const [passwordChecking, setPasswordChecking] = useState(false); // 비밀번호 체크 여부 스위칭
 
   const setUserNo = useSetRecoilState(JoinUserNo); // 가입한 회원번호 저장
 
@@ -187,6 +190,23 @@ function JoinInfo() {
       });
     } else {
       setErrorMsg({ ...errorMsg, password: "" });
+    }
+  };
+
+  // 비밀번호 확인 입력란 변경 시 동작
+  const passwordChkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordChecking(false);
+    const value = e.target.value;
+    setInputData({ ...inputData, passwordChk: value });
+
+    if (inputData.password !== e.target.value) {
+      setErrorMsg({
+        ...errorMsg,
+        passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+      });
+    } else {
+      setPasswordChecking(true);
+      setErrorMsg({ ...errorMsg, passwordChk: "" });
     }
   };
 
@@ -339,6 +359,13 @@ function JoinInfo() {
         password: "비밀번호를 입력해주세요.",
       }));
       return;
+    } else if (inputData.passwordChk === "") {
+      document.getElementById("passwordChk")?.focus();
+      setErrorMsg((prev) => ({
+        ...prev,
+        passwordChk: "비밀번호 확인을 입력해주세요.",
+      }));
+      return;
     } else if (inputData.userName === "") {
       document.getElementById("userName")?.focus();
       setErrorMsg((prev) => ({ ...prev, userName: "성명을 입력해주세요." }));
@@ -356,6 +383,10 @@ function JoinInfo() {
       return;
     } else if (errorMsg.password !== "") {
       document.getElementById("password")?.focus();
+
+      return;
+    } else if (errorMsg.passwordChk !== "") {
+      document.getElementById("passwordChk")?.focus();
 
       return;
     } else if (errorMsg.userName !== "") {
@@ -419,6 +450,21 @@ function JoinInfo() {
             />
           </Field>
           {errorMsg.password && <GuideLine>{errorMsg.password}</GuideLine>}
+
+          <Field>
+            <Label htmlFor="passwordChk">*비밀번호 확인</Label>
+            <WriteInput
+              type="password"
+              id="passwordChk"
+              value={inputData.passwordChk}
+              onChange={passwordChkChange}
+              minLength={8}
+              maxLength={15}
+            />
+          </Field>
+          {errorMsg.passwordChk && (
+            <GuideLine>{errorMsg.passwordChk}</GuideLine>
+          )}
 
           <Field>
             <Label htmlFor="userName">*성명</Label>

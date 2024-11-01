@@ -4,13 +4,9 @@ import groundToAir.airReservation.entity.UserEntity;
 import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 // 회원 정보 관련 Controller
@@ -116,9 +112,10 @@ public class UserController {
 
         // 리프레시 토큰 유효하면 소유자 ID를 추출
         String userId = jwtUtil.extractUserId(refreshToken);
+        int userNo = jwtUtil.extractUserNo(refreshToken);
         log.info("소유자 추출 : " + userId);
 
-        return userService.getJwtToken(userId); // 새로운 토큰들을 반환
+        return userService.getJwtToken(userId, userNo); // 새로운 토큰들을 반환
     }
 
     // 아이디 찾기
@@ -132,6 +129,20 @@ public class UserController {
 
     }
 
+
+    // 개인정보 확인
+@PostMapping("/myInfo")
+    public Map<String, Object> myInfo(@RequestHeader("Authorization") String accessToken) {
+
+    // Bearer 토큰에서 "Bearer " 부분 제거
+    if (accessToken.startsWith("Bearer ")) {
+        accessToken = accessToken.substring(7);
+    }
+    int userNo = jwtUtil.extractUserNo(accessToken);
+
+
+    return userService.myInfo(userNo);
+}
 
 
 }

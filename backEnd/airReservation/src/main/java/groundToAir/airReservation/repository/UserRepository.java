@@ -3,6 +3,7 @@ package groundToAir.airReservation.repository;
 import groundToAir.airReservation.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -25,4 +26,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     // 아이디 찾기 과정에서 성명, 이메일이 일치하는 아이디 확인
     @Query("SELECT u.userId FROM UserEntity u WHERE u.userName =?1 AND u.email = ?2")
     String findUserIdByUserNameAndEmail(String userName, String email);
+
+    // 개인정보 추출
+    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.passport p WHERE u.userNo = :userNo")
+    Optional<UserEntity> findUserWithPassportByUserNo(@Param("userNo") int userNo);
+
+
 }

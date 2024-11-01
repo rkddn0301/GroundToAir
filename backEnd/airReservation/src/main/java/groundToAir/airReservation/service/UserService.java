@@ -10,7 +10,6 @@ import groundToAir.airReservation.repository.UserPassportRepository;
 import groundToAir.airReservation.repository.UserRepository;
 import groundToAir.airReservation.repository.UserRoleRepository;
 import groundToAir.airReservation.utils.JwtUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +20,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -86,10 +84,10 @@ public class UserService {
     }
 
     // JWT를 전체적으로 추출하는 메서드
-    public Map<String, Object> getJwtToken(String userId) {
+    public Map<String, Object> getJwtToken(String userId, int userNo) {
         // JWT 생성
-        Map<String, Object> accessToken = jwtUtil.generateAccessToken(userId);
-        Map<String, Object> refreshToken = jwtUtil.generateRefreshToken(userId);
+        Map<String, Object> accessToken = jwtUtil.generateAccessToken(userId, userNo);
+        Map<String, Object> refreshToken = jwtUtil.generateRefreshToken(userId, userNo);
 
         // 두 토큰을 맵으로 묶어 반환
         Map<String, Object> tokens = new HashMap<>();
@@ -164,11 +162,13 @@ public class UserService {
             log.info("Kakao User ID : " + socialId);
 
             Optional<UserEntity> existingUser = userRepository.findBySocialId(socialId);
+            log.info("existingUser: {}", existingUser);
+            int userNo = existingUser.map(UserEntity::getUserNo).orElse(0); // userNo를 가져오거나 0 반환
 
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
 
-               return getJwtToken(socialId);
+               return getJwtToken(socialId, userNo);
             } else {
                 // 새 사용자로 등록
 
@@ -182,7 +182,7 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
-                return getJwtToken(socialId);
+                return getJwtToken(socialId, userEntity.getUserNo());
 
             }
         }
@@ -252,11 +252,13 @@ public class UserService {
             log.info("Google User ID : " + socialId);
 
             Optional<UserEntity> existingUser = userRepository.findBySocialId(socialId);
+            int userNo = existingUser.map(UserEntity::getUserNo).orElse(0); // userNo를 가져오거나 0 반환
+            log.info("existingUser: {}", existingUser);
 
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
 
-                return getJwtToken(socialId);
+                return getJwtToken(socialId, userNo);
             } else {
                 // 새 사용자로 등록
 
@@ -270,7 +272,7 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
-                return getJwtToken(socialId);
+                return getJwtToken(socialId, userEntity.getUserNo());
 
             }
         }
@@ -352,11 +354,15 @@ public class UserService {
         // 입력한 userId가 회원 테이블에 존재하는지 확인
         UserEntity userEntity = userRepository.findByUserId(loginEntity.getUserId()).orElse(null);
 
+        String userId = userEntity.getUserId();
+        int userNo = userEntity.getUserNo();
+
+
         // 비밀번호 비교 (암호화된 비밀번호와 비교)
         // passwordEncoder.matches(매개변수 password, 암호화된 비교대상 password) : 입력한 password와 실제 Entity에 있는 password와 비교하여 일치 여부를 추출하는 메서드
         if (userEntity != null && passwordEncoder.matches(loginEntity.getPassword(), userEntity.getPassword())) {
 
-            return getJwtToken(userEntity.getUserId());  // 로그인 성공, 토큰 반환
+            return getJwtToken(userEntity.getUserId(), userEntity.getUserNo());  // 로그인 성공, 토큰 반환
         } else {
             return null;  // 로그인 실패 (비밀번호 틀림)
         }
@@ -389,6 +395,41 @@ public class UserService {
         message.setSubject("아이디 찾기");
         message.setText("귀하의 아이디는 " + userId + " 입니다.");
         mailSender.send(message);
+    }
+
+    // 개인정보 가져오기
+    public Map<String, Object> myInfo (int userNo) {
+        Optional<UserEntity> optionalUser = userRepository.findUserWithPassportByUserNo(userNo);
+
+        // 결과를 Map으로 변환
+        Map<String, Object> responseMap = new HashMap<>();
+        if (optionalUser.isPresent()) {
+            UserEntity user = optionalUser.get();
+            responseMap.put("userId", user.getUserId());
+            responseMap.put("userName", user.getUserName());
+            responseMap.put("birth", user.getBirth());
+            responseMap.put("gender", user.getGender());
+            responseMap.put("email", user.getEmail());
+            responseMap.put("socialType", user.getSocialType());
+
+            // 여권 정보가 존재할 경우 추가
+            if (user.getPassport() != null) {
+                responseMap.put("passportNo", user.getPassport().getPassportNo());
+                responseMap.put("passportUserEngName", user.getPassport().getEngName());
+                responseMap.put("nationality", user.getPassport().getNationality() != null ? user.getPassport().getNationality().getCountry() : "");
+                responseMap.put("passportExpirationDate", user.getPassport().getExpirationDate());
+                responseMap.put("passportCountryOfIssue", user.getPassport().getCountryOfIssue() != null ? user.getPassport().getCountryOfIssue().getCountry() : "");
+            } else {
+                responseMap.put("passportNo", "");
+                responseMap.put("passportUserEngName", "");
+                responseMap.put("nationality", "");
+                responseMap.put("passportExpirationDate", "");
+                responseMap.put("passportCountryOfIssue", "");
+            }
+        } else {
+            responseMap.put("message", "User not found");
+        }
+        return responseMap;
     }
 
 

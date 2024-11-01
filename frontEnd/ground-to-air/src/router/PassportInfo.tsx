@@ -271,7 +271,7 @@ function PassportInfo() {
       );
       console.log(response.data);
       Alert("여권정보 입력이 완료되었습니다.", "success");
-      history.push("/");
+      history.push("/login");
     } catch (error) {
       console.error("여권정보 입력 실패: ", error);
       Alert(
@@ -347,7 +347,7 @@ function PassportInfo() {
           </Field>
 
           <Field>
-            <Label htmlFor="userName">여권만료일</Label>
+            <Label htmlFor="passportExDate">여권만료일</Label>
             <CalendarInput>
               <DatePicker
                 selected={
@@ -379,7 +379,7 @@ function PassportInfo() {
           </Field>
 
           <Field>
-            <Label htmlFor="gender">여권발행국</Label>
+            <Label htmlFor="passportCOI">여권발행국</Label>
             <SelectMenu>
               <SelectInput
                 value={inputData.passportCOI}
@@ -400,7 +400,9 @@ function PassportInfo() {
             <SubmitBtn onClick={infoSubmit}>작성 완료</SubmitBtn>
           </SubmitField>
           <SubmitField>
-            <SubmitBtn onClick={() => history.push("/")}>나중에 작성</SubmitBtn>
+            <SubmitBtn onClick={() => history.push("/login")}>
+              나중에 작성
+            </SubmitBtn>
           </SubmitField>
         </Form>
       </InfoBox>

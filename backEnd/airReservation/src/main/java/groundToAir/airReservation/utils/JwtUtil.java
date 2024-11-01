@@ -34,8 +34,10 @@ public class JwtUtil {
 
     // 액세스 토큰 생성 메서드
     // 생성을 위해 createToken 메서드에 필요한 데이터를 넘겨서 JWT 토큰을 받아냄
-    public Map<String, Object> generateAccessToken(String userId) {
+    public Map<String, Object> generateAccessToken(String userId, int userNo) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userNo", userNo);
+
 
         String token = createToken(claims, userId, accessTokenExpirationTime); // 토큰 반환
         Date expirationTime = extractAllClaims(token).getExpiration(); // 토큰 만료시간 반환
@@ -50,8 +52,10 @@ public class JwtUtil {
 
     // 리프레시 토큰 생성 메서드
     // 생성을 위해 createToken 메서드에 필요한 데이터를 넘겨서 JWT 토큰을 받아냄
-    public Map<String, Object> generateRefreshToken(String userId) {
+    public Map<String, Object> generateRefreshToken(String userId, int userNo) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userNo", userNo);
+
 
         String token = createToken(claims, userId, refreshTokenExpirationTime); // 토큰 반환
         Date expirationTime = extractAllClaims(token).getExpiration(); // 토큰 만료시간 반환
@@ -89,6 +93,11 @@ public class JwtUtil {
     // 소유자인 로그인 아이디를 추출하는 메서드
     public String extractUserId(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    // 소유자 고유 회원번호를 추출하는 메서드
+    public int extractUserNo(String token) {
+        return (int) extractAllClaims(token).get("userNo");
     }
 
     // 클레임 추출하는 메서드
