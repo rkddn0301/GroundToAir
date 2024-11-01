@@ -36,5 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 
-# 프로퍼티 비밀
-/src/main/resource/application-secret.properties
+# 비밀 프로퍼티
+/src/main/resources/application-secret.properties
