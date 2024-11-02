@@ -59,15 +59,11 @@ function App() {
     };
   }, [isLoggedIn]);
 
-  useEffect(() => {
-    console.log(isLoggedIn);
-  }, []);
-
   return (
     <Container>
       <Router>
         <MainContent>
-          <Route path={["/hotels", "/"]} exact>
+          <Route path={["/hotels", "/", "/myInfo"]} exact>
             <Layout />
           </Route>
 
@@ -105,7 +101,7 @@ function App() {
             </Route>
           </Switch>
         </MainContent>
-        <Route path={["/hotels", "/"]} exact>
+        <Route path={["/hotels", "/", "/myInfo"]} exact>
           <Footer />
         </Route>
       </Router>

@@ -2,8 +2,8 @@
 import axios from "axios";
 import { Alert, Confirm } from "./sweetAlert";
 
-let inactivityTimer: NodeJS.Timeout; // 비활동 타이머
-let refreshInterval: NodeJS.Timeout; // 리프레시 토큰 타이머
+export let inactivityTimer: NodeJS.Timeout; // 비활동 타이머
+export let refreshInterval: NodeJS.Timeout; // 리프레시 토큰 타이머
 
 // 로그인 시 비활동 타이머, 리프레시 토큰 타이머가 동시에 동작되는 함수
 export const startSessionTimeout = (tokenExpiration: number) => {
@@ -79,6 +79,6 @@ export const logout = async () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
 
-    window.location.href = "/"; // 로그인 페이지로 이동
+    window.location.href = "/";
   }
 };

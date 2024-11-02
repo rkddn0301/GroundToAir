@@ -329,7 +329,7 @@ function PassportInfo() {
           </Field>
 
           <Field>
-            <Label htmlFor="password">국적</Label>
+            <Label htmlFor="nationality">국적</Label>
             <SelectMenu>
               <SelectInput
                 value={inputData.nationality}

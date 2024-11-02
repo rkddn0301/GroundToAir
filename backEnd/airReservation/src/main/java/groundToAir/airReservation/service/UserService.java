@@ -162,7 +162,6 @@ public class UserService {
             log.info("Kakao User ID : " + socialId);
 
             Optional<UserEntity> existingUser = userRepository.findBySocialId(socialId);
-            log.info("existingUser: {}", existingUser);
             int userNo = existingUser.map(UserEntity::getUserNo).orElse(0); // userNo를 가져오거나 0 반환
 
             if (existingUser.isPresent()) {
@@ -182,6 +181,12 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
+
+                // 여권 정보를 위한 빈 UserPassportEntity 생성
+                UserPassportEntity userPassportEntity = new UserPassportEntity();
+                userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+                userPassportRepository.save(userPassportEntity);
+
                 return getJwtToken(socialId, userEntity.getUserNo());
 
             }
@@ -253,7 +258,6 @@ public class UserService {
 
             Optional<UserEntity> existingUser = userRepository.findBySocialId(socialId);
             int userNo = existingUser.map(UserEntity::getUserNo).orElse(0); // userNo를 가져오거나 0 반환
-            log.info("existingUser: {}", existingUser);
 
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
@@ -272,6 +276,12 @@ public class UserService {
                 userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
+
+                // 여권 정보를 위한 빈 UserPassportEntity 생성
+                UserPassportEntity userPassportEntity = new UserPassportEntity();
+                userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+                userPassportRepository.save(userPassportEntity);
+
                 return getJwtToken(socialId, userEntity.getUserNo());
 
             }
@@ -304,6 +314,11 @@ public class UserService {
         userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
         userRepository.save(userEntity);
+
+        // 여권 정보를 위한 빈 UserPassportEntity 생성
+        UserPassportEntity userPassportEntity = new UserPassportEntity();
+        userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+        userPassportRepository.save(userPassportEntity);
 
         // 여권정보 입력 사이트 이동에 필요한 userNo를 가져옴
         return userEntity.getUserNo();
@@ -354,9 +369,6 @@ public class UserService {
         // 입력한 userId가 회원 테이블에 존재하는지 확인
         UserEntity userEntity = userRepository.findByUserId(loginEntity.getUserId()).orElse(null);
 
-        String userId = userEntity.getUserId();
-        int userNo = userEntity.getUserNo();
-
 
         // 비밀번호 비교 (암호화된 비밀번호와 비교)
         // passwordEncoder.matches(매개변수 password, 암호화된 비교대상 password) : 입력한 password와 실제 Entity에 있는 password와 비교하여 일치 여부를 추출하는 메서드
@@ -405,6 +417,7 @@ public class UserService {
         Map<String, Object> responseMap = new HashMap<>();
         if (optionalUser.isPresent()) {
             UserEntity user = optionalUser.get();
+            responseMap.put("userNo", user.getUserNo());
             responseMap.put("userId", user.getUserId());
             responseMap.put("userName", user.getUserName());
             responseMap.put("birth", user.getBirth());
@@ -414,10 +427,10 @@ public class UserService {
 
             // 여권 정보가 존재할 경우 추가
             if (user.getPassport() != null) {
-                responseMap.put("passportNo", user.getPassport().getPassportNo());
-                responseMap.put("passportUserEngName", user.getPassport().getEngName());
+                responseMap.put("passportNo", user.getPassport().getPassportNo() != null ? user.getPassport().getPassportNo() : "");
+                responseMap.put("passportUserEngName", user.getPassport().getEngName() != null ? user.getPassport().getEngName() : "");
                 responseMap.put("nationality", user.getPassport().getNationality() != null ? user.getPassport().getNationality().getCountry() : "");
-                responseMap.put("passportExpirationDate", user.getPassport().getExpirationDate());
+                responseMap.put("passportExpirationDate", user.getPassport().getExpirationDate() != null ? user.getPassport().getExpirationDate() : "");
                 responseMap.put("passportCountryOfIssue", user.getPassport().getCountryOfIssue() != null ? user.getPassport().getCountryOfIssue().getCountry() : "");
             } else {
                 responseMap.put("passportNo", "");
@@ -431,6 +444,123 @@ public class UserService {
         }
         return responseMap;
     }
+
+    // 개인정보 수정
+    public boolean myInfoUpdate (UserEntity userEntity) {
+
+        log.info("userService에 들어옴 {}", userEntity);
+
+        // 기존 데이터 조회
+        UserEntity existingUser = userRepository.findById(userEntity.getUserNo()).orElse(null);
+
+        if (existingUser == null) {
+            log.warn("사용자가 존재하지 않습니다: 회원번호 {}", userEntity.getUserNo());
+            return false; // 사용자가 없는 경우 업데이트 실패
+        }
+
+        // 업데이트 여부 확인
+        boolean isUpdated = false;
+
+        // userId 변경 확인 (보낸 아이디 정보가 존재하거나, 기존 아이디 정보와 동일하지 않을 경우)
+        if (userEntity.getUserId() != null && !userEntity.getUserId().equals(existingUser.getUserId())) {
+            log.info("아이디 변경됨");
+            existingUser.setUserId(userEntity.getUserId());
+            isUpdated = true;
+        }
+
+        // password 변경 확인 및 암호화 (보낸 비밀번호 정보가 존재하거나, 비어있지 않을 경우)
+        if (userEntity.getPassword() != null && !userEntity.getPassword().isEmpty()) {
+            log.info("비밀번호 변경됨");
+            String encodedPassword = passwordEncoder.encode(userEntity.getPassword());
+            existingUser.setPassword(encodedPassword);
+            isUpdated = true;
+        }
+
+        // email 변경 확인 (보낸 이메일 정보가 존재하거나, 기존 이메일 정보와 동일하지 않을 경우)
+        if (userEntity.getEmail() != null && !userEntity.getEmail().equals(existingUser.getEmail())) {
+            log.info("이메일 변경됨");
+            existingUser.setEmail(userEntity.getEmail());
+            isUpdated = true;
+        }
+
+        // 업데이트가 필요한 경우에만 저장
+        if (isUpdated) {
+            userRepository.save(existingUser);
+            return true;
+        }
+
+        return false;
+    }
+
+    // 여권정보 수정
+    public boolean passportInfoUpdate (UserPassportEntity userPassportEntity) {
+
+        log.info("userService에 들어옴 {}", userPassportEntity);
+
+        // 기존 데이터 조회
+        UserPassportEntity existingUser = userPassportRepository.findById(userPassportEntity.getUserNo()).orElse(null);
+
+        if (existingUser == null) {
+            log.warn("사용자가 존재하지 않습니다: 회원번호 {}", userPassportEntity.getUserNo());
+            return false; // 사용자가 없는 경우 업데이트 실패
+        }
+
+        // 업데이트 여부 확인
+        boolean isUpdated = false;
+
+        // passportNo 변경 확인 (보낸 여권번호가 존재하거나, 기존 여권번호와 동일하지 않을 경우)
+        if (userPassportEntity.getPassportNo() != null && !userPassportEntity.getPassportNo().equals(existingUser.getPassportNo())) {
+            log.info("여권번호 변경됨");
+            existingUser.setPassportNo(userPassportEntity.getPassportNo());
+            isUpdated = true;
+        }
+
+        // engName 변경 확인 (보낸 영문명이 존재하거나, 기존 영문명과 동일하지 않을 경우)
+        if (userPassportEntity.getEngName() != null && !userPassportEntity.getEngName().equals(existingUser.getEngName())) {
+            log.info("영문명 변경됨");
+            existingUser.setEngName(userPassportEntity.getEngName());
+            isUpdated = true;
+        }
+
+        // nationality 변경 확인 (보낸 국적이 존재하거나, 기존 국적과 동일하지 않을 경우)
+        if (userPassportEntity.getNationality() != null && !userPassportEntity.getNationality().equals(existingUser.getNationality())) {
+            log.info("국적 변경됨");
+            CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+            existingUser.setNationality(nationalityCheck); // 외래키로 설정
+            isUpdated = true;
+        }
+
+        // expirationDate 변경 확인 (보낸 여권만료일이 존재하거나, 기존 여권만료일과 동일하지 않을 경우)
+        if (userPassportEntity.getExpirationDate() != null && !userPassportEntity.getExpirationDate().equals(existingUser.getExpirationDate())) {
+            log.info("여권만료일 변경됨");
+            // expirationDate String -> Date 변환
+            LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+            existingUser.setExpirationDate(expirationDate);
+            isUpdated = true;
+        }
+
+        // countryOfIssue 변경 확인 (보낸 여권발행국이 존재하거나, 기존 여권발행국과 동일하지 않을 경우)
+        if (userPassportEntity.getCountryOfIssue() != null && !userPassportEntity.getCountryOfIssue().equals(existingUser.getCountryOfIssue())) {
+            log.info("여권발행국 변경됨");
+            CountryEntity countryOfIssueCheck = countryRepository.findByCountry(userPassportEntity.getCountryOfIssue().getCountry())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+            existingUser.setCountryOfIssue(countryOfIssueCheck); // 외래키로 설정
+            isUpdated = true;
+        }
+
+        // 업데이트가 필요한 경우에만 저장
+        if (isUpdated) {
+            userPassportRepository.save(existingUser);
+            return true;
+        }
+
+        return false;
+    }
+
+
 
 
 

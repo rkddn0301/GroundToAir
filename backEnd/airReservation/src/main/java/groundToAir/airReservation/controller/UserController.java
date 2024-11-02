@@ -121,7 +121,7 @@ public class UserController {
     // 아이디 찾기
     @GetMapping("/idFind")
     public boolean idFind(@RequestParam("userName") String userName,
-                                      @RequestParam("email") String email) {
+                          @RequestParam("email") String email) {
         log.info("성명 : " + userName + ", 이메일 : " + email);
 
         return userService.idFind(userName, email);
@@ -131,18 +131,46 @@ public class UserController {
 
 
     // 개인정보 확인
-@PostMapping("/myInfo")
+    @PostMapping("/myInfo")
     public Map<String, Object> myInfo(@RequestHeader("Authorization") String accessToken) {
 
-    // Bearer 토큰에서 "Bearer " 부분 제거
-    if (accessToken.startsWith("Bearer ")) {
-        accessToken = accessToken.substring(7);
+        // Bearer 토큰에서 "Bearer " 부분 제거
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+        int userNo = jwtUtil.extractUserNo(accessToken);
+
+
+        return userService.myInfo(userNo);
     }
-    int userNo = jwtUtil.extractUserNo(accessToken);
+
+    // 개인정보 수정
+    @PostMapping("/myInfoUpdate")
+    public boolean myInfoUpdate(@RequestBody UserEntity userEntity) {
+        log.info(String.format("회원번호: %s, 아이디: %s, 비밀번호: %s, 이메일: %s",
+                userEntity.getUserNo(),
+                userEntity.getUserId(),
+                userEntity.getPassword(),
+                userEntity.getEmail()));
+
+        return userService.myInfoUpdate(userEntity);
+    }
+
+    // 여권정보 수정
+    @PostMapping("/passportInfoUpdate")
+    public boolean passportInfoUpdate(@RequestBody UserPassportEntity userPassportEntity) {
+        log.info(String.format("회원번호: %s, 여권번호: %s, 영문명: %s, 국적: %s, 여권만료일: %s, 여권발행국: %s"
+                , userPassportEntity.getUserNo()
+                , userPassportEntity.getPassportNo()
+                , userPassportEntity.getEngName()
+                , userPassportEntity.getNationality()
+                , userPassportEntity.getExpirationDate()
+                , userPassportEntity.getCountryOfIssue()));
+
+        return userService.passportInfoUpdate(userPassportEntity);
 
 
-    return userService.myInfo(userNo);
-}
+    }
 
 
 }
