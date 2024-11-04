@@ -4,7 +4,12 @@ import KakaoStartImg from "../img/kakaotalk_sharing_btn_small.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
+import {
+  federationAccessToken,
+  isLoggedInState,
+  socialId,
+  tokenExpirationTime,
+} from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
@@ -28,18 +33,13 @@ const Img = styled.img`
 `;
 
 function KakaoAuth(props: { redirectRoute: string; title: string }) {
-  // Redirect URI
-  const REDIRECT_URI = `http://localhost:3000${props.redirectRoute}`;
-
-  // 앱키 저장
-  const NATIVE_APP_KEY = "4a2a80ec447b5aba692b394f50d37557"; // 네이티브 앱
-  const REST_API_KEY = "20624702d5a29dd8501b4a3f25a70d87"; // REST API
-  const JAVASCRIPT_KEY = "33a797010560d5db7db69acabb0b6211"; // JAVASCRIPT API
-  const ADMIN_KEY = "60efc8f10fa79f2fdf81e6b50da66afc"; // ADMIN
-
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
   const history = useHistory();
+
+  // 타사인증을 통해 필요한 데이터를 가져옴
+  const setSocialId = useSetRecoilState(socialId);
+  const setFederationAccessToken = useSetRecoilState(federationAccessToken);
 
   useEffect(() => {
     // 카카오 페이지에서 로그인 후 Redirect로 돌아올 시 재동작을 위함
@@ -76,6 +76,8 @@ function KakaoAuth(props: { redirectRoute: string; title: string }) {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         setIsLoggedIn(true);
+        setSocialId(response.data.socialId);
+        setFederationAccessToken(response.data.federationAccessToken);
         // 만료시간 변환작업
         const expirationTime =
           new Date(accessTokenExpiration).getTime() - Date.now();

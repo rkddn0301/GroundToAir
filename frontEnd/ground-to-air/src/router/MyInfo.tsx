@@ -1,13 +1,18 @@
 // 개인정보 페이지
 
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Alert } from "../utils/sweetAlert";
+import { Alert, Confirm } from "../utils/sweetAlert";
 import { useHistory } from "react-router-dom";
-import { isLoggedInState } from "../utils/atom";
-import { useSetRecoilState } from "recoil";
+import {
+  federationAccessToken,
+  isLoggedInState,
+  socialId,
+} from "../utils/atom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { inactivityTimer, refreshInterval } from "../utils/jwtActivityTimer";
+import { StringLiteral } from "typescript";
 
 const Container = styled.div``;
 
@@ -46,14 +51,25 @@ function MyInfo() {
     nationality: "", // 국적
     passportExDate: "", // 여권만료일
     passportCOI: "", // 여권발행국
+
+    socialType: "", // 인증 타입
   }); // 기존 정보 저장 state
 
   const history = useHistory();
+
+  // 타사인증 데이터 가져옴
+  const defaultSocialId = useRecoilValue(socialId);
+  const defaultFederationAccessToken = useRecoilValue(federationAccessToken);
 
   // 개인정보 페이지 접속 시 기존 정보를 가져오기 위해 동작
   useEffect(() => {
     defaultMyInfoHandler();
   }, []);
+
+  useEffect(() => {
+    console.log(defaultSocialId);
+    console.log(defaultFederationAccessToken);
+  }, [defaultFederationAccessToken]);
 
   const defaultMyInfoHandler = async () => {
     console.log("개인정보 가져옴");
@@ -75,6 +91,8 @@ function MyInfo() {
         nationality: string;
         passportExpirationDate: string;
         passportCountryOfIssue: string;
+
+        socialType: string;
       }>(
         "http://localhost:8080/user/myInfo",
         {},
@@ -118,6 +136,7 @@ function MyInfo() {
         nationality: response.data.nationality || "",
         passportExDate: response.data.passportExpirationDate || "",
         passportCOI: response.data.passportCountryOfIssue || "",
+        socialType: response.data.socialType || "",
       }));
     } catch (error) {
       console.error("개인정보 추출 실패:", error);
@@ -256,6 +275,67 @@ function MyInfo() {
     }));
   };
 
+  // 기존 회원탈퇴
+  const directMemberDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log("회원 탈퇴 클릭");
+
+    const deleteConfirm = await Confirm(
+      "회원탈퇴를 진행하시겠습니까?<br>진행하시면 더 이상 되돌리실 수 없습니다.",
+      "question"
+    );
+
+    if (deleteConfirm.isConfirmed) {
+      if (defaultData.socialType === "KAKAO") {
+        kakaoUnlink();
+      }
+
+      try {
+        const response = await axios.post("http://localhost:8080/user/delete", {
+          userNo: inputData.userNo,
+        });
+        console.log(response.data);
+
+        if (response.data) {
+          const successAlert = await Alert(
+            "회원탈퇴가 완료되었습니다.<br>그동안 이용해주셔서 감사합니다.",
+            "success"
+          );
+          if (successAlert.isConfirmed) {
+            setIsLoggedIn(false);
+            clearTimeout(inactivityTimer);
+            clearInterval(refreshInterval);
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            history.push("/");
+          }
+        }
+      } catch (error) {
+        console.error("회원탈퇴 실패 : ", error);
+        Alert("회원 탈퇴하는 도중 오류가 발생하였습니다.", "error");
+      }
+    }
+  };
+
+  const kakaoUnlink = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/user/kakaoUnlink",
+        {
+          target_id_type: "user_id",
+          target_id: defaultSocialId,
+          accessToken: defaultFederationAccessToken,
+        }
+      );
+
+      if (response.data) {
+        console.log("연결 끊기 성공");
+      }
+    } catch (error) {
+      console.error("카카오 연결 끊기 실패", error);
+    }
+  };
+
   return (
     <Container>
       {/* 개인정보 입력 */}
@@ -385,7 +465,7 @@ function MyInfo() {
         <button onClick={passPortInfoReset}>여권정보 원래대로</button>
       </form>
       {/* 회원탈퇴 */}
-      <button>회원탈퇴 진행</button>
+      <button onClick={directMemberDelete}>회원탈퇴 진행</button>
     </Container>
   );
 }

@@ -5,6 +5,7 @@ import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -170,6 +171,23 @@ public class UserController {
         return userService.passportInfoUpdate(userPassportEntity);
 
 
+    }
+
+    // 회원 탈퇴
+    @PostMapping("/delete")
+    public boolean deleteUser(@RequestBody UserEntity userEntity) {
+        log.info(String.format("탈퇴 할 회원번호: %s", userEntity.getUserNo()));
+
+
+        return userService.deleteUser(userEntity);
+
+    }
+
+    @PostMapping("/kakaoUnlink")
+    public boolean unlinkUser(@RequestBody Map<String, Object> userInfo) {
+        log.info(userInfo.toString());
+
+        return userService.kakaoUnlink(userInfo);
     }
 
 

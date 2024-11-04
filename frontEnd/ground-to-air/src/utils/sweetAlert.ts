@@ -14,7 +14,7 @@ import Swal, { SweetAlertIcon } from "sweetalert2";
 // 단순한 확인 팝업창 띄울 시
 export const Alert = (textAlert: string, type: SweetAlertIcon) => {
   return Swal.fire({
-    text: textAlert,
+    html: textAlert,
     icon: type,
     confirmButtonText: "확인",
   });
@@ -23,7 +23,7 @@ export const Alert = (textAlert: string, type: SweetAlertIcon) => {
 // 확인 여부 과정의 팝업창 띄울 시
 export const Confirm = async (textAlert: string, type: SweetAlertIcon) => {
   const result = await Swal.fire({
-    text: textAlert,
+    html: textAlert,
     icon: type,
     confirmButtonText: "확인",
     showCancelButton: true,

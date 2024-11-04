@@ -20,3 +20,15 @@ export const tokenExpirationTime = atom<number>({
   key: "tokenExpirationTime",
   default: 0,
 });
+
+// 타사인증 토큰
+export const federationAccessToken = atom<String>({
+  key: "federationAccessToken",
+  default: "",
+});
+
+// 타사인증 socialId
+export const socialId = atom<String>({
+  key: "socialId",
+  default: "",
+});

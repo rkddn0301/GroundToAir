@@ -59,7 +59,8 @@ public class UserEntity {
     private UserRoleEntity roleName;
 
     // 양방향 설정: UserEntity와 UserPassportEntity 간의 관계
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    // CascadeType.ALL : UserEntity에 있는 데이터가 지워질 경우 UserPassportEntity에서 JoinColumn 과 일치하는 값을 찾아 같이 전부 지워버린다는 의미. (실제 DB에도 설정해놓았을 경우 여기다가 같이 써놓아야함)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private UserPassportEntity passport;
 
 }

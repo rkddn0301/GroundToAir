@@ -11,15 +11,13 @@ import groundToAir.airReservation.repository.UserRepository;
 import groundToAir.airReservation.repository.UserRoleRepository;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -83,8 +81,15 @@ public class UserService {
 
     }
 
-    // JWT를 전체적으로 추출하는 메서드
+    // JWT를 전체적으로 추출하는 메서드 오버로딩
+
+    // DIRECT 이용자, 리프레시 토큰의 경우
     public Map<String, Object> getJwtToken(String userId, int userNo) {
+        return getJwtToken(userId, userNo, "", "");
+    }
+
+    // 타사인증 이용자 로그인 시
+    public Map<String, Object> getJwtToken(String userId, int userNo, String socialId, String federationAccessToken) {
         // JWT 생성
         Map<String, Object> accessToken = jwtUtil.generateAccessToken(userId, userNo);
         Map<String, Object> refreshToken = jwtUtil.generateRefreshToken(userId, userNo);
@@ -95,6 +100,8 @@ public class UserService {
         tokens.put("accessTokenExpiration", accessToken.get("expiration"));
         tokens.put("refreshToken", refreshToken.get("token"));
         tokens.put("refreshTokenExpiration", refreshToken.get("expiration"));
+        tokens.put("socialId", socialId); // 타사인증 ID
+        tokens.put("federationAccessToken", federationAccessToken); // 타사인증 토큰
 
         return tokens;
 
@@ -167,7 +174,7 @@ public class UserService {
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
 
-               return getJwtToken(socialId, userNo);
+                return getJwtToken(socialId, userNo, socialId, accessToken);
             } else {
                 // 새 사용자로 등록
 
@@ -178,16 +185,17 @@ public class UserService {
                 userEntity.setRoleName(userRole); // 권한 설정
                 userEntity.setSocialId(socialId);
                 userEntity.setSocialType(SocialType.KAKAO);
-                userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
+
+                userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
                 userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
                 userPassportRepository.save(userPassportEntity);
 
-                return getJwtToken(socialId, userEntity.getUserNo());
+                return getJwtToken(socialId, userEntity.getUserNo(), socialId, accessToken);
 
             }
         }
@@ -262,7 +270,7 @@ public class UserService {
             if (existingUser.isPresent()) {
                 log.info("이미 해당 계정이 존재하므로 로그인만 합니다.");
 
-                return getJwtToken(socialId, userNo);
+                return getJwtToken(socialId, userNo, socialId, accessToken);
             } else {
                 // 새 사용자로 등록
 
@@ -273,16 +281,17 @@ public class UserService {
                 userEntity.setRoleName(userRole); // 권한 설정
                 userEntity.setSocialId(socialId);
                 userEntity.setSocialType(SocialType.GOOGLE);
-                userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
                 userRepository.save(userEntity);
+
+                userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
                 userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
                 userPassportRepository.save(userPassportEntity);
 
-                return getJwtToken(socialId, userEntity.getUserNo());
+                return getJwtToken(socialId, userEntity.getUserNo(), socialId, accessToken);
 
             }
         }
@@ -311,9 +320,10 @@ public class UserService {
         userEntity.setBirth(birthDay); // 변환된 생일 설정
         userEntity.setSocialType(SocialType.DIRECT); // SocialType에서 DIRECT 설정
         userEntity.setRoleName(userRole); // 권한 설정
-        userEntity.setTotalUserNo((int) (userRepository.count() + 1)); // 사용자 수 설정
 
         userRepository.save(userEntity);
+
+        userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
         // 여권 정보를 위한 빈 UserPassportEntity 생성
         UserPassportEntity userPassportEntity = new UserPassportEntity();
@@ -326,6 +336,7 @@ public class UserService {
     }
 
     // 여권 입력 진행
+    // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
     @Transactional
     public void registerPassport(UserPassportEntity userPassportEntity) {
 
@@ -382,7 +393,7 @@ public class UserService {
 
     // 아이디 찾기
     public boolean idFind(String userName,
-           String email) {
+                          String email) {
 
         // 사용자 아이디 찾기
         String userId = userRepository.findUserIdByUserNameAndEmail(userName, email);
@@ -393,14 +404,14 @@ public class UserService {
             return true;
         } else {
             // 아이디가 없을 경우
-           return false;
+            return false;
         }
 
 
 
-        }
+    }
 
-        // 이메일 전송 메서드
+    // 이메일 전송 메서드
     private void sendEmail(String toEmail, String userId) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -410,7 +421,7 @@ public class UserService {
     }
 
     // 개인정보 가져오기
-    public Map<String, Object> myInfo (int userNo) {
+    public Map<String, Object> myInfo(int userNo) {
         Optional<UserEntity> optionalUser = userRepository.findUserWithPassportByUserNo(userNo);
 
         // 결과를 Map으로 변환
@@ -446,7 +457,9 @@ public class UserService {
     }
 
     // 개인정보 수정
-    public boolean myInfoUpdate (UserEntity userEntity) {
+    // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
+    @Transactional
+    public boolean myInfoUpdate(UserEntity userEntity) {
 
         log.info("userService에 들어옴 {}", userEntity);
 
@@ -493,7 +506,9 @@ public class UserService {
     }
 
     // 여권정보 수정
-    public boolean passportInfoUpdate (UserPassportEntity userPassportEntity) {
+    // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
+    @Transactional
+    public boolean passportInfoUpdate(UserPassportEntity userPassportEntity) {
 
         log.info("userService에 들어옴 {}", userPassportEntity);
 
@@ -560,8 +575,66 @@ public class UserService {
         return false;
     }
 
+    // 회원 탈퇴
+    // @Transactional : 모든 작업이 성공적으로 완료될 시 DB에 Commit 시키고, 오류 발생 시 RollBack 시킴
+    @Transactional
+    public boolean deleteUser(UserEntity userEntity) {
+        // 기존 데이터 조회
+        UserEntity existingUser = userRepository.findById(userEntity.getUserNo()).orElse(null);
+
+        if (existingUser == null) {
+            log.warn("사용자가 존재하지 않습니다: 회원번호 {}", userEntity.getUserNo());
+            return false; // 사용자가 없는 경우 업데이트 실패
+        }
+
+        try {
+            userRepository.deleteById(userEntity.getUserNo());
+            log.info("회원 삭제 성공: 회원번호 {}", userEntity.getUserNo());
+            return true;
+        } catch (Exception e) {
+            log.error("회원 삭제 실패: 회원번호 {}, 오류: {}", userEntity.getUserNo(), e.getMessage());
+            return false;
+
+        }
 
 
+    }
+
+    // 카카오 연결 끊기
+    public boolean kakaoUnlink(Map<String, Object> userInfo) {
+
+        String accessToken = (String) userInfo.get("accessToken");
+
+        String requestBody = "target_id_type=" + userInfo.get("target_id_type") +
+                "&target_id=" + userInfo.get("target_id");
+
+        // 카카오 이용자를 연결 끊기 위한 카카오 API URL
+        String unLinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+
+        // HTTP 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+
+        // HttpEntity 생성
+        HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
+        log.info("Response Status: {}", request.getBody());
+        log.info("Response Status: {}", request.getHeaders());
+
+        try {
+            // 응답 본문이 필요 없으므로 Void 사용
+            ResponseEntity<String> response = restTemplate.exchange(unLinkUrl, HttpMethod.POST, request, String.class);
+            log.info("Response Status: {}", response.getStatusCode());
+            return response.getStatusCode().is2xxSuccessful();
+
+        }
+     catch (Exception e) {
+            log.error("카카오 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
+            return false;
+        }
+
+    }
 
 
 }
+
