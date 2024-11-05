@@ -21,8 +21,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: skyblue;
+  padding-top: 114px;
   //width: 100%;
-  height: 100vh;
+  min-height: 100vh; // 페이지 최소 높이를 100vh로 변경
 `;
 
 const MainContent = styled.main`

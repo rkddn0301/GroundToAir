@@ -17,7 +17,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -43,7 +42,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
     // 이메일 이용
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
         this.userRepository = userRepository;
@@ -79,6 +78,22 @@ public class UserService {
             return 1;
         }
 
+    }
+
+    // 비밀번호 중복 체크
+    public int pwCheck(String userNoStr, String password) {
+
+        // String userNo를 int로 변환
+        int userNo = Integer.parseInt(userNoStr);
+
+
+        UserEntity userEntity = userRepository.findById(userNo).orElse(null);
+        // 사용자가 존재하고, 비밀번호가 일치할 때
+        if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
+            return 0; // 중복된 비밀번호 있음
+        } else {
+            return 1; // 중복된 비밀번호 없음
+        }
     }
 
     // JWT를 전체적으로 추출하는 메서드 오버로딩
@@ -410,7 +425,6 @@ public class UserService {
         }
 
 
-
     }
 
     // 이메일 전송 메서드
@@ -485,10 +499,15 @@ public class UserService {
 
         // password 변경 확인 및 암호화 (보낸 비밀번호 정보가 존재하거나, 비어있지 않을 경우)
         if (userEntity.getPassword() != null && !userEntity.getPassword().isEmpty()) {
-            log.info("비밀번호 변경됨");
+
             String encodedPassword = passwordEncoder.encode(userEntity.getPassword());
+
+
+            log.info("비밀번호 변경됨");
             existingUser.setPassword(encodedPassword);
             isUpdated = true;
+
+
         }
 
         // email 변경 확인 (보낸 이메일 정보가 존재하거나, 기존 이메일 정보와 동일하지 않을 경우)
@@ -540,7 +559,7 @@ public class UserService {
         }
 
         // nationality 변경 확인 (보낸 국적이 존재하거나, 기존 국적과 동일하지 않을 경우)
-        if (userPassportEntity.getNationality() != null && !userPassportEntity.getNationality().equals(existingUser.getNationality())) {
+        if (userPassportEntity.getNationality().getCountry() != null && !userPassportEntity.getNationality().getCountry().equals(existingUser.getNationality().getCountry())) {
             log.info("국적 변경됨");
             CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
                     .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
@@ -559,7 +578,7 @@ public class UserService {
         }
 
         // countryOfIssue 변경 확인 (보낸 여권발행국이 존재하거나, 기존 여권발행국과 동일하지 않을 경우)
-        if (userPassportEntity.getCountryOfIssue() != null && !userPassportEntity.getCountryOfIssue().equals(existingUser.getCountryOfIssue())) {
+        if (userPassportEntity.getCountryOfIssue().getCountry() != null && !userPassportEntity.getCountryOfIssue().getCountry().equals(existingUser.getCountryOfIssue().getCountry())) {
             log.info("여권발행국 변경됨");
             CountryEntity countryOfIssueCheck = countryRepository.findByCountry(userPassportEntity.getCountryOfIssue().getCountry())
                     .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
@@ -627,8 +646,7 @@ public class UserService {
             ResponseEntity<String> response = restTemplate.exchange(unLinkUrl, HttpMethod.POST, request, String.class);
             return response.getStatusCode().is2xxSuccessful();
 
-        }
-     catch (Exception e) {
+        } catch (Exception e) {
             log.error("카카오 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
             return false;
         }
@@ -648,8 +666,7 @@ public class UserService {
             ResponseEntity<String> response = restTemplate.postForEntity(unLinkUrl, null, String.class);
             return response.getStatusCode().is2xxSuccessful();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("구글 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
             return false;
         }

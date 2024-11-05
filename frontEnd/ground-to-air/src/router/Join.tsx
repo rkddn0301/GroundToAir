@@ -7,7 +7,7 @@ import KakaoAuth from "../components/KakaoAuth";
 import GoogleAuth from "../components/GoogleAuth";
 
 const Container = styled.div`
-  padding-top: 50px;
+  margin-top: -15px;
 `;
 
 const Menus = styled.div`

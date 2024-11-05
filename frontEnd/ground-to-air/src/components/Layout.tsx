@@ -8,10 +8,13 @@ import { isLoggedInState } from "../utils/atom";
 import { logout } from "../utils/jwtActivityTimer";
 
 const Nav = styled.nav`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   padding: 20px;
-  margin-bottom: 20px;
   background-color: ${(props) => props.theme.black.bg};
   color: ${(props) => props.theme.black.font};
 `;

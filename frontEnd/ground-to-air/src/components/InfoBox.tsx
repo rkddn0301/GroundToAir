@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const Box = styled.div`
   width: 50%;
-  height: 80vh;
+  min-height: 80vh;
   border-radius: 25px;
   margin: 0 auto;
   background-color: ${(props) => props.theme.white.bg};

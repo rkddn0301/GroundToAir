@@ -15,7 +15,7 @@ import { JoinUserNo } from "../utils/atom";
 import { Alert } from "../utils/sweetAlert";
 
 const Container = styled.div`
-  padding-top: 50px;
+  margin-top: -15px;
 `;
 
 const GuideLine = styled.div`
@@ -146,8 +146,8 @@ function JoinInfo() {
     email: "",
   }); // 성공 메시지 표시 state
 
-  const [idChecking, setIdChecking] = useState(false); // 아이디 체크 여부 스위칭
-  const [emailChecking, setEmailChecking] = useState(false); // 이메일 체크 여부 스위칭
+  const [idExisting, setIdExisting] = useState(false); // 아이디 중복 여부 스위칭
+  const [emailExisting, setEmailExisting] = useState(false); // 이메일 중복 여부 스위칭
   const [passwordChecking, setPasswordChecking] = useState(false); // 비밀번호 체크 여부 스위칭
 
   const setUserNo = useSetRecoilState(JoinUserNo); // 가입한 회원번호 저장
@@ -157,7 +157,7 @@ function JoinInfo() {
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // 아이디 변경 시 기존 중복체크 내용은 자동으로 비활성화
-    setIdChecking(false);
+    setIdExisting(false);
     setSuccessMsg({
       ...successMsg,
       userId: "",
@@ -183,13 +183,39 @@ function JoinInfo() {
     setInputData({ ...inputData, password: value });
 
     // 비밀번호 규칙 : 영문자+숫자+특수문자, 길이 8~15자
-    if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,15}$/.test(value)) {
-      setErrorMsg({
-        ...errorMsg,
-        password: "비밀번호는 영문자, 숫자, 특수문자로 8~15자여야 합니다.",
-      });
+
+    if (value === "") {
+      // 1. 비밀번호가 비어 있을 시 password errorMsg 제거
+      setErrorMsg((prev) => ({ ...prev, password: "" }));
+      // 비밀번호 확인 창의 오류 유지
+      setErrorMsg((prev) => ({
+        // 3. 비밀번호가 비어있던 적혀있던 비밀번호 확인란이랑 일치하지 않으면 passwordChk에 errorMsg 표시
+        ...prev,
+        passwordChk:
+          inputData.passwordChk !== ""
+            ? "비밀번호가 일치하지 않습니다. 다시 확인해주세요."
+            : "",
+      }));
     } else {
-      setErrorMsg({ ...errorMsg, password: "" });
+      if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,15}$/.test(value)) {
+        // 2. 비밀번호가 적혀있을 때 규칙에 어긋나면 password에 erorrMsg를 표시
+        setErrorMsg((prev) => ({
+          ...prev,
+          password: "비밀번호는 영문자, 숫자, 특수문자로 8~15자여야 합니다.",
+        }));
+      } else {
+        setErrorMsg((prev) => ({ ...prev, password: "" }));
+      }
+
+      // 비밀번호 확인 체크
+      if (inputData.passwordChk !== value) {
+        setErrorMsg((prev) => ({
+          ...prev,
+          passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+        }));
+      } else {
+        setErrorMsg((prev) => ({ ...prev, passwordChk: "" }));
+      }
     }
   };
 
@@ -243,7 +269,7 @@ function JoinInfo() {
 
   // 이메일 입력란 변경 시 동작
   const emailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmailChecking(false);
+    setEmailExisting(false);
     setSuccessMsg({
       ...successMsg,
       email: "",
@@ -265,7 +291,7 @@ function JoinInfo() {
 
   // 아이디 입력란 벗어날 시 동작
   const userIdBlur = async () => {
-    if (inputData.userId && !idChecking && !errorMsg.userId) {
+    if (inputData.userId && !idExisting && !errorMsg.userId) {
       const response = await axios.get(`http://localhost:8080/user/idCheck`, {
         params: {
           userId: inputData.userId,
@@ -273,7 +299,7 @@ function JoinInfo() {
       });
 
       if (response.data > 0) {
-        setIdChecking(true);
+        setIdExisting(true);
         setErrorMsg({
           ...errorMsg,
           userId: "",
@@ -284,7 +310,7 @@ function JoinInfo() {
           userId: "사용 가능한 아이디입니다.",
         });
       } else {
-        setIdChecking(false);
+        setIdExisting(false);
         setSuccessMsg({
           ...successMsg,
           userId: "",
@@ -300,7 +326,7 @@ function JoinInfo() {
 
   // 이메일 작성란을 벗어날 시 동작
   const emailBlur = async () => {
-    if (inputData.email && !emailChecking && !errorMsg.email) {
+    if (inputData.email && !emailExisting && !errorMsg.email) {
       const response = await axios.get(
         `http://localhost:8080/user/emailCheck`,
         {
@@ -311,7 +337,7 @@ function JoinInfo() {
       );
 
       if (response.data > 0) {
-        setEmailChecking(true);
+        setEmailExisting(true);
         setErrorMsg({
           ...errorMsg,
           email: "",
@@ -321,7 +347,7 @@ function JoinInfo() {
           email: "사용 가능한 이메일입니다.",
         });
       } else {
-        setEmailChecking(false);
+        setEmailExisting(false);
         setSuccessMsg({
           ...successMsg,
           email: "",

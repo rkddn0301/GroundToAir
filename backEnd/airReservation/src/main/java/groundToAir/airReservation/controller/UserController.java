@@ -36,6 +36,14 @@ public class UserController {
         return userService.emailCheck(email);
     }
 
+    // 비밀번호 중복 체크
+    @GetMapping("/pwCheck")
+    public int pwCheck(
+            @RequestParam("userNo") String userNo,
+            @RequestParam("password") String password) {
+        return userService.pwCheck(userNo, password);
+    }
+
     // 카카오 인증
     @PostMapping("/kakao")
     public Map<String, Object> kakaoUser(@RequestBody Map<String, Object> userInfo) {

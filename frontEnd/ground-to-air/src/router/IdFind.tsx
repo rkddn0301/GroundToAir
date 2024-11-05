@@ -7,7 +7,7 @@ import axios from "axios";
 import { Alert } from "../utils/sweetAlert";
 
 const Container = styled.div`
-  padding-top: 50px;
+  margin-top: -15px;
 `;
 
 const GuideLine = styled.div`
