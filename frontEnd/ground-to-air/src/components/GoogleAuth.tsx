@@ -4,7 +4,12 @@ import GoogleStartImg from "../img/g-logo.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
+import {
+  federationAccessToken,
+  isLoggedInState,
+  socialId,
+  tokenExpirationTime,
+} from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
@@ -31,6 +36,10 @@ function GoogleAuth(props: { redirectRoute: string; title: string }) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
   const history = useHistory();
+
+  // 타사인증을 통해 필요한 데이터를 가져옴
+  const setSocialId = useSetRecoilState(socialId);
+  const setFederationAccessToken = useSetRecoilState(federationAccessToken);
 
   useEffect(() => {
     console.log(`${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`);
@@ -69,6 +78,8 @@ function GoogleAuth(props: { redirectRoute: string; title: string }) {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         setIsLoggedIn(true);
+        setSocialId(response.data.socialId);
+        setFederationAccessToken(response.data.federationAccessToken);
         // 만료시간 변환작업
         const expirationTime =
           new Date(accessTokenExpiration).getTime() - Date.now();

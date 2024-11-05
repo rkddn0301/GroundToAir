@@ -128,7 +128,7 @@ public class UserService {
         log.info("tokenRequest : {}", request);
 
         // ResponseEntity : 서버로부터 받은 응답을 처리하는 객체.
-        // restTemplate.exchange(URL, HttpMethod, HttpEntity, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(HttpEntity)하여 원하는 타입(ResponseType)으로 받아오는 역할
+        // restTemplate.exchange(URL, HttpMethod, request, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(request)하여 원하는 타입(ResponseType)으로 받아오는 역할
         // 액세스 토큰 응답 처리
         ResponseEntity<Map> response = restTemplate.exchange((String) userInfo.get("access_token_url"), HttpMethod.POST, request, Map.class);
 
@@ -158,6 +158,7 @@ public class UserService {
         headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         // 사용자 정보 요청
+        // restTemplate.exchange(URL, HttpMethod, request, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(request)하여 원하는 타입(ResponseType)으로 받아오는 역할
         HttpEntity<String> request = new HttpEntity<>(headers);
         ResponseEntity<Map> response = restTemplate.exchange(userInfoUrl, HttpMethod.POST, request, Map.class);
 
@@ -255,6 +256,7 @@ public class UserService {
 
         // 사용자 정보 요청
         HttpEntity<String> request = new HttpEntity<>(headers);
+        // restTemplate.exchange(URL, HttpMethod, request, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(request)하여 원하는 타입(ResponseType)으로 받아오는 역할
         ResponseEntity<Map> response = restTemplate.exchange(userInfoUrl, HttpMethod.POST, request, Map.class);
 
         // 사용자 정보 처리
@@ -603,6 +605,7 @@ public class UserService {
     // 카카오 연결 끊기
     public boolean kakaoUnlink(Map<String, Object> userInfo) {
 
+        // 연결 끊기에 필요한 데이터들 String 형식으로 변환
         String accessToken = (String) userInfo.get("accessToken");
 
         String requestBody = "target_id_type=" + userInfo.get("target_id_type") +
@@ -618,13 +621,10 @@ public class UserService {
 
         // HttpEntity 생성
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
-        log.info("Response Status: {}", request.getBody());
-        log.info("Response Status: {}", request.getHeaders());
 
         try {
-            // 응답 본문이 필요 없으므로 Void 사용
+            // restTemplate.exchange(URL, HttpMethod, request, ResponseType) : 지정된 URL에 대해 특정 HttpMethod로 요청을 보내고 그에 대한 응답을 요청 본문과 헤더를 포함(request)하여 원하는 타입(ResponseType)으로 받아오는 역할
             ResponseEntity<String> response = restTemplate.exchange(unLinkUrl, HttpMethod.POST, request, String.class);
-            log.info("Response Status: {}", response.getStatusCode());
             return response.getStatusCode().is2xxSuccessful();
 
         }
@@ -633,6 +633,26 @@ public class UserService {
             return false;
         }
 
+    }
+
+    // 구글 연결 끊기
+    public boolean googleUnlink(Map<String, Object> userInfo) {
+        // 연결 끊기에 필요한 데이터들 String 형식으로 변환
+        String accessToken = (String) userInfo.get("accessToken");
+
+        // 구글 연결 끊기 API URL
+        String unLinkUrl = "https://accounts.google.com/o/oauth2/revoke?token=" + accessToken;
+
+        try {
+            // restTemplate.postForEntity(URL, request, ResponseType.class) : 지정한 URL을 요청(request)에 따라 POST 형식으로 수행하여 응답(ResponseType.class)을 받아오는 역할.
+            ResponseEntity<String> response = restTemplate.postForEntity(unLinkUrl, null, String.class);
+            return response.getStatusCode().is2xxSuccessful();
+
+        }
+        catch (Exception e) {
+            log.error("구글 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
+            return false;
+        }
     }
 
 

@@ -183,11 +183,20 @@ public class UserController {
 
     }
 
+    // 카카오 연결 끊기
     @PostMapping("/kakaoUnlink")
-    public boolean unlinkUser(@RequestBody Map<String, Object> userInfo) {
+    public boolean kakaoUnlinkUser(@RequestBody Map<String, Object> userInfo) {
         log.info(userInfo.toString());
 
         return userService.kakaoUnlink(userInfo);
+    }
+
+    // 구글 연결 끊기
+    @PostMapping("/googleUnlink")
+    public boolean gogoleUnlinkUser(@RequestBody Map<String, Object> userInfo) {
+        log.info(userInfo.toString());
+
+        return userService.googleUnlink(userInfo);
     }
 
 

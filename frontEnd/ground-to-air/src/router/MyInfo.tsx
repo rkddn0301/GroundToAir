@@ -275,8 +275,8 @@ function MyInfo() {
     }));
   };
 
-  // 기존 회원탈퇴
-  const directMemberDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  // 회원탈퇴
+  const memberDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     console.log("회원 탈퇴 클릭");
 
@@ -288,6 +288,8 @@ function MyInfo() {
     if (deleteConfirm.isConfirmed) {
       if (defaultData.socialType === "KAKAO") {
         kakaoUnlink();
+      } else if (defaultData.socialType === "GOOGLE") {
+        googleUnlink();
       }
 
       try {
@@ -317,6 +319,7 @@ function MyInfo() {
     }
   };
 
+  // 카카오 로그인 연결 끊기
   const kakaoUnlink = async () => {
     try {
       const response = await axios.post(
@@ -335,6 +338,24 @@ function MyInfo() {
       console.error("카카오 연결 끊기 실패", error);
     }
   };
+
+  // 구글 로그인 연결 끊기
+  const googleUnlink = async () => {
+    try {
+      const response = await axios.post("http://localhost:8080/user/googleUnlink",
+        {
+          accessToken: defaultFederationAccessToken,
+        }
+      );
+
+      if (response.data) {
+        console.log("연결 끊기 성공");
+      }
+
+    } catch (error) {
+      console.error("구글 연결 끊기 실패", error);
+    }
+  }
 
   return (
     <Container>
@@ -465,7 +486,7 @@ function MyInfo() {
         <button onClick={passPortInfoReset}>여권정보 원래대로</button>
       </form>
       {/* 회원탈퇴 */}
-      <button onClick={directMemberDelete}>회원탈퇴 진행</button>
+      <button onClick={memberDelete}>회원탈퇴 진행</button>
     </Container>
   );
 }
