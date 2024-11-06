@@ -16,6 +16,7 @@ import { isLoggedInState, tokenExpirationTime } from "./utils/atom";
 import PwFind from "./router/PwFind";
 import IdFind from "./router/IdFind";
 import MyInfo from "./router/MyInfo";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const Container = styled.div`
   display: flex;
@@ -73,33 +74,38 @@ function App() {
             <ChoiceButton />
           </Route>
           <Switch>
-            <Route path="/myInfo">
-              <MyInfo />
-            </Route>
-            <Route path="/pwFind">
-              <PwFind />
-            </Route>
-            <Route path="/idFind">
-              <IdFind />
-            </Route>
-            <Route path="/login">
-              <Login />
-            </Route>
-            <Route path="/join/info/passportInfo">
-              <PassportInfo />
-            </Route>
-            <Route path="/join/info">
-              <JoinInfo />
-            </Route>
-            <Route path="/join">
-              <Join />
-            </Route>
-            <Route path="/hotels">
-              <HotelSearch />
-            </Route>
-            <Route exact path="/">
-              <FlightSearch />
-            </Route>
+            {/* 로그인된 사용자만 접근 가능 */}
+            <ProtectedRoute
+              path="/myInfo"
+              component={MyInfo}
+              restricted={false}
+            />
+
+            {/* 로그인된 사용자는 접근 불가 */}
+            <ProtectedRoute
+              path="/pwFind"
+              component={PwFind}
+              restricted={true}
+            />
+            <ProtectedRoute
+              path="/idFind"
+              component={IdFind}
+              restricted={true}
+            />
+            <ProtectedRoute path="/login" component={Login} restricted={true} />
+            <ProtectedRoute path="/join" component={Join} restricted={true} />
+            <ProtectedRoute
+              path="/join/info"
+              component={JoinInfo}
+              restricted={true}
+            />
+            <ProtectedRoute
+              path="/join/info/passportInfo"
+              component={PassportInfo}
+              restricted={true}
+            />
+            <Route path="/hotels" component={HotelSearch} />
+            <Route exact path="/" component={FlightSearch} />
           </Switch>
         </MainContent>
         <Route path={["/hotels", "/", "/myInfo"]} exact>
