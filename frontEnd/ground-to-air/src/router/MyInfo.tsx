@@ -340,9 +340,9 @@ function MyInfo() {
       [name]: value, // 변경된 필드만 업데이트
     }));
 
+    // 아이디 입력
     if (name === "userId") {
-      // 아이디 변경 시 기존 중복체크 내용은 자동으로 비활성화
-      setIdExisting(false);
+      setIdExisting(false); // 아이디 변경 시 기존 중복체크 내용은 자동으로 비활성화
       setSuccessMsg({
         ...successMsg,
         userId: "",
@@ -357,16 +357,16 @@ function MyInfo() {
       } else {
         setErrorMsg({ ...errorMsg, userId: "" });
       }
-    } else if (name === "password") {
-      // 비밀번호 변경 시 기존 중복체크 내용은 자동으로 비활성화
-      setPasswordExisting(false);
+    }
+    // 비밀번호 입력
+    else if (name === "password") {
+      setPasswordExisting(false); // 비밀번호 변경 시 기존 중복체크 내용은 자동으로 비활성화
 
       // 비밀번호 규칙 : 영문자+숫자+특수문자, 길이 8~15자
 
       if (value === "") {
         // 1. 비밀번호가 비어 있을 시 password errorMsg 제거
         setErrorMsg((prev) => ({ ...prev, password: "" }));
-        // 비밀번호 확인 창의 오류 유지
         setErrorMsg((prev) => ({
           // 3. 비밀번호가 비어있던 적혀있던 비밀번호 확인란이랑 일치하지 않으면 passwordChk에 errorMsg 표시
           ...prev,
@@ -386,7 +386,7 @@ function MyInfo() {
           setErrorMsg((prev) => ({ ...prev, password: "" }));
         }
 
-        // 비밀번호 확인 체크
+        // 비밀번호 입력 시 비밀번호 확인도 체크
         if (inputData.passwordChk !== value) {
           setErrorMsg((prev) => ({
             ...prev,
@@ -396,7 +396,10 @@ function MyInfo() {
           setErrorMsg((prev) => ({ ...prev, passwordChk: "" }));
         }
       }
-    } else if (name === "passwordChk") {
+    }
+
+    // 비밀번호 확인 입력
+    else if (name === "passwordChk") {
       setPasswordChecking(false);
       if (inputData.password !== e.target.value) {
         setErrorMsg({
@@ -407,8 +410,11 @@ function MyInfo() {
         setPasswordChecking(true);
         setErrorMsg({ ...errorMsg, passwordChk: "" });
       }
-    } else if (name === "email") {
-      setEmailExisting(false);
+    }
+
+    //  이메일 입력
+    else if (name === "email") {
+      setEmailExisting(false); // 이메일 변경 시 기존 중복체크 내용은 자동으로 비활성화
       setSuccessMsg({
         ...successMsg,
         email: "",
@@ -426,6 +432,33 @@ function MyInfo() {
       } else {
         setErrorMsg((prev) => ({ ...prev, email: "" }));
       }
+    }
+
+    // 성(영문) 입력
+    else if (name === "userEngFN") {
+      setInputData({
+        ...inputData,
+        userEngFN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+      }); // 대문자로만 작성
+    }
+
+    // 명(영문) 입력
+    else if (name === "userEngLN") {
+      setInputData({
+        ...inputData,
+        userEngLN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+      });
+    }
+
+    // 여권번호 입력
+    else if (name === "passportNo") {
+      setInputData((prevData) => ({
+        ...prevData,
+        passportNo: value,
+        nationality: value === "" ? "" : prevData.nationality,
+        passportExDate: value === "" ? "" : prevData.passportExDate,
+        passportCOI: value === "" ? "" : prevData.passportCOI,
+      }));
     }
   };
 
@@ -650,6 +683,21 @@ function MyInfo() {
       inputData.passportExDate,
       inputData.passportCOI
     );
+
+    // 여권번호가 작성된 상태에서 국적, 여권만료일, 여권발행국 중 비어있을 경우
+    if (
+      inputData.passportNo &&
+      (!inputData.nationality ||
+        !inputData.passportExDate ||
+        !inputData.passportCOI)
+    ) {
+      Alert(
+        "여권번호가 입력된 경우 국적, 여권만료일, 여권발행국이 모두 작성되어야 합니다.",
+        "warning"
+      );
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:8080/user/passportInfoUpdate`,
@@ -696,6 +744,15 @@ function MyInfo() {
       passwordChk: "",
       userName: defaultData.userName,
       email: defaultData.email,
+    }));
+
+    setErrorMsg((prevState) => ({
+      ...prevState,
+      userId: "",
+      password: "",
+      passwordChk: "",
+      userName: "",
+      email: "",
     }));
   };
 

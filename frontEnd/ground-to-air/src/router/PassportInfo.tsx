@@ -183,7 +183,13 @@ function PassportInfo() {
   // 여권번호 입력란 변경 시 동작
   const passportNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase();
-    setInputData({ ...inputData, passportNo: value });
+    setInputData((prevData) => ({
+      ...prevData,
+      passportNo: value,
+      nationality: value === "" ? "" : prevData.nationality,
+      passportExDate: value === "" ? "" : prevData.passportExDate,
+      passportCOI: value === "" ? "" : prevData.passportCOI,
+    }));
   };
 
   // 국적 선택란 변경 시 동작

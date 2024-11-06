@@ -380,13 +380,17 @@ public class UserService {
         }
 
         // expirationDate String -> Date 변환
-        LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+        if (userPassportEntity.getExpirationDate() != null) {
+            LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+            userPassportEntity.setExpirationDate(expirationDate);
+        }
+
 
         // UserPassportEntity에 설정
         // ! 위에서 check하고 넣는 이유는 불일치 했던 형식(int, String)을 올바른 형식(UserEntity, CountryEntity)으로 삽입하기 위함이다.
         userPassportEntity.setUser(userCheck);
 
-        userPassportEntity.setExpirationDate(expirationDate);
+
 
         userPassportRepository.save(userPassportEntity);
     }
@@ -558,34 +562,73 @@ public class UserService {
             isUpdated = true;
         }
 
-        // nationality 변경 확인 (보낸 국적이 존재하거나, 기존 국적과 동일하지 않을 경우)
-        if (userPassportEntity.getNationality().getCountry() != null && !userPassportEntity.getNationality().getCountry().equals(existingUser.getNationality().getCountry())) {
-            log.info("국적 변경됨");
-            CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+        // nationality 변경 확인
+        if (userPassportEntity.getNationality() != null) { // 내가 작성한 국적이 존재 할 경우
+            // 기존 국적(existingUser)에서 변화가 있을 경우 변경됨
+            if (userPassportEntity.getNationality().getCountry() != null &&
+                    (existingUser.getNationality() == null ||
+                            !userPassportEntity.getNationality().getCountry().equals(existingUser.getNationality().getCountry()))) {
+                log.info("국적 변경됨");
+                CountryEntity nationalityCheck = countryRepository.findByCountry(userPassportEntity.getNationality().getCountry())
+                        .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
 
-            existingUser.setNationality(nationalityCheck); // 외래키로 설정
-            isUpdated = true;
+                existingUser.setNationality(nationalityCheck); // 외래키로 설정
+                isUpdated = true;
+            }
+        } else { // 내가 작성한 국적이 null일 경우
+            //  기존에 국적이 있었다면 변경된 것으로 처리
+            if (existingUser.getNationality() != null) {
+                log.info("국적 변경됨");
+                existingUser.setNationality(null);
+                isUpdated = true;
+            }
         }
+
 
         // expirationDate 변경 확인 (보낸 여권만료일이 존재하거나, 기존 여권만료일과 동일하지 않을 경우)
-        if (userPassportEntity.getExpirationDate() != null && !userPassportEntity.getExpirationDate().equals(existingUser.getExpirationDate())) {
-            log.info("여권만료일 변경됨");
-            // expirationDate String -> Date 변환
-            LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
-            existingUser.setExpirationDate(expirationDate);
-            isUpdated = true;
+        if (userPassportEntity.getExpirationDate() != null) {
+            // 보낸 만료일이 존재하고 기존 만료일과 다른 경우
+            if (existingUser.getExpirationDate() == null || !userPassportEntity.getExpirationDate().equals(existingUser.getExpirationDate())) {
+                log.info("여권만료일 변경됨");
+                // expirationDate String -> Date 변환
+                LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+                existingUser.setExpirationDate(expirationDate);
+                isUpdated = true;
+            }
+        } else {
+            // 만약 보낸 값이 null이면 기존 값과 동일하면 변화 없음
+            if (existingUser.getExpirationDate() != null) {
+                log.info("여권만료일이 비어있는데, 기존 값이 존재");
+                existingUser.setExpirationDate(null);
+                isUpdated = true;
+            }
         }
 
-        // countryOfIssue 변경 확인 (보낸 여권발행국이 존재하거나, 기존 여권발행국과 동일하지 않을 경우)
-        if (userPassportEntity.getCountryOfIssue().getCountry() != null && !userPassportEntity.getCountryOfIssue().getCountry().equals(existingUser.getCountryOfIssue().getCountry())) {
-            log.info("여권발행국 변경됨");
-            CountryEntity countryOfIssueCheck = countryRepository.findByCountry(userPassportEntity.getCountryOfIssue().getCountry())
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
 
-            existingUser.setCountryOfIssue(countryOfIssueCheck); // 외래키로 설정
-            isUpdated = true;
+        // countryOfIssue 변경 확인
+        if (userPassportEntity.getCountryOfIssue() != null) { // 내가 작성한 여권발행국이 존재 할 경우
+            // 기존 여권발행국(existingUser)에서 변화가 있을 경우 변경됨
+            if (userPassportEntity.getCountryOfIssue().getCountry() != null &&
+                    (existingUser.getCountryOfIssue() == null ||
+                            !userPassportEntity.getCountryOfIssue().getCountry().equals(existingUser.getCountryOfIssue().getCountry()))) {
+                log.info("여권발행국 변경됨");
+                CountryEntity countryOfIssueCheck = countryRepository.findByCountry(userPassportEntity.getCountryOfIssue().getCountry())
+                        .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 국적입니다."));
+
+                existingUser.setCountryOfIssue(countryOfIssueCheck); // 외래키로 설정
+                isUpdated = true;
+            }
+
+        } else { // 내가 작성한 여권발행국이 null일 경우
+            // 기존에 여권발행국이 있었다면 변경된 것으로 처리
+            if (existingUser.getCountryOfIssue() != null) {
+                log.info("국적 변경됨");
+                existingUser.setCountryOfIssue(null);
+                isUpdated = true;
+            }
+
         }
+
 
         // 업데이트가 필요한 경우에만 저장
         if (isUpdated) {
