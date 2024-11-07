@@ -47,7 +47,7 @@ function App() {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         resetInactivityTimer(tokenExpiration);
-      }, 10000); // 10초 후 리셋
+      }, 2000); // 2초 후 리셋
 
       console.log("동작");
     };
@@ -58,6 +58,7 @@ function App() {
     return () => {
       // 브라우저에서 사이트를 닫거나 새로고침 시 이벤트 리스너 제거
       events.forEach((event) => window.removeEventListener(event, resetTimer));
+      clearTimeout(debounceTimer); // 짧은 타이머이지만 메모리 누수에 문제가 발생할 수 있어 작성됨.
     };
   }, [isLoggedIn]);
 
@@ -93,17 +94,18 @@ function App() {
               restricted={true}
             />
             <ProtectedRoute path="/login" component={Login} restricted={true} />
-            <ProtectedRoute path="/join" component={Join} restricted={true} />
-            <ProtectedRoute
-              path="/join/info"
-              component={JoinInfo}
-              restricted={true}
-            />
             <ProtectedRoute
               path="/join/info/passportInfo"
               component={PassportInfo}
               restricted={true}
             />
+            <ProtectedRoute
+              path="/join/info"
+              component={JoinInfo}
+              restricted={true}
+            />
+            <ProtectedRoute path="/join" component={Join} restricted={true} />
+
             <Route path="/hotels" component={HotelSearch} />
             <Route exact path="/" component={FlightSearch} />
           </Switch>

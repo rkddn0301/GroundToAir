@@ -565,6 +565,11 @@ public class UserService {
         // nationality 변경 확인
         if (userPassportEntity.getNationality() != null) { // 내가 작성한 국적이 존재 할 경우
             // 기존 국적(existingUser)에서 변화가 있을 경우 변경됨
+            /*
+            existingUser.getNationality() == null을 넣은 이유는 기존 국적이 비어 있을 때 내가 작성한 국적이랑 비교하려는 경우
+            --> !userPassportEntity.getNationality().getCountry().equals(existingUser.getNationality().getCountry()) 여기서 기존 국적이 이미 null 이라 getCountry를 가져올 수 없어서 오류가 발생하기 때문.
+             */
+
             if (userPassportEntity.getNationality().getCountry() != null &&
                     (existingUser.getNationality() == null ||
                             !userPassportEntity.getNationality().getCountry().equals(existingUser.getNationality().getCountry()))) {
@@ -578,7 +583,7 @@ public class UserService {
         } else { // 내가 작성한 국적이 null일 경우
             //  기존에 국적이 있었다면 변경된 것으로 처리
             if (existingUser.getNationality() != null) {
-                log.info("국적 변경됨");
+                log.info("국적이 비어있는데, 기존 값이 존재하여 변경됨");
                 existingUser.setNationality(null);
                 isUpdated = true;
             }
@@ -588,7 +593,7 @@ public class UserService {
         // expirationDate 변경 확인 (보낸 여권만료일이 존재하거나, 기존 여권만료일과 동일하지 않을 경우)
         if (userPassportEntity.getExpirationDate() != null) {
             // 보낸 만료일이 존재하고 기존 만료일과 다른 경우
-            if (existingUser.getExpirationDate() == null || !userPassportEntity.getExpirationDate().equals(existingUser.getExpirationDate())) {
+            if (!userPassportEntity.getExpirationDate().equals(existingUser.getExpirationDate())) {
                 log.info("여권만료일 변경됨");
                 // expirationDate String -> Date 변환
                 LocalDate expirationDate = LocalDate.parse(userPassportEntity.getExpirationDate().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
@@ -598,7 +603,7 @@ public class UserService {
         } else {
             // 만약 보낸 값이 null이면 기존 값과 동일하면 변화 없음
             if (existingUser.getExpirationDate() != null) {
-                log.info("여권만료일이 비어있는데, 기존 값이 존재");
+                log.info("여권만료일이 비어있는데, 기존 값이 존재하여 변경됨");
                 existingUser.setExpirationDate(null);
                 isUpdated = true;
             }
@@ -608,6 +613,10 @@ public class UserService {
         // countryOfIssue 변경 확인
         if (userPassportEntity.getCountryOfIssue() != null) { // 내가 작성한 여권발행국이 존재 할 경우
             // 기존 여권발행국(existingUser)에서 변화가 있을 경우 변경됨
+            /*
+            existingUser.getCountryOfIssue() == null을 넣은 이유는 기존 여권발행국이 비어 있을 때 내가 작성한 여권발행국이랑 비교하려는 경우
+            --> !userPassportEntity.getCountryOfIssue().getCountry().equals(existingUser.getCountryOfIssue().getCountry()) 여기서 기존 여권발행국이 이미 null 이라 getCountry를 가져올 수 없어서 오류가 발생하기 때문.
+             */
             if (userPassportEntity.getCountryOfIssue().getCountry() != null &&
                     (existingUser.getCountryOfIssue() == null ||
                             !userPassportEntity.getCountryOfIssue().getCountry().equals(existingUser.getCountryOfIssue().getCountry()))) {
@@ -622,7 +631,7 @@ public class UserService {
         } else { // 내가 작성한 여권발행국이 null일 경우
             // 기존에 여권발행국이 있었다면 변경된 것으로 처리
             if (existingUser.getCountryOfIssue() != null) {
-                log.info("국적 변경됨");
+                log.info("여권발행국이 비어있는데 기존 값이 존재하여 변경됨");
                 existingUser.setCountryOfIssue(null);
                 isUpdated = true;
             }
