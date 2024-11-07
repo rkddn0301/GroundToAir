@@ -5,7 +5,6 @@ import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -136,6 +135,15 @@ public class UserController {
         return userService.idFind(userName, email);
 
 
+    }
+
+    // 비밀번호 찾기
+    @GetMapping("/pwFind")
+    public boolean pwFind(@RequestParam("userName") String userName,
+                          @RequestParam("email") String email) {
+        log.info("성명 : " + userName + ", 이메일 : " + email);
+
+        return userService.pwFind(userName, email);
     }
 
 

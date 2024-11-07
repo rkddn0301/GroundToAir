@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     @Query("SELECT u.userId FROM UserEntity u WHERE u.userName =?1 AND u.email = ?2")
     String findUserIdByUserNameAndEmail(String userName, String email);
 
+    // 성명과 이메일로 사용자 조회 (비밀번호 찾기)
+    UserEntity findByUserNameAndEmail(String userName, String email);
+
     // 개인정보 추출
     @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.passport p WHERE u.userNo = :userNo")
     Optional<UserEntity> findUserWithPassportByUserNo(@Param("userNo") int userNo);

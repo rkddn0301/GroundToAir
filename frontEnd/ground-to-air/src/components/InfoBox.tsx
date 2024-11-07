@@ -83,6 +83,24 @@ function InfoBox({ children }: any) {
             <Link to="/pwFind">비밀번호 찾기</Link>
           </div>
         )}
+
+        {/* 아이디 찾기 */}
+        {currentRoute === "/idFind" && (
+          <div>
+            <Link to="/join">회원가입</Link> {" | "}
+            <Link to="/login">로그인</Link> {" | "}
+            <Link to="/pwFind">비밀번호 찾기</Link>
+          </div>
+        )}
+
+        {/* 비밀번호 찾기 */}
+        {currentRoute === "/pwFind" && (
+          <div>
+            <Link to="/join">회원가입</Link> {" | "}
+            <Link to="/login">로그인</Link> {" | "}
+            <Link to="/idFind">아이디 찾기</Link>
+          </div>
+        )}
       </BoxFooter>
     </Box>
   );

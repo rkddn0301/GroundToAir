@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 
 // 회원 정보 관련 Service
@@ -42,7 +43,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
     // 이메일 이용
-    private final JavaMailSender mailSender;
+    private JavaMailSender mailSender;
 
     public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
         this.userRepository = userRepository;
@@ -412,6 +413,26 @@ public class UserService {
         }
     }
 
+    // 이메일 전송 메서드
+    private void sendEmail(String toEmail, String messageContent, String messageType) {
+        long startTime = System.currentTimeMillis();
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+
+        // 메시지 유형에 따라 제목과 내용을 다르게 설정
+        if ("idFind".equals(messageType)) {
+            message.setSubject("아이디 찾기");
+            message.setText("귀하의 아이디는 " + messageContent + " 입니다.");
+        } else if ("pwFind".equals(messageType)) {
+            message.setSubject("비밀번호 찾기");
+            message.setText("귀하의 임시 비밀번호는: " + messageContent + " 입니다.\n로그인 후 반드시 비밀번호를 변경해 주시기 바랍니다.");
+        }
+
+        mailSender.send(message);
+        long endTime = System.currentTimeMillis();
+        log.info("메일 전송 완료, 소요시간: " + (endTime - startTime) + "ms");
+    }
+
     // 아이디 찾기
     public boolean idFind(String userName,
                           String email) {
@@ -421,7 +442,7 @@ public class UserService {
 
         if (userId != null) {
             // 아이디가 존재할 경우 이메일로 전송
-            sendEmail(email, userId);
+            sendEmail(email, userId, "idFind");
             return true;
         } else {
             // 아이디가 없을 경우
@@ -431,13 +452,51 @@ public class UserService {
 
     }
 
-    // 이메일 전송 메서드
-    private void sendEmail(String toEmail, String userId) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("아이디 찾기");
-        message.setText("귀하의 아이디는 " + userId + " 입니다.");
-        mailSender.send(message);
+
+
+    // 비밀번호 찾기
+    public boolean pwFind(String userName, String email) {
+        // 성명과 이메일로 사용자 조회
+        UserEntity user = userRepository.findByUserNameAndEmail(userName, email);
+
+        // 사용자가 존재하지 않으면 false 반환
+        if (user == null) {
+            return false;
+        }
+
+        // 임시 비밀번호 생성
+        String temporaryPassword = generateTemporaryPassword();
+        log.info("임시비밀번호 : " + temporaryPassword);
+
+        // 임시 비밀번호 암호화
+        String encryptedPassword = passwordEncoder.encode(temporaryPassword);
+
+        // DB에 암호화된 비밀번호 저장
+        user.setPassword(encryptedPassword);
+        userRepository.save(user);
+
+        // 이메일로 임시 비밀번호 전송
+        sendEmail(email, temporaryPassword, "pwFind");
+
+        return true;
+    }
+
+    // 임시 비밀번호 생성 (영문자+숫자+특수문자 포함)
+    private String generateTemporaryPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+
+        // StringBuilder : 문자열을 효율적으로 생성해주는 클래스이며, 문자열을 변경할 때마다 기존 객체에 값을 추가해줌.
+        // 반대로 String은 문자열이 변경될 때마다 새로 객체를 생성해야함.
+        StringBuilder password = new StringBuilder();
+
+        // Random : 무작위로 생성해주는 객체
+        Random rand = new Random();
+        for (int i = 0; i < 6; i++) {
+            int index = rand.nextInt(chars.length()); // chars 길이(0 ~ chars.length() -1)를 기준으로 무작위로 돌려 숫자값으로 반환
+            password.append(chars.charAt(index)); // chars 문자열에서 index 위치에 있는 문자를 비밀번호에 추가함.
+        }
+
+        return password.toString(); // StringBuilder에 있는 내용을 String으로 바꿔서 넘김
     }
 
     // 개인정보 가져오기
