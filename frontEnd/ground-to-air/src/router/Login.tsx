@@ -81,6 +81,9 @@ const FederationField = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  button {
+    // 추후에 카카오, 구글 버튼 여기서 수정하거나 다른 방식 진행
+  }
 `;
 
 function Login() {
@@ -168,7 +171,7 @@ function Login() {
         history.push("/");
       } else {
         Alert(
-          "아이디 혹은 비밀번호가 잘못 입력되었습니다. 다시 확인해주십시오.",
+          "아이디 혹은 비밀번호가 잘못 입력되었습니다.<br>다시 확인해주십시오.",
           "error"
         );
       }

@@ -754,6 +754,12 @@ function MyInfo() {
       userName: "",
       email: "",
     }));
+
+    setSuccessMsg((prevState) => ({
+      ...prevState,
+      userId: "",
+      email: "",
+    }));
   };
 
   // 여권정보 원래대로
