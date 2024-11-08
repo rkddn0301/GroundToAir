@@ -50,6 +50,11 @@ public class AirController {
             @RequestParam("currencyCode") String currencyCode
     ) throws Exception {
 
+        log.info("출발지 : {}, 도착지 : {}, 가는날 : {}, 오는날 : {}, 인원 : {}, 코드 : {}",
+                originLocationCode, destinationLocationCode, departureDate, returnDate, adults, currencyCode);
+
+
+
         String accessToken = accessTokenUtil.checkAndRefreshToken();
         return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, currencyCode);
     }

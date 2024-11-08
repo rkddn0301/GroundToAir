@@ -29,14 +29,19 @@ public class AirService {
         String url = "https://test.api.amadeus.com/v2/shopping/flight-offers";
 
         // URL에 쿼리 파라미터 추가
-        String fullUrl = UriComponentsBuilder.fromHttpUrl(url)
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("originLocationCode", originLocationCode)
                 .queryParam("destinationLocationCode", destinationLocationCode)
                 .queryParam("departureDate", departureDate)
-                .queryParam("returnDate", returnDate)
                 .queryParam("adults", adults)
-                .queryParam("currencyCode", currencyCode)
-                .toUriString();
+                .queryParam("currencyCode", currencyCode);
+
+        // 비어있을 경우 편도, 존재할 경우 왕복
+        if (returnDate != null && !returnDate.isEmpty()) {
+            uriBuilder.queryParam("returnDate", returnDate);
+        }
+
+        String fullUrl = uriBuilder.toUriString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
