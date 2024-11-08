@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { Alert } from "../utils/sweetAlert";
 import InfoBox from "../components/InfoBox";
 import Title from "../components/Title";
+import { motion } from "framer-motion";
 
 const Container = styled.div`
   margin-top: -15px;
@@ -58,7 +59,7 @@ const SubmitField = styled.div`
   width: 50%;
 `;
 
-const SubmitBtn = styled.button`
+const SubmitBtn = styled(motion.button)`
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};
@@ -67,10 +68,24 @@ const SubmitBtn = styled.button`
   border-radius: 10px;
   cursor: pointer;
 
+  /* 로딩 애니메이션 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
   }
+`;
+
+const Spinner = styled(motion.div)`
+  border: 4px solid ${(props) => props.theme.white.font};
+  border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
 `;
 
 function PwFind() {
@@ -85,6 +100,8 @@ function PwFind() {
   }); // 오류 메시지 표시 state
 
   const history = useHistory();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // 성명 입력란 변경 시 동작
   const userNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,6 +146,9 @@ function PwFind() {
       }));
       return;
     }
+
+    setIsLoading(true);
+
     try {
       const response = await axios.get(`http://localhost:8080/user/pwFind`, {
         params: {
@@ -146,6 +166,8 @@ function PwFind() {
     } catch (error) {
       console.error("비밀번호 찾기 오류: ", error);
       Alert("비밀번호 찾기 요청에 실패하였습니다.", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,7 +205,24 @@ function PwFind() {
           {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
 
           <SubmitField>
-            <SubmitBtn onClick={infoSubmit}>비밀번호 찾기</SubmitBtn>
+            <SubmitBtn
+              onClick={infoSubmit}
+              whileHover={{ scale: 1.05 }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Spinner
+                  animate={{ rotate: [0, 360] }} // 회전 애니메이션
+                  transition={{
+                    duration: 1, // 1초 동안
+                    ease: "linear", // 일정한 속도
+                    repeat: Infinity, // 무한반복
+                  }}
+                />
+              ) : (
+                "비밀번호 찾기"
+              )}
+            </SubmitBtn>
           </SubmitField>
         </Form>
       </InfoBox>

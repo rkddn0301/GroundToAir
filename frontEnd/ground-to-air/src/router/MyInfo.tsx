@@ -645,7 +645,7 @@ function MyInfo() {
 
       if (response.data) {
         const successAlert = await Alert(
-          "개인정보 수정이 완료되었습니다. 다시 로그인 해주십시오.",
+          "개인정보 수정이 완료되었습니다.<br>다시 로그인 해주십시오.",
           "success"
         );
 

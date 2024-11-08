@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 import { Alert } from "../utils/sweetAlert";
+import { motion } from "framer-motion";
 
 const Container = styled.div`
   margin-top: -15px;
@@ -56,7 +57,7 @@ const SubmitField = styled.div`
   width: 50%;
 `;
 
-const SubmitBtn = styled.button`
+const SubmitBtn = styled(motion.button)`
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};
@@ -65,10 +66,24 @@ const SubmitBtn = styled.button`
   border-radius: 10px;
   cursor: pointer;
 
+  /* 로딩 애니메이션 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
   }
+`;
+
+const Spinner = styled(motion.div)`
+  border: 4px solid ${(props) => props.theme.white.font};
+  border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
 `;
 
 function IdFind() {
@@ -83,6 +98,8 @@ function IdFind() {
   }); // 오류 메시지 표시 state
 
   const history = useHistory();
+
+  const [isLoading, setIsLoading] = useState(false); // 응답 로딩
 
   // 성명 입력란 변경 시 동작
   const userNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +144,7 @@ function IdFind() {
       }));
       return;
     }
+    setIsLoading(true); // 이메일 전송 이전까지 로딩
     try {
       const response = await axios.get(`http://localhost:8080/user/idFind`, {
         params: {
@@ -144,6 +162,8 @@ function IdFind() {
     } catch (error) {
       console.error("아이디 찾기 오류: ", error);
       Alert("아이디 찾기 요청에 실패하였습니다.", "error");
+    } finally {
+      setIsLoading(false); // 어떤일이 발생하든 동작이 끝나면 로딩 해제
     }
   };
 
@@ -181,7 +201,24 @@ function IdFind() {
           {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
 
           <SubmitField>
-            <SubmitBtn onClick={infoSubmit}>아이디 찾기</SubmitBtn>
+            <SubmitBtn
+              onClick={infoSubmit}
+              whileHover={{ scale: 1.05 }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Spinner
+                  animate={{ rotate: [0, 360] }} // 회전 애니메이션
+                  transition={{
+                    duration: 1, // 1초 동안
+                    ease: "linear", // 일정한 속도
+                    repeat: Infinity, // 무한반복
+                  }}
+                />
+              ) : (
+                "아이디 찾기"
+              )}
+            </SubmitBtn>
           </SubmitField>
         </Form>
       </InfoBox>
