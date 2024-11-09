@@ -10,5 +10,6 @@ import java.util.List;
 
 public interface IataCodeRepository extends JpaRepository<IataCodeEntity, Integer> {
 
-    List<IataCodeEntity> findByIataStartingWith(String keyword);
+    List<IataCodeEntity> findByIataStartingWithOrCityCodeStartingWithOrAirportKorStartingWithOrCityKorStartingWith(String iataKeyword, String cityCodeKeyword, String airportKeyword, String cityKorKeyword);
+
 }

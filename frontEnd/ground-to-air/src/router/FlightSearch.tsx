@@ -34,8 +34,10 @@ const Banner = styled.div`
 
 interface IataCodes {
   codeNo: number;
-  airport: string;
-  iata: string;
+  airportKor?: string;
+  iata?: string;
+  cityKor?: string;
+  cityCode?: string;
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
@@ -93,12 +95,12 @@ function FlightSearch() {
 
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
-  const [searchOriginLocations, setSearchOriginLocations] = useState<
-    IataCodes[]
-  >([]); // 출발지 테스트
-  const [searchDestinationLocations, setSearchDestinationLocations] = useState<
-    IataCodes[]
-  >([]); // 도착지 테스트
+  const [autoComplateOriginLocations, setAutoComplateOriginLocations] =
+    useState<IataCodes[]>([]); // 출발지 자동완성
+  const [
+    autoComplateDestinationLocations,
+    setAutoComplateDestinationLocations,
+  ] = useState<IataCodes[]>([]); // 도착지 자동완성
 
   // 가는날 & 오는날 초기값 설정
   useEffect(() => {
@@ -119,85 +121,148 @@ function FlightSearch() {
       destinationLocationCode: prev.originLocationCode,
     }));
 
-    // 검색 기록 초기화
-    setSearchOriginLocations([]);
-    setSearchDestinationLocations([]);
+    setAutoComplateOriginLocations((prev) => [
+      ...autoComplateDestinationLocations,
+    ]); // 도착지의 자동완성을 출발지에 할당
+    setAutoComplateDestinationLocations((prev) => [
+      ...autoComplateOriginLocations,
+    ]); // 출발지의 자동완성을 도착지에 할당
   };
 
   // 항공 검색 동작
-  const flightSearch = () => {
-    console.log(
-      inputData.originLocationCode,
-      inputData.destinationLocationCode,
-      inputData.departureDate,
-      inputData.returnDate
-    );
-    if (inputData.originLocationCode === "") {
-      alert("출발지를 입력해주세요.");
-      return;
-    } else if (inputData.destinationLocationCode === "") {
-      alert("도착지를 입력해주세요.");
-      return;
-    } else if (inputData.departureDate === "") {
-      alert("가는날을 입력해주세요.");
+  const flightSearch = async () => {
+    let searchOriginLocation; // 실질적으로 검색될 출발지 데이터
+    let searchDestinationLocation; // 실질적으로 검색될 도착지 데이터
+
+    // 출발지/도착지 조건
+    /*
+     1. 자동완성기능을 선택하지 않고 즉시 검색했을 때
+     2. 자동완성기능을 선택했을 때의 처리
+     3. 나머지는 focus
+    */
+
+    //  출발지
+    if (
+      inputData.originLocationCode.length > 1 &&
+      autoComplateOriginLocations.length > 0
+    ) {
+      // 가장 첫 번째에 있는 공항이 검색
+      searchOriginLocation = autoComplateOriginLocations[0]?.iata || "";
+      setInputData((prev) => ({
+        ...prev,
+        originLocationCode: `${autoComplateOriginLocations[0]?.airportKor} (${autoComplateOriginLocations[0]?.iata})`,
+      }));
+    } else if (/\(.*\)/.test(inputData.originLocationCode)) {
+      searchOriginLocation = inputData.originLocationCode
+        .split("(")[1]
+        .split(")")[0];
+    } else {
+      document.getElementById("originLocation")?.focus();
       return;
     }
 
-    setFlightOffers(null);
-    setIsLoading(true);
-    const apiUrl = `http://localhost:8080/air/flightOffers`;
-    const params = {
-      originLocationCode: inputData.originLocationCode,
-      destinationLocationCode: inputData.destinationLocationCode,
-      departureDate: inputData.departureDate,
-      returnDate: inputData.returnDate || "",
-      adults: inputData.adults,
-      currencyCode: "KRW",
-    };
+    // 도착지
+    if (
+      inputData.destinationLocationCode.length > 1 &&
+      autoComplateDestinationLocations.length > 0
+    ) {
+      // 가장 첫 번째에 있는 공항이 검색
+      searchDestinationLocation =
+        autoComplateDestinationLocations[0]?.iata || "";
+      setInputData((prev) => ({
+        ...prev,
+        destinationLocationCode: `${autoComplateDestinationLocations[0]?.airportKor} (${autoComplateDestinationLocations[0]?.iata})`,
+      }));
+    } else if (/\(.*\)/.test(inputData.destinationLocationCode)) {
+      searchDestinationLocation = inputData.destinationLocationCode
+        .split("(")[1]
+        .split(")")[0];
+    } else {
+      document.getElementById("destinationLocation")?.focus();
+      return;
+    }
 
-    axios
-      .get(apiUrl, { params })
-      .then((response) => {
-        setFlightOffers(response.data);
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching flight offers:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    if (!inputData.departureDate) {
+      document.getElementById("departureDate")?.focus();
+      return;
+    }
+
+    console.log(
+      searchOriginLocation,
+      searchDestinationLocation,
+      inputData.departureDate,
+      inputData.returnDate
+    );
+
+    setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
+    setAutoComplateOriginLocations([]); // 출발지 자동완성 제거
+    setAutoComplateDestinationLocations([]); // 도착지 자동완성 제거
+    setIsLoading(true); // 항공 검색 이전까지 로딩
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/air/flightOffers`,
+        {
+          params: {
+            originLocationCode: searchOriginLocation,
+            destinationLocationCode: searchDestinationLocation,
+            departureDate: inputData.departureDate,
+            returnDate: inputData.returnDate || "",
+            adults: inputData.adults,
+            currencyCode: "KRW",
+          },
+        }
+      );
+      setFlightOffers(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("항공 검색 도중 오류 발생 : ", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const originChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const originChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputData((prev) => ({ ...prev, originLocationCode: value }));
 
     if (value.length > 1) {
-      axios
-        .get(`http://localhost:8080/air/iataCode`, {
+      try {
+        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
           params: { keyword: value },
-        })
-        .then((response) => setSearchOriginLocations(response.data))
-        .catch((error) => console.error(error));
+        });
+        if (response.data) {
+          setAutoComplateOriginLocations(response.data);
+        } else {
+          setAutoComplateOriginLocations([]);
+        }
+      } catch (error) {
+        console.error("출발지 자동완성 오류 발생 : ", error);
+      }
     } else {
-      setSearchOriginLocations([]);
+      setAutoComplateOriginLocations([]);
     }
   };
 
-  const destinationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const destinationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputData((prev) => ({ ...prev, destinationLocationCode: value }));
 
     if (value.length > 1) {
-      axios
-        .get(`http://localhost:8080/air/iataCode`, {
+      try {
+        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
           params: { keyword: value },
-        })
-        .then((response) => setSearchDestinationLocations(response.data))
-        .catch((error) => console.error(error));
+        });
+        if (response.data) {
+          setAutoComplateDestinationLocations(response.data);
+        } else {
+          setAutoComplateDestinationLocations([]);
+        }
+      } catch (error) {
+        console.error("도착지 자동완성 오류 발생 : ", error);
+      }
     } else {
-      setSearchDestinationLocations([]);
+      setAutoComplateDestinationLocations([]);
     }
   };
 
@@ -209,25 +274,47 @@ function FlightSearch() {
           <label>출발지</label>
           <input
             type="text"
+            id="originLocation"
             value={inputData.originLocationCode}
             onChange={originChange}
-            placeholder="국가 또는 도시"
+            placeholder="도시 또는 공항명"
           />
-          {searchOriginLocations.length > 0 && (
+          {autoComplateOriginLocations.length > 0 && (
             <ul>
-              {searchOriginLocations.map((originLocation) => (
-                <li
-                  key={originLocation.codeNo}
-                  onClick={() => {
-                    setInputData((prev) => ({
-                      ...prev,
-                      originLocationCode: originLocation.iata,
-                    }));
-                    setSearchOriginLocations([]); // 제안 리스트 비우기
-                  }}
-                >
-                  {originLocation.airport} ({originLocation.iata})
-                </li>
+              {autoComplateOriginLocations.map((originLocation, index) => (
+                <>
+                  {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
+                  {index === 0 &&
+                    autoComplateOriginLocations.length > 1 &&
+                    originLocation.cityKor !== null &&
+                    originLocation.cityCode != null && (
+                      <li
+                        key={originLocation.codeNo}
+                        onClick={() => {
+                          setInputData((prev) => ({
+                            ...prev,
+                            originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
+                          }));
+                          setAutoComplateOriginLocations([]); // 제안 리스트 비우기
+                        }}
+                      >
+                        {originLocation.cityKor} ({originLocation.cityCode})
+                      </li>
+                    )}
+
+                  <li
+                    key={originLocation.codeNo + "_airport"}
+                    onClick={() => {
+                      setInputData((prev) => ({
+                        ...prev,
+                        originLocationCode: `${originLocation.airportKor} (${originLocation.iata})`,
+                      }));
+                      setAutoComplateOriginLocations([]); // 제안 리스트 비우기
+                    }}
+                  >
+                    {originLocation.airportKor} ({originLocation.iata})
+                  </li>
+                </>
               ))}
             </ul>
           )}
@@ -237,26 +324,52 @@ function FlightSearch() {
           <label>도착지</label>
           <input
             type="text"
+            id="destinationLocation"
             value={inputData.destinationLocationCode}
             onChange={destinationChange}
-            placeholder="국가 또는 도시"
+            placeholder="도시 또는 공항명"
           />
-          {searchDestinationLocations.length > 0 && (
+          {autoComplateDestinationLocations.length > 0 && (
             <ul>
-              {searchDestinationLocations.map((destinationLocation) => (
-                <li
-                  key={destinationLocation.codeNo}
-                  onClick={() => {
-                    setInputData((prev) => ({
-                      ...prev,
-                      destinationLocationCode: destinationLocation.iata,
-                    }));
-                    setSearchDestinationLocations([]);
-                  }}
-                >
-                  {destinationLocation.airport} ({destinationLocation.iata})
-                </li>
-              ))}
+              {autoComplateDestinationLocations.map(
+                (destinationLocation, index) => (
+                  <>
+                    {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
+                    {index === 0 &&
+                      autoComplateDestinationLocations.length > 1 &&
+                      destinationLocation.cityKor !== null &&
+                      destinationLocation.cityCode != null && (
+                        <li
+                          key={destinationLocation.codeNo}
+                          onClick={() => {
+                            setInputData((prev) => ({
+                              ...prev,
+                              destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
+                            }));
+                            setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
+                          }}
+                        >
+                          {destinationLocation.cityKor} (
+                          {destinationLocation.cityCode})
+                        </li>
+                      )}
+
+                    <li
+                      key={destinationLocation.codeNo + "_airport"}
+                      onClick={() => {
+                        setInputData((prev) => ({
+                          ...prev,
+                          originLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
+                        }));
+                        setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
+                      }}
+                    >
+                      {destinationLocation.airportKor} (
+                      {destinationLocation.iata})
+                    </li>
+                  </>
+                )
+              )}
             </ul>
           )}
         </InputBox>
@@ -264,6 +377,7 @@ function FlightSearch() {
           <label>가는날</label>
           <input
             type="date"
+            id="departureDate"
             value={inputData.departureDate}
             onChange={(e) =>
               setInputData((prev) => ({
@@ -277,6 +391,7 @@ function FlightSearch() {
           <label>오는날</label>
           <input
             type="date"
+            id="returnDate"
             value={inputData.returnDate}
             onChange={(e) =>
               setInputData((prev) => ({ ...prev, returnDate: e.target.value }))

@@ -1,17 +1,17 @@
 package groundToAir.airReservation.service;
 
-
 import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.repository.IataCodeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
+@Slf4j
 @Service
 public class AirService {
 
@@ -52,16 +52,15 @@ public class AirService {
     }
 
     public List<IataCodeEntity> getIataCodes(String keyword) {
-
-
-        // keyword 값이 없거나 2글자 미만이면 해당 조건 적용
-        if (keyword == null  || keyword.length() < 2) {
+        if (keyword == null || keyword.length() < 2) {
             return Collections.emptyList(); // 빈 리스트 반환
         }
 
-      return iataCodeRepository.findByIataStartingWith(keyword);
+        // 해당 조건을 만족하는 데이터들만 반환
+        return iataCodeRepository.findByIataStartingWithOrCityCodeStartingWithOrAirportKorStartingWithOrCityKorStartingWith(
+                keyword, keyword, keyword, keyword
+        );
     }
-
 
 
 
