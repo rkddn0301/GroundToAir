@@ -2,10 +2,13 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
+import DatePicker from "react-datepicker";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import styled from "styled-components";
 
 const Container = styled.div`
-  width: 90%;
+  min-width: 100%;
   margin: 0 auto;
 `;
 
@@ -80,14 +83,27 @@ interface FlightOffersResponse {
   data: FlightOffer[];
 }
 
+// 좌석 클래스 enum
+enum SeatClass {
+  ECONOMY = "ECONOMY", // 일반석
+  PREMIUM_ECONOMY = "PREMIUM_ECONOMY", // 프리미엄 일반석
+  BUSINESS = "BUSINESS", // 비즈니스석
+  FIRST = "FIRST", // 일등석
+}
+
 function FlightSearch() {
   const [inputData, setInputData] = useState({
     originLocationCode: "", // 출발지
     destinationLocationCode: "", // 도착지
     departureDate: "", // 가는날
     returnDate: "", // 오는날
-    adults: 1, // 인원
+    adults: 1, // 성인
+    children: 0, // 어린이
+    infants: 0, // 유아
+    travelClass: SeatClass.ECONOMY, // 여행 좌석 클래스
   }); // input 입력 state
+
+  const [onewayChecking, setOnewayChecking] = useState(false); // 편도/왕복 여부 스위칭 state
 
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
@@ -102,7 +118,7 @@ function FlightSearch() {
     setAutoComplateDestinationLocations,
   ] = useState<IataCodes[]>([]); // 도착지 자동완성
 
-  // 가는날 & 오는날 초기값 설정
+  // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
   useEffect(() => {
     const currentDate = new Date();
     currentDate.setDate(currentDate.getDate() + 3);
@@ -112,6 +128,28 @@ function FlightSearch() {
     setInputData((prev) => ({ ...prev, departureDate: initDepartureDate })); // 렌더링 후에 3일 뒤 날짜 설정
     setInputData((prev) => ({ ...prev, returnDate: initReturnDate })); // 렌더링 후에 4일 뒤 날짜 설정
   }, []);
+
+  // 편도/왕복 선택 radio
+  const onewayCheckingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (value === "oneway") {
+      setOnewayChecking(true);
+      setInputData((prev) => ({ ...prev, returnDate: "" })); // 오는날은 데이터가 필요없음
+    } else if (value === "rountTrip") {
+      setOnewayChecking(false);
+
+      // 왕복 전환 중 가는날에 날짜가 선택되어 있을 경우 오는날에 하루 뒤로 출력
+      const choiceDepartureDate = new Date(inputData.departureDate);
+      choiceDepartureDate.setDate(choiceDepartureDate.getDate() + 1);
+
+      setInputData((prev) => ({
+        ...prev,
+        returnDate: choiceDepartureDate.toISOString().split("T")[0],
+      }));
+    }
+    setFlightOffers(null); // 이전 검색 기록 초기화
+  };
 
   // 클릭 시 출발지 <-> 도착지 변경
   const locationChange = () => {
@@ -127,6 +165,81 @@ function FlightSearch() {
     setAutoComplateDestinationLocations((prev) => [
       ...autoComplateOriginLocations,
     ]); // 출발지의 자동완성을 도착지에 할당
+  };
+
+  // 출발지 입력 시 동작
+  const originChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputData((prev) => ({ ...prev, originLocationCode: value }));
+
+    if (value.length > 1) {
+      try {
+        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
+          params: { keyword: value },
+        });
+        if (response.data) {
+          setAutoComplateOriginLocations(response.data);
+        } else {
+          setAutoComplateOriginLocations([]);
+        }
+      } catch (error) {
+        console.error("출발지 자동완성 오류 발생 : ", error);
+      }
+    } else {
+      setAutoComplateOriginLocations([]);
+    }
+  };
+
+  // 도착지 입력 시 동작
+  const destinationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputData((prev) => ({ ...prev, destinationLocationCode: value }));
+
+    if (value.length > 1) {
+      try {
+        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
+          params: { keyword: value },
+        });
+        if (response.data) {
+          setAutoComplateDestinationLocations(response.data);
+        } else {
+          setAutoComplateDestinationLocations([]);
+        }
+      } catch (error) {
+        console.error("도착지 자동완성 오류 발생 : ", error);
+      }
+    } else {
+      setAutoComplateDestinationLocations([]);
+    }
+  };
+
+  // 왕복 달력 선택
+  const rountTripDateChange = (dates: [Date | null, Date | null]) => {
+    const [start, end] = dates;
+
+    setInputData({
+      ...inputData,
+      departureDate: start ? format(start, "yyyy-MM-dd") : "",
+      returnDate: end ? format(end, "yyyy-MM-dd") : "",
+    });
+  };
+
+  // 편도 달력 선택
+  const onewayDateChange = (date: Date | null) => {
+    if (date) {
+      setInputData({
+        ...inputData,
+        departureDate: format(date, "yyyy-MM-dd"),
+      }); // Date --> String 변환하여 departureDate에 삽입
+    } else {
+      setInputData({ ...inputData, departureDate: "" });
+    }
+  };
+
+  // 좌석 및 등급 선택
+  const travelClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as SeatClass;
+    setInputData((prev) => ({ ...prev, travelClass: value }));
   };
 
   // 항공 검색 동작
@@ -191,7 +304,11 @@ function FlightSearch() {
       searchOriginLocation,
       searchDestinationLocation,
       inputData.departureDate,
-      inputData.returnDate
+      inputData.returnDate,
+      inputData.adults,
+      inputData.children,
+      inputData.infants,
+      inputData.travelClass
     );
 
     setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
@@ -209,6 +326,9 @@ function FlightSearch() {
             departureDate: inputData.departureDate,
             returnDate: inputData.returnDate || "",
             adults: inputData.adults,
+            children: inputData.children,
+            infants: inputData.infants,
+            travelClass: inputData.travelClass,
             currencyCode: "KRW",
           },
         }
@@ -222,53 +342,30 @@ function FlightSearch() {
     }
   };
 
-  const originChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData((prev) => ({ ...prev, originLocationCode: value }));
-
-    if (value.length > 1) {
-      try {
-        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
-          params: { keyword: value },
-        });
-        if (response.data) {
-          setAutoComplateOriginLocations(response.data);
-        } else {
-          setAutoComplateOriginLocations([]);
-        }
-      } catch (error) {
-        console.error("출발지 자동완성 오류 발생 : ", error);
-      }
-    } else {
-      setAutoComplateOriginLocations([]);
-    }
-  };
-
-  const destinationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData((prev) => ({ ...prev, destinationLocationCode: value }));
-
-    if (value.length > 1) {
-      try {
-        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
-          params: { keyword: value },
-        });
-        if (response.data) {
-          setAutoComplateDestinationLocations(response.data);
-        } else {
-          setAutoComplateDestinationLocations([]);
-        }
-      } catch (error) {
-        console.error("도착지 자동완성 오류 발생 : ", error);
-      }
-    } else {
-      setAutoComplateDestinationLocations([]);
-    }
-  };
-
   return (
     <Container>
       <Title>항공편 조회</Title>
+      <div>
+        <label>
+          <input
+            type="radio"
+            value="rountTrip"
+            name="tripType"
+            onChange={onewayCheckingChange}
+            defaultChecked
+          />{" "}
+          왕복
+        </label>
+        <label>
+          <input
+            type="radio"
+            value="oneway"
+            name="tripType"
+            onChange={onewayCheckingChange}
+          />{" "}
+          편도
+        </label>
+      </div>
       <InputField>
         <InputBox>
           <label>출발지</label>
@@ -373,35 +470,63 @@ function FlightSearch() {
             </ul>
           )}
         </InputBox>
+        {!onewayChecking && (
+          <InputBox>
+            <label>가는날/오는날</label>
+            <DatePicker
+              showIcon
+              onChange={rountTripDateChange} // 범위 선택을 위한 onChange
+              startDate={
+                inputData.departureDate
+                  ? new Date(inputData.departureDate)
+                  : undefined
+              }
+              endDate={
+                inputData.returnDate
+                  ? new Date(inputData.returnDate)
+                  : undefined
+              }
+              minDate={new Date()} // 금일 이전 날짜 비활성화
+              maxDate={
+                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+              } // 금일로부터 1년 뒤까지 선택 가능
+              swapRange
+              selectsRange
+              monthsShown={2} // 달력을 2개월치로 표시
+              locale={ko} // 한국어 설정
+              dateFormat="yyyy-MM-dd" // 날짜 형식
+              placeholderText="가는날/오는날(왕복)"
+            />
+          </InputBox>
+        )}
+
+        {onewayChecking && (
+          <InputBox>
+            <label>가는날</label>
+            <DatePicker
+              showIcon
+              onChange={onewayDateChange}
+              selected={
+                inputData.departureDate
+                  ? new Date(inputData.departureDate)
+                  : null
+              }
+              minDate={new Date()} // 금일 이전 날짜 비활성화
+              maxDate={
+                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+              } // 금일로부터 1년 뒤까지 선택 가능
+              monthsShown={2} // 달력을 2개월치로 표시
+              locale={ko} // 한국어 설정
+              dateFormat="yyyy-MM-dd" // 날짜 형식
+              placeholderText="가는날(편도)"
+            />
+          </InputBox>
+        )}
+
         <InputBox>
-          <label>가는날</label>
+          <label>성인</label>
           <input
-            type="date"
-            id="departureDate"
-            value={inputData.departureDate}
-            onChange={(e) =>
-              setInputData((prev) => ({
-                ...prev,
-                departureDate: e.target.value,
-              }))
-            }
-          />
-        </InputBox>
-        <InputBox>
-          <label>오는날</label>
-          <input
-            type="date"
-            id="returnDate"
-            value={inputData.returnDate}
-            onChange={(e) =>
-              setInputData((prev) => ({ ...prev, returnDate: e.target.value }))
-            }
-          />
-        </InputBox>
-        <InputBox>
-          <label>인원</label>
-          <input
-            id="human"
+            id="adults"
             type="number"
             value={inputData.adults}
             onChange={(e) =>
@@ -411,7 +536,49 @@ function FlightSearch() {
               }))
             }
             min={1}
+            max={9}
           />
+        </InputBox>
+        <InputBox>
+          <label>어린이</label>
+          <input
+            id="children"
+            type="number"
+            value={inputData.children}
+            onChange={(e) =>
+              setInputData((prev) => ({
+                ...prev,
+                children: Number(e.target.value),
+              }))
+            }
+            min={0}
+            max={9}
+          />
+        </InputBox>
+        <InputBox>
+          <label>유아</label>
+          <input
+            id="infants"
+            type="number"
+            value={inputData.infants}
+            onChange={(e) =>
+              setInputData((prev) => ({
+                ...prev,
+                infants: Number(e.target.value),
+              }))
+            }
+            min={0}
+            max={9}
+          />
+        </InputBox>
+        <InputBox>
+          <label>좌석 클래스 선택:</label>
+          <select value={inputData.travelClass} onChange={travelClassChange}>
+            <option value={SeatClass.ECONOMY}>일반석</option>
+            <option value={SeatClass.PREMIUM_ECONOMY}>프리미엄 일반석</option>
+            <option value={SeatClass.BUSINESS}>비즈니스석</option>
+            <option value={SeatClass.FIRST}>일등석</option>
+          </select>
         </InputBox>
       </InputField>
       <button onClick={flightSearch}>검색</button>

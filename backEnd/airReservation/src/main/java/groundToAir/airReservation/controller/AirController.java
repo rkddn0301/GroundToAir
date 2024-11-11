@@ -46,16 +46,19 @@ public class AirController {
             @RequestParam("departureDate") String departureDate,
             @RequestParam("returnDate") String returnDate,
             @RequestParam("adults") int adults,
+            @RequestParam("children") int children,
+            @RequestParam("infants") int infants,
+            @RequestParam("travelClass") String travelClass,
             @RequestParam("currencyCode") String currencyCode
     ) throws Exception {
 
-        log.info("출발지 : {}, 도착지 : {}, 가는날 : {}, 오는날 : {}, 인원 : {}, 코드 : {}",
-                originLocationCode, destinationLocationCode, departureDate, returnDate, adults, currencyCode);
+        log.info("출발지 : {}, 도착지 : {}, 가는날 : {}, 오는날 : {}, 성인 : {}, 어린이 : {}, 유아 : {}, 좌석등급 : {}, 화폐 : {}",
+                originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode);
 
 
 
         String accessToken = accessTokenUtil.checkAndRefreshToken();
-        return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, currencyCode);
+        return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode);
     }
 
     // 항공편 코드
