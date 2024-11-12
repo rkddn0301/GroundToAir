@@ -1,7 +1,7 @@
 // 메인 & 항공 조회 페이지
 
 import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -12,20 +12,140 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 
-const Title = styled.h1`
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 20px;
+const Icon = styled.svg`
+  width: 25px;
 `;
 
-const InputField = styled.div`
+const OnewayCheckMenu = styled.div`
+  width: 200px;
+  margin-bottom: 15px;
+  padding: 15px 10px 15px 20px;
   display: flex;
+  align-items: center;
   gap: 15px;
+  background: linear-gradient(
+    135deg,
+    ${(props) => props.theme.white.bg} 0%,
+    #f7f9fc 100%
+  );
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border-right: 5px solid skyblue;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
-const InputBox = styled.div`
+const Form = styled.form`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: ${(props) => props.theme.white.bg};
+  gap: 5px;
+  height: 15vh;
+  padding: 15px;
+  margin: 0 auto;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const Field = styled.div`
+  height: 85%;
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
+  padding: 15px;
+`;
+
+const CircleField = styled.div`
+  padding: 15px;
+  display: flex;
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 50%;
+  font-size: 15px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
+`;
+
+const Label = styled.label`
+  font-size: 12px;
+  padding: 0 5px 0 0;
+  margin-bottom: 8px;
+`;
+
+const WriteInput = styled.input`
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+  margin-top: auto;
+`;
+
+const CalendarInput = styled.div`
+  margin-top: 10px;
+`;
+
+const TravelerButton = styled.button`
+  position: relative;
+  margin-top: 10px;
+  padding: 5px;
+  background-color: ${(props) => props.theme.white.bg};
+  border-radius: 7px;
+  border: 1px solid ${(props) => props.theme.white.font};
+  cursor: pointer;
+`;
+
+const TravelerModal = styled.div`
+  position: absolute;
+  top: 100%; /* TravelerButton 바로 아래에 위치하게 설정 */
+  left: 0;
+  z-index: 10;
+  background-color: ${(props) => props.theme.white.bg};
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 5px;
+  padding: 10px;
+`;
+
+const CounterField = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5em 0;
+`;
+
+const CounterLabel = styled.span`
+  font-size: 1em;
+  font-weight: 500;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const CounterButton = styled.button`
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  cursor: pointer;
+  &:hover {
+    background-color: #e0e0e0;
+  }
+`;
+
+const HorizontalLine = styled.hr`
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1em 0;
 `;
 
 const Banner = styled.div`
@@ -103,7 +223,15 @@ function FlightSearch() {
     travelClass: SeatClass.ECONOMY, // 여행 좌석 클래스
   }); // input 입력 state
 
+  const [tempData, setTempData] = useState({
+    adults: 1,
+    children: 0,
+    infants: 0,
+    travelClass: SeatClass.ECONOMY,
+  }); // 선택완료 이전 작성 데이터
+
   const [onewayChecking, setOnewayChecking] = useState(false); // 편도/왕복 여부 스위칭 state
+  const [travelerBtnSw, setTravelerBtnSw] = useState(false); // 인원 및 좌석등급 활성화 스위칭 state
 
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
@@ -236,14 +364,95 @@ function FlightSearch() {
     }
   };
 
-  // 좌석 및 등급 선택
+  // 인원 및 좌석등급 활성화
+  const travelerClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    setTravelerBtnSw((prev) => !prev);
+  };
+
+  // 인원 카운팅 동작
+  const travelerCounterChange = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    operation: "increment" | "decrement"
+  ) => {
+    e.preventDefault();
+    const { name } = e.currentTarget;
+
+    setTempData((prev: any) => {
+      let newValue = prev[name];
+
+      // 전체 인원 수 계산
+      const totalCount = prev.adults + prev.children + prev.infants;
+
+      // 최대 인원 제한(9명)
+      const maxCount = 9;
+
+      if (name === "adults" && operation === "increment") {
+        newValue = Math.min(newValue + 1, maxCount - totalCount + prev.adults); // 성인 최대
+      } else if (name === "adults" && operation === "decrement") {
+        newValue = Math.max(newValue - 1, 1); // 성인은 최소 1명
+      } else if (name === "children" && operation === "increment") {
+        newValue = Math.min(
+          newValue + 1,
+          maxCount - totalCount + prev.children
+        ); // 어린이 최대
+      } else if (name === "children" && operation === "decrement") {
+        newValue = Math.max(newValue - 1, 0); // 어린이는 최소 0명
+      } else if (name === "infants" && operation === "increment") {
+        // 유아는 성인 수를 넘지 않도록 제한
+        if (prev.infants < prev.adults) {
+          newValue = Math.min(
+            newValue + 1,
+            maxCount - totalCount + prev.infants
+          ); // 유아 최대
+        } else {
+          return prev; // 유아가 성인 수를 넘지 않도록
+        }
+      } else if (name === "infants" && operation === "decrement") {
+        newValue = Math.max(newValue - 1, 0); // 유아는 최소 0명
+      }
+
+      // 성인이 줄어들 때 유아 수를 성인 수와 일치시킴
+      if (name === "adults" && operation === "decrement") {
+        // 성인 수가 줄어들었을 때, 유아 수가 성인을 초과하면 유아 수를 성인 수에 맞게 줄임
+        if (prev.infants > newValue) {
+          return {
+            ...prev,
+            adults: newValue,
+            infants: newValue, // 유아 수를 성인 수에 맞춤
+          };
+        }
+      }
+
+      return {
+        ...prev,
+        [name]: newValue,
+      };
+    });
+  };
+
+  // 좌석등급 선택
   const travelClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as SeatClass;
-    setInputData((prev) => ({ ...prev, travelClass: value }));
+    setTempData((prev) => ({ ...prev, travelClass: value }));
+  };
+
+  // 인원 및 좌석등급 선택완료
+  const travelerConfirm = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setInputData((prev) => ({
+      ...prev,
+      adults: tempData.adults,
+      children: tempData.children,
+      infants: tempData.infants,
+      travelClass: tempData.travelClass,
+    }));
+    setTravelerBtnSw(false);
   };
 
   // 항공 검색 동작
-  const flightSearch = async () => {
+  const flightSearch = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     let searchOriginLocation; // 실질적으로 검색될 출발지 데이터
     let searchDestinationLocation; // 실질적으로 검색될 도착지 데이터
 
@@ -344,8 +553,7 @@ function FlightSearch() {
 
   return (
     <Container>
-      <Title>항공편 조회</Title>
-      <div>
+      <OnewayCheckMenu>
         <label>
           <input
             type="radio"
@@ -365,223 +573,288 @@ function FlightSearch() {
           />{" "}
           편도
         </label>
-      </div>
-      <InputField>
-        <InputBox>
-          <label>출발지</label>
-          <input
+      </OnewayCheckMenu>
+      <Form>
+        <Field>
+          <Label htmlFor="originLocation">출발지</Label>
+          <WriteInput
             type="text"
             id="originLocation"
             value={inputData.originLocationCode}
             onChange={originChange}
             placeholder="도시 또는 공항명"
           />
-          {autoComplateOriginLocations.length > 0 && (
-            <ul>
-              {autoComplateOriginLocations.map((originLocation, index) => (
-                <>
-                  {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
-                  {index === 0 &&
-                    autoComplateOriginLocations.length > 1 &&
-                    originLocation.cityKor !== null &&
-                    originLocation.cityCode != null && (
-                      <li
-                        key={originLocation.codeNo}
-                        onClick={() => {
-                          setInputData((prev) => ({
-                            ...prev,
-                            originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
-                          }));
-                          setAutoComplateOriginLocations([]); // 제안 리스트 비우기
-                        }}
-                      >
-                        {originLocation.cityKor} ({originLocation.cityCode})
-                      </li>
-                    )}
-
-                  <li
-                    key={originLocation.codeNo + "_airport"}
-                    onClick={() => {
-                      setInputData((prev) => ({
-                        ...prev,
-                        originLocationCode: `${originLocation.airportKor} (${originLocation.iata})`,
-                      }));
-                      setAutoComplateOriginLocations([]); // 제안 리스트 비우기
-                    }}
-                  >
-                    {originLocation.airportKor} ({originLocation.iata})
-                  </li>
-                </>
-              ))}
-            </ul>
-          )}
-        </InputBox>
-        <div onClick={locationChange}>↔</div>
-        <InputBox>
-          <label>도착지</label>
-          <input
+        </Field>
+        <CircleField>
+          <Icon
+            onClick={locationChange}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+            />
+          </Icon>
+        </CircleField>
+        <Field>
+          <Label htmlFor="destinationLocation">도착지</Label>
+          <WriteInput
             type="text"
             id="destinationLocation"
             value={inputData.destinationLocationCode}
             onChange={destinationChange}
             placeholder="도시 또는 공항명"
           />
-          {autoComplateDestinationLocations.length > 0 && (
-            <ul>
-              {autoComplateDestinationLocations.map(
-                (destinationLocation, index) => (
-                  <>
-                    {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
-                    {index === 0 &&
-                      autoComplateDestinationLocations.length > 1 &&
-                      destinationLocation.cityKor !== null &&
-                      destinationLocation.cityCode != null && (
-                        <li
-                          key={destinationLocation.codeNo}
-                          onClick={() => {
-                            setInputData((prev) => ({
-                              ...prev,
-                              destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
-                            }));
-                            setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
-                          }}
-                        >
-                          {destinationLocation.cityKor} (
-                          {destinationLocation.cityCode})
-                        </li>
-                      )}
-
-                    <li
-                      key={destinationLocation.codeNo + "_airport"}
-                      onClick={() => {
-                        setInputData((prev) => ({
-                          ...prev,
-                          originLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
-                        }));
-                        setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
-                      }}
-                    >
-                      {destinationLocation.airportKor} (
-                      {destinationLocation.iata})
-                    </li>
-                  </>
-                )
-              )}
-            </ul>
-          )}
-        </InputBox>
+        </Field>
         {!onewayChecking && (
-          <InputBox>
-            <label>가는날/오는날</label>
-            <DatePicker
-              showIcon
-              onChange={rountTripDateChange} // 범위 선택을 위한 onChange
-              startDate={
-                inputData.departureDate
-                  ? new Date(inputData.departureDate)
-                  : undefined
-              }
-              endDate={
-                inputData.returnDate
-                  ? new Date(inputData.returnDate)
-                  : undefined
-              }
-              minDate={new Date()} // 금일 이전 날짜 비활성화
-              maxDate={
-                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-              } // 금일로부터 1년 뒤까지 선택 가능
-              swapRange
-              selectsRange
-              monthsShown={2} // 달력을 2개월치로 표시
-              locale={ko} // 한국어 설정
-              dateFormat="yyyy-MM-dd" // 날짜 형식
-              placeholderText="가는날/오는날(왕복)"
-            />
-          </InputBox>
+          <Field>
+            <Label>가는날/오는날</Label>
+            <CalendarInput>
+              <DatePicker
+                showIcon
+                onChange={rountTripDateChange} // 범위 선택을 위한 onChange
+                startDate={
+                  inputData.departureDate
+                    ? new Date(inputData.departureDate)
+                    : undefined
+                }
+                endDate={
+                  inputData.returnDate
+                    ? new Date(inputData.returnDate)
+                    : undefined
+                }
+                minDate={new Date()} // 금일 이전 날짜 비활성화
+                maxDate={
+                  new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                } // 금일로부터 1년 뒤까지 선택 가능
+                swapRange
+                selectsRange
+                monthsShown={2} // 달력을 2개월치로 표시
+                locale={ko} // 한국어 설정
+                dateFormat="yyyy-MM-dd" // 날짜 형식
+                placeholderText="가는날/오는날(왕복)"
+              />
+            </CalendarInput>
+          </Field>
         )}
 
         {onewayChecking && (
-          <InputBox>
-            <label>가는날</label>
-            <DatePicker
-              showIcon
-              onChange={onewayDateChange}
-              selected={
-                inputData.departureDate
-                  ? new Date(inputData.departureDate)
-                  : null
-              }
-              minDate={new Date()} // 금일 이전 날짜 비활성화
-              maxDate={
-                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-              } // 금일로부터 1년 뒤까지 선택 가능
-              monthsShown={2} // 달력을 2개월치로 표시
-              locale={ko} // 한국어 설정
-              dateFormat="yyyy-MM-dd" // 날짜 형식
-              placeholderText="가는날(편도)"
-            />
-          </InputBox>
+          <Field>
+            <Label>가는날</Label>
+            <CalendarInput>
+              <DatePicker
+                showIcon
+                onChange={onewayDateChange}
+                selected={
+                  inputData.departureDate
+                    ? new Date(inputData.departureDate)
+                    : null
+                }
+                minDate={new Date()} // 금일 이전 날짜 비활성화
+                maxDate={
+                  new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                } // 금일로부터 1년 뒤까지 선택 가능
+                monthsShown={2} // 달력을 2개월치로 표시
+                locale={ko} // 한국어 설정
+                dateFormat="yyyy-MM-dd" // 날짜 형식
+                placeholderText="가는날(편도)"
+              />
+            </CalendarInput>
+          </Field>
         )}
+        <Field style={{ position: "relative" }}>
+          <Label>인원 및 좌석 등급</Label>
+          <TravelerButton onClick={travelerClick}>
+            인원&nbsp;
+            {Number(inputData.adults) +
+              Number(inputData.children) +
+              Number(inputData.infants)}
+            명 &nbsp;ㆍ{" "}
+            {inputData.travelClass === SeatClass.ECONOMY && "일반석"}
+            {inputData.travelClass === SeatClass.PREMIUM_ECONOMY &&
+              "프리미엄 일반석"}
+            {inputData.travelClass === SeatClass.BUSINESS && "비즈니스석"}
+            {inputData.travelClass === SeatClass.FIRST && "일등석"}
+          </TravelerButton>
+          {travelerBtnSw && (
+            <TravelerModal>
+              {/* 성인 Counter */}
+              <CounterField>
+                <CounterLabel>성인</CounterLabel>
+                <ButtonGroup>
+                  <CounterButton
+                    name="adults"
+                    onClick={(e) => travelerCounterChange(e, "decrement")}
+                  >
+                    -
+                  </CounterButton>
+                  <span>{tempData.adults}</span>
+                  <CounterButton
+                    name="adults"
+                    onClick={(e) => travelerCounterChange(e, "increment")}
+                  >
+                    +
+                  </CounterButton>
+                </ButtonGroup>
+              </CounterField>
 
-        <InputBox>
-          <label>성인</label>
-          <input
-            id="adults"
-            type="number"
-            value={inputData.adults}
-            onChange={(e) =>
-              setInputData((prev) => ({
-                ...prev,
-                adults: Number(e.target.value),
-              }))
-            }
-            min={1}
-            max={9}
-          />
-        </InputBox>
-        <InputBox>
-          <label>어린이</label>
-          <input
-            id="children"
-            type="number"
-            value={inputData.children}
-            onChange={(e) =>
-              setInputData((prev) => ({
-                ...prev,
-                children: Number(e.target.value),
-              }))
-            }
-            min={0}
-            max={9}
-          />
-        </InputBox>
-        <InputBox>
-          <label>유아</label>
-          <input
-            id="infants"
-            type="number"
-            value={inputData.infants}
-            onChange={(e) =>
-              setInputData((prev) => ({
-                ...prev,
-                infants: Number(e.target.value),
-              }))
-            }
-            min={0}
-            max={9}
-          />
-        </InputBox>
-        <InputBox>
-          <label>좌석 클래스 선택:</label>
-          <select value={inputData.travelClass} onChange={travelClassChange}>
-            <option value={SeatClass.ECONOMY}>일반석</option>
-            <option value={SeatClass.PREMIUM_ECONOMY}>프리미엄 일반석</option>
-            <option value={SeatClass.BUSINESS}>비즈니스석</option>
-            <option value={SeatClass.FIRST}>일등석</option>
-          </select>
-        </InputBox>
-      </InputField>
-      <button onClick={flightSearch}>검색</button>
+              {/* 어린이 Counter */}
+              <CounterField>
+                <CounterLabel>어린이</CounterLabel>
+                <ButtonGroup>
+                  <CounterButton
+                    name="children"
+                    onClick={(e) => travelerCounterChange(e, "decrement")}
+                  >
+                    -
+                  </CounterButton>
+                  <span>{tempData.children}</span>
+                  <CounterButton
+                    name="children"
+                    onClick={(e) => travelerCounterChange(e, "increment")}
+                  >
+                    +
+                  </CounterButton>
+                </ButtonGroup>
+              </CounterField>
+
+              {/* 유아 Counter */}
+              <CounterField>
+                <CounterLabel>유아</CounterLabel>
+                <ButtonGroup>
+                  <CounterButton
+                    name="infants"
+                    onClick={(e) => travelerCounterChange(e, "decrement")}
+                  >
+                    -
+                  </CounterButton>
+                  <span>{tempData.infants}</span>
+                  <CounterButton
+                    name="infants"
+                    onClick={(e) => travelerCounterChange(e, "increment")}
+                  >
+                    +
+                  </CounterButton>
+                </ButtonGroup>
+              </CounterField>
+
+              <HorizontalLine />
+
+              {/* 좌석 클래스 선택 */}
+              <Field>
+                <Label>좌석 클래스 선택:</Label>
+                <select
+                  value={tempData.travelClass}
+                  onChange={travelClassChange}
+                >
+                  <option value={SeatClass.ECONOMY}>일반석</option>
+                  <option value={SeatClass.PREMIUM_ECONOMY}>
+                    프리미엄 일반석
+                  </option>
+                  <option value={SeatClass.BUSINESS}>비즈니스석</option>
+                  <option value={SeatClass.FIRST}>일등석</option>
+                </select>
+              </Field>
+              <HorizontalLine />
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button onClick={travelerConfirm}>선택완료</button>
+              </div>
+            </TravelerModal>
+          )}
+        </Field>
+
+        <button onClick={flightSearch}>검색</button>
+      </Form>
+      <div>
+        {autoComplateOriginLocations.length > 0 && (
+          <ul>
+            {autoComplateOriginLocations.map((originLocation, index) => (
+              <>
+                {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
+                {index === 0 &&
+                  autoComplateOriginLocations.length > 1 &&
+                  originLocation.cityKor !== null &&
+                  originLocation.cityCode != null && (
+                    <li
+                      key={originLocation.codeNo}
+                      onClick={() => {
+                        setInputData((prev) => ({
+                          ...prev,
+                          originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
+                        }));
+                        setAutoComplateOriginLocations([]); // 제안 리스트 비우기
+                      }}
+                    >
+                      {originLocation.cityKor} ({originLocation.cityCode})
+                    </li>
+                  )}
+
+                <li
+                  key={originLocation.codeNo + "_airport"}
+                  onClick={() => {
+                    setInputData((prev) => ({
+                      ...prev,
+                      originLocationCode: `${originLocation.airportKor} (${originLocation.iata})`,
+                    }));
+                    setAutoComplateOriginLocations([]); // 제안 리스트 비우기
+                  }}
+                >
+                  {originLocation.airportKor} ({originLocation.iata})
+                </li>
+              </>
+            ))}
+          </ul>
+        )}
+        {autoComplateDestinationLocations.length > 0 && (
+          <ul>
+            {autoComplateDestinationLocations.map(
+              (destinationLocation, index) => (
+                <>
+                  {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
+                  {index === 0 &&
+                    autoComplateDestinationLocations.length > 1 &&
+                    destinationLocation.cityKor !== null &&
+                    destinationLocation.cityCode != null && (
+                      <li
+                        key={destinationLocation.codeNo}
+                        onClick={() => {
+                          setInputData((prev) => ({
+                            ...prev,
+                            destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
+                          }));
+                          setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
+                        }}
+                      >
+                        {destinationLocation.cityKor} (
+                        {destinationLocation.cityCode})
+                      </li>
+                    )}
+
+                  <li
+                    key={destinationLocation.codeNo + "_airport"}
+                    onClick={() => {
+                      setInputData((prev) => ({
+                        ...prev,
+                        originLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
+                      }));
+                      setAutoComplateDestinationLocations([]); // 제안 리스트 비우기
+                    }}
+                  >
+                    {destinationLocation.airportKor} ({destinationLocation.iata}
+                    )
+                  </li>
+                </>
+              )
+            )}
+          </ul>
+        )}
+      </div>
 
       {isLoading ? (
         <div>로딩 중...</div>
@@ -753,7 +1026,7 @@ function FlightSearch() {
           ))}
         </div>
       ) : (
-        <div>비행편이 없습니다.</div>
+        ""
       )}
     </Container>
   );

@@ -13,10 +13,14 @@ import {
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
-const Btn = styled.button`
-  width: 300px;
-  padding: 20px;
-  font-size: 20px;
+const Btn = styled.button<{
+  width?: string;
+  fontSize?: string;
+  padding?: string;
+}>`
+  width: ${(props) => props.width || "300px"};
+  font-size: ${(props) => props.fontSize || "20px"};
+  padding: ${(props) => props.padding || "20px"};
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
   border-radius: 25px;
@@ -29,10 +33,16 @@ const Btn = styled.button`
 
 const Img = styled.img`
   width: 10%;
-  margin: 0 5px -5px 0;
+  margin: 0 3% -1.5% 0;
 `;
 
-function KakaoAuth(props: { redirectRoute: string; title: string }) {
+function KakaoAuth(props: {
+  redirectRoute: string;
+  title?: string;
+  width?: string;
+  fontSize?: string;
+  padding?: string;
+}) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
   const history = useHistory();
@@ -93,7 +103,12 @@ function KakaoAuth(props: { redirectRoute: string; title: string }) {
   };
 
   return (
-    <Btn onClick={impression}>
+    <Btn
+      onClick={impression}
+      width={props.width}
+      fontSize={props.fontSize}
+      padding={props.padding}
+    >
       <Img src={KakaoStartImg} />
       {props.title}
     </Btn>

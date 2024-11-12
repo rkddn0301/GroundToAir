@@ -80,10 +80,15 @@ const SubmitBtn = styled.button`
 const FederationField = styled.div`
   width: 100%;
   display: flex;
-  justify-content: center;
-  button {
-    // 추후에 카카오, 구글 버튼 여기서 수정하거나 다른 방식 진행
-  }
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+`;
+
+const FederationBtnField = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
 `;
 
 function Login() {
@@ -213,14 +218,23 @@ function Login() {
           </SubmitField>
         </Form>
         <FederationField>
-          <KakaoAuth
-            redirectRoute={history.location.pathname}
-            title={"카카오 로그인"}
-          />
-          <GoogleAuth
-            redirectRoute={history.location.pathname}
-            title={"구글 로그인"}
-          />
+          <p style={{ marginTop: "10px" }}>간편 로그인</p>
+          <FederationBtnField>
+            <KakaoAuth
+              redirectRoute={history.location.pathname}
+              title="카카오 로그인"
+              width="50%"
+              fontSize="16px"
+              padding="10px"
+            />
+            <GoogleAuth
+              redirectRoute={history.location.pathname}
+              title="구글 로그인"
+              width="50%"
+              fontSize="16px"
+              padding="10px"
+            />
+          </FederationBtnField>
         </FederationField>
       </InfoBox>
     </Container>
