@@ -72,13 +72,26 @@ a {
     margin: 0 auto; // 아이콘 중앙 정렬
   }
 
+  
+
     /* DatePicker 입력창 스타일 수정 */
-    .react-datepicker__input-container input {
-     border: 1px solid ${(props) => props.theme.white.font}; 
+  .react-datepicker__input-container input {
+    //max-width: 170px;
+    width: 100%;
+    border: 1px solid ${(props) => props.theme.white.font}; 
     border-radius: 5px; /* 모서리 둥글게 */
-    font-size: 14px; /* 폰트 크기 */
+    font-size: 12px; /* 폰트 크기 */
+    
+    
     //text-align: center;
   }
+
+  .react-datepicker__calendar-icon  {
+    max-width : 10px;
+    margin-top: -1.5%;
+  }
+
+
 
 `;
 
