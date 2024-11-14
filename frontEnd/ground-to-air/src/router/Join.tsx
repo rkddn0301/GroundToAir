@@ -35,7 +35,6 @@ const Btn = styled.button`
 `;
 function Join() {
   const history = useHistory();
-  console.log(history.location.pathname);
 
   return (
     <Container>

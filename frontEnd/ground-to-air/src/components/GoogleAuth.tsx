@@ -52,7 +52,6 @@ function GoogleAuth(props: {
   const setFederationAccessToken = useSetRecoilState(federationAccessToken);
 
   useEffect(() => {
-    console.log(`${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`);
     // 구글 페이지에서 로그인 후 Redirect로 돌아올 시 재동작을 위함
     // state는 구글 로그인이라는걸 확인하기 위함
     // 1. 구글에서 로그인 후 인가 코드를 받음
