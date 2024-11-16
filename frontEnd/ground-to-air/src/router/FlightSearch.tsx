@@ -14,15 +14,6 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 
-const Banner = styled.div`
-  width: 80%;
-  margin: 0 auto;
-  border: 1px solid;
-  border-radius: 25px;
-  padding: 25px;
-  margin-bottom: 20px;
-`;
-
 const ArrowsIcon = styled.svg`
   width: 25px;
 `;
@@ -136,7 +127,7 @@ const AutoCompleteList = styled.ul`
   top: 100%;
   left: 0;
   right: 0;
-  max-height: 200px; // 최대 높이 지정
+  max-height: 300px; // 최대 높이 지정
   overflow-y: auto; // 최대 높이 초과 시 스크롤바 생성
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
@@ -145,6 +136,10 @@ const AutoCompleteList = styled.ul`
   margin: 0; // ul 기본 마진 제거
   padding: 0; // ul 기본 패딩 제거
   list-style-type: none; // 기본적인 목록 스타일(점, 번호 등) 제거
+  /* 
+  &::-webkit-scrollbar { // 스크롤바 없애는건데 잠시 보류 11/16
+    display: none;
+  } */
 `;
 
 const AutoCompleteItem = styled.li`
@@ -175,6 +170,29 @@ const Flight = styled.span`
   margin-right: 8px;
 `;
 
+// 다른 컴포넌트에서 inputData를 props로 이용 시 필요
+export interface InputData {
+  originLocationCode: string;
+  destinationLocationCode: string;
+  departureDate: string;
+  returnDate: string;
+  adults: number;
+  children: number;
+  infants: number;
+  travelClass: SeatClass;
+  originLocationCodeNo: string;
+  destinationLocationCodeNo: string;
+}
+
+// 다른 컴포넌트에서 locationData를 props로 이용 시 필요
+export interface LocationData {
+  originLocationIataCodeChecking: boolean;
+  destinationLocationIataCodeChecking: boolean;
+
+  originIataCode: string;
+  destinationIataCode: string;
+}
+
 interface IataCodes {
   codeNo: number;
   airportKor?: string;
@@ -184,33 +202,37 @@ interface IataCodes {
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
-interface FlightOffer {
-  type: string;
-  id: string;
+export interface FlightOffer {
+  type: string; // 응답 데이터의 유형
+  id: string; // 항공편 제안 고유 ID
   source: string;
-  numberOfBookableSeats?: number;
+  numberOfBookableSeats?: number; // 예약 가능한 좌석 수
   itineraries: {
-    duration: string;
+    duration: string; // 소요 시간
     segments: {
       departure?: {
         // 출발지
-        iataCode?: string;
-        at?: string;
+        iataCode?: string; // 공항코드
+        at?: string; // 출발시간(현지기준)
       };
       arrival?: {
         // 도착지
-        iataCode?: string;
-        at?: string;
+        iataCode?: string; // 공항코드
+        at?: string; // 도착시간(현지기준)
       };
-      carrierCode?: string;
-      number?: string;
+      carrierCode?: string; // 항공사 코드
+      number?: string; // 항공편 번호
       aircraft?: {
-        code?: string;
+        code?: string; // 항공기 코드
       };
+      operating?: {
+        carrierCode?: string;
+      }; // 실질적으로 운항하는 항공사
       numberOfStops: number; // 경유 횟수
     }[];
   }[];
   price: {
+    // 가격 정보
     total: string;
   };
 }
@@ -221,6 +243,11 @@ interface FlightOffersResponse {
     count: number;
   };
   data: FlightOffer[];
+  dictionaries: {
+    carriers: {
+      [key: string]: string;
+    };
+  };
 }
 
 // 좌석 클래스 enum
@@ -241,7 +268,23 @@ function FlightSearch() {
     children: 0, // 어린이
     infants: 0, // 유아
     travelClass: SeatClass.ECONOMY, // 여행 좌석 클래스
+    originLocationCodeNo: "", // 출발지가 선택된 코드(도시/공항 구분용)
+    destinationLocationCodeNo: "", // 도착지가 선택된 코드(도시/공항 구분용)
   }); // input 입력 state
+
+  /*
+  * 생성한 이유 
+  - Amadeus API에서 도시코드와 공항코드 검색이라는 구분이 따로 존재하지 않음
+  - 상하이(SHA) === 상하이 훙차오 공항(SHA)과 같이 도시코드와 공항코드가 동일 할 경우 도시코드로 검색이 되버려서 구분이 필요
+  */
+  const [filterMismatchCount, setFilterMismatchCount] = useState(0); // 총 개수 - 필터링 된 개수
+  const [locationData, setLocationData] = useState({
+    originLocationIataCodeChecking: false,
+    destinationLocationIataCodeChecking: false,
+
+    originIataCode: "",
+    destinationIataCode: "",
+  });
 
   const [onewayChecking, setOnewayChecking] = useState(false); // 편도/왕복 여부 스위칭 state
 
@@ -353,7 +396,9 @@ function FlightSearch() {
     setInputData((prev) => ({
       ...prev,
       originLocationCode: prev.destinationLocationCode,
+      originLocationCodeNo: prev.destinationLocationCodeNo,
       destinationLocationCode: prev.originLocationCode,
+      destinationLocationCodeNo: prev.originLocationCodeNo,
     }));
 
     setAutoCompleteOriginLocations((prev) => [
@@ -447,8 +492,19 @@ function FlightSearch() {
   // 항공 검색 동작
   const flightSearch = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    let searchOriginLocation; // 실질적으로 검색될 출발지 데이터
-    let searchDestinationLocation; // 실질적으로 검색될 도착지 데이터
+    let searchOriginLocation: string; // 실질적으로 검색될 출발지 데이터
+    let searchDestinationLocation: string; // 실질적으로 검색될 도착지 데이터
+
+    // 구분 초기화
+    setLocationData({
+      originLocationIataCodeChecking: false,
+      destinationLocationIataCodeChecking: false,
+
+      originIataCode: "",
+      destinationIataCode: "",
+    });
+
+    setFilterMismatchCount(0);
 
     // 출발지/도착지 조건
     /*
@@ -467,11 +523,29 @@ function FlightSearch() {
       setInputData((prev) => ({
         ...prev,
         originLocationCode: `${autoCompleteOriginLocations[0]?.airportKor} (${autoCompleteOriginLocations[0]?.iata})`,
+        originLocationCodeNo: `${autoCompleteOriginLocations[0]?.codeNo}_airport`,
+      }));
+      console.log("출발지에 공항명칭으로 검색함");
+
+      setLocationData((prev) => ({
+        ...prev,
+        originLocationIataCodeChecking: true,
+        originIataCode: searchOriginLocation,
       }));
     } else if (/\(.*\)/.test(inputData.originLocationCode)) {
       searchOriginLocation = inputData.originLocationCode
         .split("(")[1]
         .split(")")[0];
+
+      // 검색한게 도시코드/공항코드 인지 확인
+      if (inputData.originLocationCodeNo.endsWith("_airport")) {
+        console.log("출발지에 공항명칭으로 검색함");
+        setLocationData((prev) => ({
+          ...prev,
+          originLocationIataCodeChecking: true,
+          originIataCode: searchOriginLocation,
+        }));
+      }
     } else {
       document.getElementById("originLocation")?.focus();
       return;
@@ -488,11 +562,30 @@ function FlightSearch() {
       setInputData((prev) => ({
         ...prev,
         destinationLocationCode: `${autoCompleteDestinationLocations[0]?.airportKor} (${autoCompleteDestinationLocations[0]?.iata})`,
+        destinationLocationCodeNo: `${autoCompleteDestinationLocations[0]?.codeNo}_airport`,
+      }));
+
+      console.log("도착지에 공항명칭으로 검색함");
+
+      setLocationData((prev) => ({
+        ...prev,
+        destinationLocationIataCodeChecking: true,
+        destinationIataCode: searchDestinationLocation,
       }));
     } else if (/\(.*\)/.test(inputData.destinationLocationCode)) {
       searchDestinationLocation = inputData.destinationLocationCode
         .split("(")[1]
         .split(")")[0];
+
+      // 검색한게 도시코드/공항코드 인지 확인
+      if (inputData.destinationLocationCodeNo.endsWith("_airport")) {
+        console.log("도착지에 공항명칭으로 검색함");
+        setLocationData((prev) => ({
+          ...prev,
+          destinationLocationIataCodeChecking: true,
+          destinationIataCode: searchDestinationLocation,
+        }));
+      }
     } else {
       document.getElementById("destinationLocation")?.focus();
       return;
@@ -603,6 +696,7 @@ function FlightSearch() {
                             setInputData((prev) => ({
                               ...prev,
                               originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
+                              originLocationCodeNo: `${originLocation.codeNo}`,
                             }));
                             setAutoCompleteOriginLocationSw(false);
                             setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
@@ -632,6 +726,7 @@ function FlightSearch() {
                         setInputData((prev) => ({
                           ...prev,
                           originLocationCode: `${originLocation.airportKor} (${originLocation.iata})`,
+                          originLocationCodeNo: `${originLocation.codeNo}_airport`,
                         }));
                         setAutoCompleteOriginLocationSw(false);
                         setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
@@ -689,9 +784,11 @@ function FlightSearch() {
                           <AutoCompleteItem
                             key={destinationLocation.codeNo}
                             onClick={() => {
+                              console.log(destinationLocation.codeNo);
                               setInputData((prev) => ({
                                 ...prev,
                                 destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
+                                destinationLocationCodeNo: `${destinationLocation.codeNo}`,
                               }));
                               setAutoCompleteDestinationLocationSw(false);
                               setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
@@ -719,9 +816,11 @@ function FlightSearch() {
                       <AutoCompleteItem
                         key={destinationLocation.codeNo + "_airport"}
                         onClick={() => {
+                          console.log(destinationLocation.codeNo + "_airport");
                           setInputData((prev) => ({
                             ...prev,
                             destinationLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
+                            destinationLocationCodeNo: `${destinationLocation.codeNo}_airport`,
                           }));
                           setAutoCompleteDestinationLocationSw(false);
                           setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
@@ -824,10 +923,17 @@ function FlightSearch() {
         <Container>
           <p style={{ margin: "10px" }}>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
-            {flightOffers.meta.count}개
+            {flightOffers.meta.count - filterMismatchCount}개
           </p>
-          {flightOffers.data.slice(0, 10).map((offer: any) => (
-            <FlightResult key={offer.id} offer={offer} inputData={inputData} />
+          {flightOffers.data.slice(0, 90).map((offer: any) => (
+            <FlightResult
+              key={offer.id}
+              offer={offer}
+              inputData={inputData}
+              locationData={locationData}
+              dictionaries={flightOffers.dictionaries}
+              setFilterMismatchCount={setFilterMismatchCount}
+            />
           ))}
         </Container>
       ) : (

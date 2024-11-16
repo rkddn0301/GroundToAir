@@ -1,10 +1,12 @@
 package groundToAir.airReservation.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @Service
 public class HotelService {
 
@@ -26,11 +28,13 @@ public class HotelService {
         for (String subType : subTypes) {
             builder.queryParam("subType", subType);
         }
+        log.info("치환이전 : {}", builder.toUriString());
 
 
         // keyword에서 공백이 있는 상태로 검색 시 오류 발생하여 replace로 수정
         String fullUrl = builder.toUriString().replace("%20", " ");
-        System.out.println(fullUrl);
+        log.info("치환이후 : {}", fullUrl);
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);

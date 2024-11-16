@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import styled from "styled-components";
-import { SeatClass } from "../../router/FlightSearch";
+import { InputData, SeatClass } from "../../router/FlightSearch";
 
 const Container = styled.div`
   position: absolute;
@@ -118,18 +118,6 @@ const ChoiceBtn = styled.button`
     color: ${(props) => props.theme.black.font};
   }
 `;
-
-// inputData의 타입 정의
-interface InputData {
-  originLocationCode: string;
-  destinationLocationCode: string;
-  departureDate: string;
-  returnDate: string;
-  adults: number;
-  children: number;
-  infants: number;
-  travelClass: SeatClass;
-}
 
 // TravelerModal의 props 타입 정의
 interface TravelerModalProps {
