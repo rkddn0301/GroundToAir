@@ -195,10 +195,11 @@ export interface LocationData {
 
 interface IataCodes {
   codeNo: number;
-  airportKor?: string;
-  iata?: string;
-  cityKor?: string;
-  cityCode?: string;
+  airportKor?: string; // 공항명(한국어)
+  iata?: string; // 공항코드
+  cityKor?: string; // 도시명(한국어)
+  cityCode?: string; // 도시코드
+  countryKor?: string; // 국가명(한국어)
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
@@ -683,43 +684,74 @@ function FlightSearch() {
           {autoCompleteOriginLocationSw &&
             autoCompleteOriginLocations.length > 0 && (
               <AutoCompleteList>
-                {autoCompleteOriginLocations.map((originLocation, index) => (
-                  <>
-                    {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
-                    {index === 0 &&
-                      autoCompleteOriginLocations.length > 1 &&
-                      originLocation.cityKor !== null &&
-                      originLocation.cityCode != null && (
-                        <AutoCompleteItem
-                          key={originLocation.codeNo}
-                          onClick={() => {
-                            setInputData((prev) => ({
-                              ...prev,
-                              originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
-                              originLocationCodeNo: `${originLocation.codeNo}`,
-                            }));
-                            setAutoCompleteOriginLocationSw(false);
-                            setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
-                          }}
-                        >
-                          <BuildingIcon
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            className="size-6"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                            />
-                          </BuildingIcon>
-                          {originLocation.cityKor} ({originLocation.cityCode})
-                        </AutoCompleteItem>
-                      )}
+                {/* 도시코드 출력 */}
+                {autoCompleteOriginLocations.length > 1 &&
+                  autoCompleteOriginLocations.find(
+                    (location) =>
+                      location.cityKor != null && location.cityCode != null
+                  ) && (
+                    <AutoCompleteItem
+                      key="cityCode"
+                      onClick={() => {
+                        const originLocation = autoCompleteOriginLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        );
+                        if (originLocation) {
+                          setInputData((prev) => ({
+                            ...prev,
+                            originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
+                            originLocationCodeNo: `${originLocation.codeNo}`,
+                          }));
+                          setAutoCompleteOriginLocationSw(false);
+                          setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
+                        }
+                      }}
+                    >
+                      <BuildingIcon
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
+                        />
+                      </BuildingIcon>
+                      {
+                        autoCompleteOriginLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.cityKor
+                      }{" "}
+                      (
+                      {
+                        autoCompleteOriginLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.cityCode
+                      }
+                      ) <br />
+                      {
+                        autoCompleteOriginLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.countryKor
+                      }
+                    </AutoCompleteItem>
+                  )}
 
+                {autoCompleteOriginLocations.map((originLocation) => (
+                  <>
+                    {/* 공항코드만 출력 */}
                     <AutoCompleteItem
                       key={originLocation.codeNo + "_airport"}
                       onClick={() => {
@@ -733,7 +765,8 @@ function FlightSearch() {
                       }}
                     >
                       <Flight>✈</Flight>
-                      {originLocation.airportKor} ({originLocation.iata})
+                      {originLocation.airportKor} ({originLocation.iata})<br />
+                      {originLocation.countryKor}
                     </AutoCompleteItem>
                   </>
                 ))}
@@ -773,66 +806,94 @@ function FlightSearch() {
           {autoCompleteDestinationLocationSw &&
             autoCompleteDestinationLocations.length > 0 && (
               <AutoCompleteList>
-                {autoCompleteDestinationLocations.map(
-                  (destinationLocation, index) => (
-                    <>
-                      {/* cityKor와 cityCode는 한 번만 표시되도록 체크되며 공항명이 1개만 있으면 나오지 않음 */}
-                      {index === 0 &&
-                        autoCompleteDestinationLocations.length > 1 &&
-                        destinationLocation.cityKor !== null &&
-                        destinationLocation.cityCode != null && (
-                          <AutoCompleteItem
-                            key={destinationLocation.codeNo}
-                            onClick={() => {
-                              console.log(destinationLocation.codeNo);
-                              setInputData((prev) => ({
-                                ...prev,
-                                destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
-                                destinationLocationCodeNo: `${destinationLocation.codeNo}`,
-                              }));
-                              setAutoCompleteDestinationLocationSw(false);
-                              setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
-                            }}
-                          >
-                            <BuildingIcon
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="1.5"
-                              stroke="currentColor"
-                              className="size-6"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                              />
-                            </BuildingIcon>
-                            {destinationLocation.cityKor} (
-                            {destinationLocation.cityCode})
-                          </AutoCompleteItem>
-                        )}
-
-                      <AutoCompleteItem
-                        key={destinationLocation.codeNo + "_airport"}
-                        onClick={() => {
-                          console.log(destinationLocation.codeNo + "_airport");
+                {/* 도시코드 출력 */}
+                {autoCompleteDestinationLocations.length > 1 &&
+                  autoCompleteDestinationLocations.find(
+                    (location) =>
+                      location.cityKor != null && location.cityCode != null
+                  ) && (
+                    <AutoCompleteItem
+                      key="cityCode"
+                      onClick={() => {
+                        const destinationLocation =
+                          autoCompleteDestinationLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          );
+                        if (destinationLocation) {
                           setInputData((prev) => ({
                             ...prev,
-                            destinationLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
-                            destinationLocationCodeNo: `${destinationLocation.codeNo}_airport`,
+                            destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
+                            destinationLocationCodeNo: `${destinationLocation.codeNo}`,
                           }));
                           setAutoCompleteDestinationLocationSw(false);
                           setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
-                        }}
+                        }
+                      }}
+                    >
+                      <BuildingIcon
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-6"
                       >
-                        <Flight>✈</Flight>
-                        {destinationLocation.airportKor} (
-                        {destinationLocation.iata})
-                      </AutoCompleteItem>
-                    </>
-                  )
-                )}
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
+                        />
+                      </BuildingIcon>
+                      {
+                        autoCompleteDestinationLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.cityKor
+                      }{" "}
+                      (
+                      {
+                        autoCompleteDestinationLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.cityCode
+                      }
+                      ) <br />
+                      {
+                        autoCompleteDestinationLocations.find(
+                          (location) =>
+                            location.cityKor != null &&
+                            location.cityCode != null
+                        )?.countryKor
+                      }
+                    </AutoCompleteItem>
+                  )}
+
+                {autoCompleteDestinationLocations.map((destinationLocation) => (
+                  <>
+                    {/* 공항코드만 출력 */}
+                    <AutoCompleteItem
+                      key={destinationLocation.codeNo + "_airport"}
+                      onClick={() => {
+                        setInputData((prev) => ({
+                          ...prev,
+                          destinationLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
+                          destinationLocationCodeNo: `${destinationLocation.codeNo}_airport`,
+                        }));
+                        setAutoCompleteDestinationLocationSw(false);
+                        setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
+                      }}
+                    >
+                      <Flight>✈</Flight>
+                      {destinationLocation.airportKor} (
+                      {destinationLocation.iata})<br />
+                      {destinationLocation.countryKor}
+                    </AutoCompleteItem>
+                  </>
+                ))}
               </AutoCompleteList>
             )}
         </Field>
