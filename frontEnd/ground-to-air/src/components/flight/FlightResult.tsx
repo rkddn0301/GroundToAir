@@ -3,12 +3,14 @@ import {
   FlightOffer,
   InputData,
   LocationData,
-  SeatClass,
 } from "../../router/FlightSearch";
 import { useEffect } from "react";
+import { formatDuration, formatTime } from "../../utils/formatTime";
 
 const Banner = styled.div`
-  width: 80%;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
   margin: 0 auto;
@@ -16,6 +18,46 @@ const Banner = styled.div`
   border-radius: 25px;
   padding: 25px;
   margin-bottom: 20px;
+`;
+
+const FlightInfo = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+`;
+
+const Airline = styled.div`
+  width: 30%;
+`;
+
+const OriginLine = styled.div`
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+`;
+
+const DestinationLine = styled.div`
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+`;
+
+const MiddleInfoLine = styled.div`
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+`;
+
+const ReservationDetails = styled.div`
+  display: flex;
+  justify-content: space-around;
 `;
 
 interface FlightResultProps {
@@ -93,117 +135,122 @@ function FlightResult({
   if (shouldReturnNull) {
     return null; // 조건에 맞지 않으면 결과를 출력하지 않음
   }
+
   return (
     <Banner key={offer.id}>
-      <p>
-        항공사 :{" "}
-        {
-          dictionaries.carriers[
-            offer.itineraries[0]?.segments[0]?.operating?.carrierCode || ""
-          ]
-        }
-      </p>
-      <p>
-        출발시간: {offer.itineraries[0]?.segments[0]?.departure?.at} (
-        {offer.itineraries[0]?.segments[0]?.departure?.iataCode})
-      </p>
-      <p>
-        도착시간:{" "}
-        {
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.arrival?.at
-        }{" "}
-        (
-        {
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.arrival?.iataCode
-        }
-        )
-      </p>
-      <p>
-        항공편 번호:{" "}
-        {
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.carrierCode
-        }
-        {
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.number
-        }
-      </p>
-      <p>
-        항공기 정보:{" "}
-        {
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.aircraft?.code
-        }
-      </p>
-      <p>경유지 수: {offer.itineraries[0]?.segments.length - 1}</p>
+      <FlightInfo>
+        <Airline>
+          {
+            dictionaries.carriers[
+              offer.itineraries[0]?.segments[0]?.operating?.carrierCode || ""
+            ]
+          }
+          <div>
+            {
+              offer.itineraries[0]?.segments[
+                offer.itineraries[0]?.segments.length - 1
+              ]?.carrierCode
+            }
+            {
+              offer.itineraries[0]?.segments[
+                offer.itineraries[0]?.segments.length - 1
+              ]?.number
+            }
+          </div>
+        </Airline>
+        <OriginLine>
+          {formatTime(offer.itineraries[0]?.segments[0]?.departure?.at)}
+          <div style={{ fontWeight: "600" }}>
+            {offer.itineraries[0]?.segments[0]?.departure?.iataCode}
+          </div>
+        </OriginLine>
+        <MiddleInfoLine>
+          {formatDuration(offer.itineraries[0]?.duration)}
+
+          <div>
+            {offer.itineraries[0]?.segments.length - 1 === 0
+              ? "직항"
+              : `${offer.itineraries[0]?.segments.length - 1}회 경유`}
+          </div>
+        </MiddleInfoLine>
+        <DestinationLine>
+          {formatTime(
+            offer.itineraries[0]?.segments[
+              offer.itineraries[0]?.segments.length - 1
+            ]?.arrival?.at
+          )}{" "}
+          <div style={{ fontWeight: "600" }}>
+            {
+              offer.itineraries[0]?.segments[
+                offer.itineraries[0]?.segments.length - 1
+              ]?.arrival?.iataCode
+            }
+          </div>
+        </DestinationLine>
+      </FlightInfo>
 
       {/* 왕복일경우 */}
       {inputData.returnDate !== "" && (
-        <>
-          <hr />
-          <p>
-            항공사 :{" "}
+        <FlightInfo>
+          <Airline>
             {
               dictionaries.carriers[
                 offer.itineraries[1]?.segments[0]?.operating?.carrierCode || ""
               ]
             }
-          </p>
-          <p>
-            출발시간: {offer.itineraries[1]?.segments[0]?.departure?.at} (
-            {offer.itineraries[1]?.segments[0]?.departure?.iataCode})
-          </p>
-          <p>
-            도착시간:{" "}
-            {
+
+            <div>
+              {
+                offer.itineraries[1]?.segments[
+                  offer.itineraries[1]?.segments.length - 1
+                ]?.carrierCode
+              }
+              {
+                offer.itineraries[1]?.segments[
+                  offer.itineraries[1]?.segments.length - 1
+                ]?.number
+              }
+            </div>
+          </Airline>
+          <OriginLine>
+            {formatTime(offer.itineraries[1]?.segments[0]?.departure?.at)}
+            <div style={{ fontWeight: "600" }}>
+              {offer.itineraries[1]?.segments[0]?.departure?.iataCode}
+            </div>
+          </OriginLine>
+          <MiddleInfoLine>
+            {formatDuration(offer.itineraries[1]?.duration)}
+            <div>
+              {offer.itineraries[1]?.segments.length - 1 === 0
+                ? "직항"
+                : `${offer.itineraries[1]?.segments.length - 1}회 경유`}
+            </div>
+          </MiddleInfoLine>
+          <DestinationLine>
+            {formatTime(
               offer.itineraries[1]?.segments[
                 offer.itineraries[1]?.segments.length - 1
               ]?.arrival?.at
-            }{" "}
-            (
-            {
-              offer.itineraries[1]?.segments[
-                offer.itineraries[1]?.segments.length - 1
-              ]?.arrival?.iataCode
-            }
-            )
-          </p>
-          <p>
-            항공편 번호:{" "}
-            {
-              offer.itineraries[1]?.segments[
-                offer.itineraries[1]?.segments.length - 1
-              ]?.carrierCode
-            }
-            {
-              offer.itineraries[1]?.segments[
-                offer.itineraries[1]?.segments.length - 1
-              ]?.number
-            }
-          </p>
-          <p>
-            항공기 정보:{" "}
-            {
-              offer.itineraries[1]?.segments[
-                offer.itineraries[1]?.segments.length - 1
-              ]?.aircraft?.code
-            }
-          </p>
-          <p>경유지 수: {offer.itineraries[1]?.segments.length - 1}</p>
-        </>
+            )}
+            <div style={{ fontWeight: "600" }}>
+              {
+                offer.itineraries[1]?.segments[
+                  offer.itineraries[1]?.segments.length - 1
+                ]?.arrival?.iataCode
+              }
+            </div>
+          </DestinationLine>
+        </FlightInfo>
       )}
 
       <hr />
-      <p>남은 예약좌석 : {offer.numberOfBookableSeats}</p>
-      <p>총 가격: {offer.price.total}</p>
+      <ReservationDetails>
+        남은 예약좌석 : {offer.numberOfBookableSeats}석
+        <div>
+          {`\\${new Intl.NumberFormat().format(parseFloat(offer.price.total))}`}
+          <button>예약하기</button>
+        </div>
+      </ReservationDetails>
     </Banner>
   );
 }

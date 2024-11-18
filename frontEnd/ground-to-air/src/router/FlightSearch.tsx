@@ -124,6 +124,7 @@ const SubmitBtn = styled.button`
 
 const AutoCompleteList = styled.ul`
   position: absolute;
+  width: 15rem;
   top: 100%;
   left: 0;
   right: 0;
@@ -144,7 +145,7 @@ const AutoCompleteList = styled.ul`
 
 const AutoCompleteItem = styled.li`
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: 12px 12px; // 상하 / 좌우
   cursor: pointer;
   font-size: 14px;
@@ -709,43 +710,47 @@ function FlightSearch() {
                         }
                       }}
                     >
-                      <BuildingIcon
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                        />
-                      </BuildingIcon>
-                      {
-                        autoCompleteOriginLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.cityKor
-                      }{" "}
-                      (
-                      {
-                        autoCompleteOriginLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.cityCode
-                      }
-                      ) <br />
-                      {
-                        autoCompleteOriginLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.countryKor
-                      }
+                      <div>
+                        <BuildingIcon
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
+                          />
+                        </BuildingIcon>
+                        {
+                          autoCompleteOriginLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.cityKor
+                        }{" "}
+                        (
+                        {
+                          autoCompleteOriginLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.cityCode
+                        }
+                        )
+                      </div>
+                      <div style={{ marginTop: "10px" }}>
+                        {
+                          autoCompleteOriginLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.countryKor
+                        }
+                      </div>
                     </AutoCompleteItem>
                   )}
 
@@ -764,9 +769,13 @@ function FlightSearch() {
                         setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
                       }}
                     >
-                      <Flight>✈</Flight>
-                      {originLocation.airportKor} ({originLocation.iata})<br />
-                      {originLocation.countryKor}
+                      <div>
+                        <Flight>✈</Flight>
+                        {originLocation.airportKor} ({originLocation.iata})
+                      </div>
+                      <div style={{ marginTop: "10px" }}>
+                        {originLocation.countryKor}
+                      </div>
                     </AutoCompleteItem>
                   </>
                 ))}
@@ -832,43 +841,47 @@ function FlightSearch() {
                         }
                       }}
                     >
-                      <BuildingIcon
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                        />
-                      </BuildingIcon>
-                      {
-                        autoCompleteDestinationLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.cityKor
-                      }{" "}
-                      (
-                      {
-                        autoCompleteDestinationLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.cityCode
-                      }
-                      ) <br />
-                      {
-                        autoCompleteDestinationLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        )?.countryKor
-                      }
+                      <div>
+                        <BuildingIcon
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
+                          />
+                        </BuildingIcon>
+                        {
+                          autoCompleteDestinationLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.cityKor
+                        }{" "}
+                        (
+                        {
+                          autoCompleteDestinationLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.cityCode
+                        }
+                        )
+                      </div>
+                      <div style={{ marginTop: "10px" }}>
+                        {
+                          autoCompleteDestinationLocations.find(
+                            (location) =>
+                              location.cityKor != null &&
+                              location.cityCode != null
+                          )?.countryKor
+                        }
+                      </div>
                     </AutoCompleteItem>
                   )}
 
@@ -887,10 +900,14 @@ function FlightSearch() {
                         setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
                       }}
                     >
-                      <Flight>✈</Flight>
-                      {destinationLocation.airportKor} (
-                      {destinationLocation.iata})<br />
-                      {destinationLocation.countryKor}
+                      <div>
+                        <Flight>✈</Flight>
+                        {destinationLocation.airportKor} (
+                        {destinationLocation.iata})
+                      </div>
+                      <div style={{ marginTop: "10px" }}>
+                        {destinationLocation.countryKor}
+                      </div>
                     </AutoCompleteItem>
                   </>
                 ))}
