@@ -22,7 +22,6 @@ export function formatDuration(duration?: string) {
   const regex = /^PT(\d+H)?(\d+M)?$/;
   const matches = duration.match(regex);
 
-  console.log(matches);
   if (!matches) return "";
 
   const hours = matches[1] ? parseInt(matches[1].replace("H", "")) : 0;
