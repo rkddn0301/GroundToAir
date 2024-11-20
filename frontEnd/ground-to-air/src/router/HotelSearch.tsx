@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { AutoCompleteKeywords, HotelOffer } from "../utils/api";
 
 const Container = styled.div`
   width: 90%;
@@ -31,59 +32,6 @@ const Banner = styled.div`
   padding: 25px;
   margin-bottom: 20px;
 `;
-
-// 호텔 자동완성 기능 데이터 선언부
-interface AutoCompleteKeywords {
-  data: {
-    id: number; // 식별코드
-    name: string; // 호텔명
-    iataCode: string; // 지역코드
-    subType: string; // 호텔 하위유형
-    hotelIds: string[]; // 호텔 ID
-    address: {
-      cityName: string; // 도시명
-      countryCode: string; // 국가코드
-    };
-    geoCode: {
-      latitude: number; // 호텔의 위도
-      longitude: number; // 호텔의 경도
-    };
-  }[];
-}
-
-// 호텔 검색 데이터 선언부
-interface HotelOffer {
-  data: {
-    type: string; // 데이터 유형
-    hotel: {
-      hotelId: string; // 호텔 고유식별자
-      chainCode: string; // 호텔 체인 코드
-      name: string; // 호텔명
-      cityCode: string; // 호텔이 위치한 도시의 코드
-      latitude: number; // 호텔의 위도
-      longitue: number; // 호텔의 경도
-    };
-    offers: {
-      checkInDate: string; // 체크인 날짜
-      checkOutDate: string; // 체크아웃 날짜
-      room: {
-        type: string; // 객실 유형
-        typeEstimated?: {
-          category?: string; // 객실명
-          beds?: number; // 침대 수
-          bedType?: string; // 침대 유형
-        };
-      };
-      guests: {
-        adults: number; // 객실 인원
-      };
-      price: {
-        base: string; // 기본 요금
-        total: string; // 총 요금
-      };
-    }[];
-  }[];
-}
 
 function HotelSearch() {
   // input 작성 키워드

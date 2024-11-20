@@ -8,6 +8,8 @@ import { ko } from "date-fns/locale";
 import styled from "styled-components";
 import TravelerModal from "../components/flight/TravelerModal";
 import FlightResult from "../components/flight/FlightResult";
+import AutoComplete from "../components/flight/AutoComplete";
+import { FlightOffer, IataCodes } from "../utils/api";
 
 const Container = styled.div`
   min-width: 100%;
@@ -122,55 +124,6 @@ const SubmitBtn = styled.button`
   }
 `;
 
-const AutoCompleteList = styled.ul`
-  position: absolute;
-  width: 15rem;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: 300px; // 최대 높이 지정
-  overflow-y: auto; // 최대 높이 초과 시 스크롤바 생성
-  background-color: ${(props) => props.theme.white.bg};
-  color: ${(props) => props.theme.white.font};
-  border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
-  margin: 0; // ul 기본 마진 제거
-  padding: 0; // ul 기본 패딩 제거
-  list-style-type: none; // 기본적인 목록 스타일(점, 번호 등) 제거
-  /* 
-  &::-webkit-scrollbar { // 스크롤바 없애는건데 잠시 보류 11/16
-    display: none;
-  } */
-`;
-
-const AutoCompleteItem = styled.li`
-  display: flex;
-  flex-direction: column;
-  padding: 12px 12px; // 상하 / 좌우
-  cursor: pointer;
-  font-size: 14px;
-  &:hover {
-    background-color: ${(props) => props.theme.black.bg};
-    color: ${(props) => props.theme.black.font};
-  }
-  &:not(:last-child) {
-    // 마지막 항목을 제외한 모든 항목에 하단 경계선 추가
-    border-bottom: 1px solid ${(props) => props.theme.white.font};
-  }
-`;
-
-const BuildingIcon = styled.svg`
-  width: 14px;
-  height: 14px;
-  margin-right: 8px;
-`;
-
-const Flight = styled.span`
-  width: 14px;
-  height: 14px;
-  margin-right: 8px;
-`;
-
 // 다른 컴포넌트에서 inputData를 props로 이용 시 필요
 export interface InputData {
   originLocationCode: string;
@@ -185,6 +138,14 @@ export interface InputData {
   destinationLocationCodeNo: string;
 }
 
+// 좌석 클래스 enum
+export enum SeatClass {
+  ECONOMY = "ECONOMY", // 일반석
+  PREMIUM_ECONOMY = "PREMIUM_ECONOMY", // 프리미엄 일반석
+  BUSINESS = "BUSINESS", // 비즈니스석
+  FIRST = "FIRST", // 일등석
+}
+
 // 다른 컴포넌트에서 locationData를 props로 이용 시 필요
 export interface LocationData {
   originLocationIataCodeChecking: boolean;
@@ -192,51 +153,6 @@ export interface LocationData {
 
   originIataCode: string;
   destinationIataCode: string;
-}
-
-interface IataCodes {
-  codeNo: number;
-  airportKor?: string; // 공항명(한국어)
-  iata?: string; // 공항코드
-  cityKor?: string; // 도시명(한국어)
-  cityCode?: string; // 도시코드
-  countryKor?: string; // 국가명(한국어)
-}
-
-// AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
-export interface FlightOffer {
-  type: string; // 응답 데이터의 유형
-  id: string; // 항공편 제안 고유 ID
-  source: string;
-  numberOfBookableSeats?: number; // 예약 가능한 좌석 수
-  itineraries: {
-    duration: string; // 소요 시간
-    segments: {
-      departure?: {
-        // 출발지
-        iataCode?: string; // 공항코드
-        at?: string; // 출발시간(현지기준)
-      };
-      arrival?: {
-        // 도착지
-        iataCode?: string; // 공항코드
-        at?: string; // 도착시간(현지기준)
-      };
-      carrierCode?: string; // 항공사 코드
-      number?: string; // 항공편 번호
-      aircraft?: {
-        code?: string; // 항공기 코드
-      };
-      operating?: {
-        carrierCode?: string;
-      }; // 실질적으로 운항하는 항공사
-      numberOfStops: number; // 경유 횟수
-    }[];
-  }[];
-  price: {
-    // 가격 정보
-    total: string;
-  };
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출 데이터 배열로 변환
@@ -250,14 +166,6 @@ interface FlightOffersResponse {
       [key: string]: string;
     };
   };
-}
-
-// 좌석 클래스 enum
-export enum SeatClass {
-  ECONOMY = "ECONOMY", // 일반석
-  PREMIUM_ECONOMY = "PREMIUM_ECONOMY", // 프리미엄 일반석
-  BUSINESS = "BUSINESS", // 비즈니스석
-  FIRST = "FIRST", // 일등석
 }
 
 function FlightSearch() {
@@ -684,107 +592,17 @@ function FlightSearch() {
           />
           {autoCompleteOriginLocationSw &&
             autoCompleteOriginLocations.length > 0 && (
-              <AutoCompleteList>
-                {/* 도시코드 출력 */}
-                {autoCompleteOriginLocations.length > 1 &&
-                  autoCompleteOriginLocations.find(
-                    (location) =>
-                      location.cityKor != null && location.cityCode != null
-                  ) && (
-                    <AutoCompleteItem
-                      key="cityCode"
-                      onClick={() => {
-                        const originLocation = autoCompleteOriginLocations.find(
-                          (location) =>
-                            location.cityKor != null &&
-                            location.cityCode != null
-                        );
-                        if (originLocation) {
-                          setInputData((prev) => ({
-                            ...prev,
-                            originLocationCode: `${originLocation.cityKor} (${originLocation.cityCode})`,
-                            originLocationCodeNo: `${originLocation.codeNo}`,
-                          }));
-                          setAutoCompleteOriginLocationSw(false);
-                          setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
-                        }
-                      }}
-                    >
-                      <div>
-                        <BuildingIcon
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                          />
-                        </BuildingIcon>
-                        {
-                          autoCompleteOriginLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.cityKor
-                        }{" "}
-                        (
-                        {
-                          autoCompleteOriginLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.cityCode
-                        }
-                        )
-                      </div>
-                      <div style={{ marginTop: "10px" }}>
-                        {
-                          autoCompleteOriginLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.countryKor
-                        }
-                      </div>
-                    </AutoCompleteItem>
-                  )}
-
-                {autoCompleteOriginLocations.map((originLocation) => (
-                  <>
-                    {/* 공항코드만 출력 */}
-                    <AutoCompleteItem
-                      key={originLocation.codeNo + "_airport"}
-                      onClick={() => {
-                        setInputData((prev) => ({
-                          ...prev,
-                          originLocationCode: `${originLocation.airportKor} (${originLocation.iata})`,
-                          originLocationCodeNo: `${originLocation.codeNo}_airport`,
-                        }));
-                        setAutoCompleteOriginLocationSw(false);
-                        setAutoCompleteOriginLocations([]); // 제안 리스트 비우기
-                      }}
-                    >
-                      <div>
-                        <Flight>✈</Flight>
-                        {originLocation.airportKor} ({originLocation.iata})
-                      </div>
-                      <div style={{ marginTop: "10px" }}>
-                        {originLocation.countryKor}
-                      </div>
-                    </AutoCompleteItem>
-                  </>
-                ))}
-              </AutoCompleteList>
+              <AutoComplete
+                setInputData={setInputData}
+                setAutoCompleteLocationSw={setAutoCompleteOriginLocationSw}
+                autoCompleteLocations={autoCompleteOriginLocations}
+                setAutoCompleteLocations={setAutoCompleteOriginLocations}
+                type="origin"
+              />
             )}
         </Field>
-        <CircleField>
+        <CircleField onClick={locationChange}>
           <ArrowsIcon
-            onClick={locationChange}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -814,104 +632,13 @@ function FlightSearch() {
           />
           {autoCompleteDestinationLocationSw &&
             autoCompleteDestinationLocations.length > 0 && (
-              <AutoCompleteList>
-                {/* 도시코드 출력 */}
-                {autoCompleteDestinationLocations.length > 1 &&
-                  autoCompleteDestinationLocations.find(
-                    (location) =>
-                      location.cityKor != null && location.cityCode != null
-                  ) && (
-                    <AutoCompleteItem
-                      key="cityCode"
-                      onClick={() => {
-                        const destinationLocation =
-                          autoCompleteDestinationLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          );
-                        if (destinationLocation) {
-                          setInputData((prev) => ({
-                            ...prev,
-                            destinationLocationCode: `${destinationLocation.cityKor} (${destinationLocation.cityCode})`,
-                            destinationLocationCodeNo: `${destinationLocation.codeNo}`,
-                          }));
-                          setAutoCompleteDestinationLocationSw(false);
-                          setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
-                        }
-                      }}
-                    >
-                      <div>
-                        <BuildingIcon
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
-                          />
-                        </BuildingIcon>
-                        {
-                          autoCompleteDestinationLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.cityKor
-                        }{" "}
-                        (
-                        {
-                          autoCompleteDestinationLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.cityCode
-                        }
-                        )
-                      </div>
-                      <div style={{ marginTop: "10px" }}>
-                        {
-                          autoCompleteDestinationLocations.find(
-                            (location) =>
-                              location.cityKor != null &&
-                              location.cityCode != null
-                          )?.countryKor
-                        }
-                      </div>
-                    </AutoCompleteItem>
-                  )}
-
-                {autoCompleteDestinationLocations.map((destinationLocation) => (
-                  <>
-                    {/* 공항코드만 출력 */}
-                    <AutoCompleteItem
-                      key={destinationLocation.codeNo + "_airport"}
-                      onClick={() => {
-                        setInputData((prev) => ({
-                          ...prev,
-                          destinationLocationCode: `${destinationLocation.airportKor} (${destinationLocation.iata})`,
-                          destinationLocationCodeNo: `${destinationLocation.codeNo}_airport`,
-                        }));
-                        setAutoCompleteDestinationLocationSw(false);
-                        setAutoCompleteDestinationLocations([]); // 제안 리스트 비우기
-                      }}
-                    >
-                      <div>
-                        <Flight>✈</Flight>
-                        {destinationLocation.airportKor} (
-                        {destinationLocation.iata})
-                      </div>
-                      <div style={{ marginTop: "10px" }}>
-                        {destinationLocation.countryKor}
-                      </div>
-                    </AutoCompleteItem>
-                  </>
-                ))}
-              </AutoCompleteList>
+              <AutoComplete
+                setInputData={setInputData}
+                setAutoCompleteLocationSw={setAutoCompleteDestinationLocationSw}
+                autoCompleteLocations={autoCompleteDestinationLocations}
+                setAutoCompleteLocations={setAutoCompleteDestinationLocations}
+                type="destination"
+              />
             )}
         </Field>
         {!onewayChecking && (

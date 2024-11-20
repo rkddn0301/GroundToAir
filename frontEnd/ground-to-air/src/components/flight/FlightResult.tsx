@@ -1,11 +1,8 @@
 import styled from "styled-components";
-import {
-  FlightOffer,
-  InputData,
-  LocationData,
-} from "../../router/FlightSearch";
+import { InputData, LocationData } from "../../router/FlightSearch";
 import { useEffect } from "react";
 import { formatDuration, formatTime } from "../../utils/formatTime";
+import { FlightOffer } from "../../utils/api";
 
 const Banner = styled.div`
   width: 60%;
@@ -276,7 +273,7 @@ function FlightResult({
               <>
                 {`${numberOfStops}회 경유`}{" "}
                 {airportStopover.segments.map(
-                  (segments: any, index) =>
+                  (segments: any, index: any) =>
                     index < numberOfStops && (
                       <span key={index}>{segments.arrival.iataCode} </span>
                     )
@@ -315,7 +312,7 @@ function FlightResult({
                 <>
                   {`${returnNumberOfStops}회 경유`}{" "}
                   {returnAirportStopover.segments.map(
-                    (segments: any, index) =>
+                    (segments: any, index: any) =>
                       index < returnNumberOfStops && (
                         <span key={index}>{segments.arrival.iataCode} </span>
                       )
