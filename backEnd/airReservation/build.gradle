@@ -48,6 +48,9 @@ dependencies {
 	// 이메일
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	// Jsoup
+	implementation 'org.jsoup:jsoup:1.15.3'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly('org.springframework.boot:spring-boot-devtools')

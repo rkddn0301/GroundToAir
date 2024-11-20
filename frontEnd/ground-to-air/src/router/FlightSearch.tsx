@@ -10,6 +10,7 @@ import TravelerModal from "../components/flight/TravelerModal";
 import FlightResult from "../components/flight/FlightResult";
 import AutoComplete from "../components/flight/AutoComplete";
 import { FlightOffer, IataCodes } from "../utils/api";
+import { motion } from "framer-motion";
 
 const Container = styled.div`
   min-width: 100%;
@@ -122,6 +123,26 @@ const SubmitBtn = styled.button`
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
   }
+`;
+
+const Loading = styled.div`
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;
+
+const Spinner = styled(motion.div)`
+  border: 4px solid ${(props) => props.theme.white.font};
+  border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+`;
+
+const ResultContainer = styled.div`
+  //margin: 0 auto;
 `;
 
 // 다른 컴포넌트에서 inputData를 props로 이용 시 필요
@@ -723,13 +744,23 @@ function FlightSearch() {
       </Form>
 
       {isLoading ? (
-        <Container>로딩 중...</Container>
+        <Loading>
+          <Spinner
+            animate={{ rotate: [0, 360] }} // 회전 애니메이션
+            transition={{
+              duration: 1, // 1초 동안
+              ease: "linear", // 일정한 속도
+              repeat: Infinity, // 무한반복
+            }}
+          />
+          <div style={{ fontWeight: "600" }}>검색 중...</div>
+        </Loading>
       ) : flightOffers ? (
-        <Container>
-          <p style={{ margin: "10px" }}>
+        <ResultContainer>
+          <div style={{ margin: "10px", fontWeight: "600" }}>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
             {flightOffers.meta.count - filterMismatchCount}개
-          </p>
+          </div>
           {flightOffers.data.slice(0, 90).map((offer: any) => (
             <FlightResult
               key={offer.id}
@@ -740,7 +771,7 @@ function FlightSearch() {
               setFilterMismatchCount={setFilterMismatchCount}
             />
           ))}
-        </Container>
+        </ResultContainer>
       ) : (
         ""
       )}

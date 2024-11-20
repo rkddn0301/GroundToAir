@@ -6,7 +6,7 @@ import { FlightOffer } from "../../utils/api";
 
 const Banner = styled.div`
   width: 60%;
-  height: 250px;
+  max-height: 250px;
   display: flex;
   flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
@@ -41,8 +41,10 @@ const ReservationDetails = styled.div`
   //flex: 0 0 5%;
   height: 10%;
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
   align-items: center;
+  border-top: 1px solid #ccc;
+  padding: 5px 10px 0 0;
 `;
 
 // 항공사 라인
@@ -329,9 +331,8 @@ function FlightResult({
       )}
 
       <ReservationDetails>
-        <div style={{ fontSize: "12px" }}>
-          예약 가능한 좌석 {numberOfBookableSeats}석
-        </div>
+        {/* <div style={{ fontSize: "12px" }}>{numberOfBookableSeats}석 남음</div> */}
+
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           <ReservationBtn>예약하기</ReservationBtn>
           {`\\${new Intl.NumberFormat().format(parseFloat(totalPrice))}`}

@@ -3,11 +3,14 @@ package groundToAir.airReservation.service;
 import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.repository.IataCodeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -63,6 +66,14 @@ public class AirService {
         return iataCodeRepository.findByIataStartingWithOrCityCodeStartingWithOrAirportKorStartingWithOrCityKorStartingWith(
                 keyword, keyword, keyword, keyword
         );
+    }
+
+    public String getImageUrlFromHtml() throws IOException {
+        String url = "https://www.airportal.go.kr/knowledge/airlines/KgMain01P1.jsp?df_id=60";
+        Document doc = Jsoup.connect(url).get();
+        log.info("doc : {}", doc);
+
+        return url;
     }
 
 
