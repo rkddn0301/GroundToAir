@@ -51,6 +51,8 @@ dependencies {
 	// Jsoup
 	implementation 'org.jsoup:jsoup:1.15.3'
 
+	implementation 'com.opencsv:opencsv:5.7.1'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly('org.springframework.boot:spring-boot-devtools')

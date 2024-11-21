@@ -1,6 +1,9 @@
 package groundToAir.airReservation.service;
 
+import groundToAir.airReservation.entity.AirlineCodeEntity;
 import groundToAir.airReservation.entity.IataCodeEntity;
+import groundToAir.airReservation.repository.AirlineCodeRepository;
+import groundToAir.airReservation.repository.CountryRepository;
 import groundToAir.airReservation.repository.IataCodeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -21,10 +24,12 @@ public class AirService {
 
     private final RestTemplate restTemplate;
     private final IataCodeRepository iataCodeRepository;
+    private final AirlineCodeRepository airlineCodeRepository;
 
-    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository) {
+    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository, AirlineCodeRepository airlineCodeRepository) {
         this.restTemplate = restTemplate;
         this.iataCodeRepository = iataCodeRepository;
+        this.airlineCodeRepository = airlineCodeRepository;
     }
 
 
@@ -68,13 +73,10 @@ public class AirService {
         );
     }
 
-    public String getImageUrlFromHtml() throws IOException {
-        String url = "https://www.airportal.go.kr/knowledge/airlines/KgMain01P1.jsp?df_id=60";
-        Document doc = Jsoup.connect(url).get();
-        log.info("doc : {}", doc);
 
-        return url;
-    }
+
+
+
 
 
 

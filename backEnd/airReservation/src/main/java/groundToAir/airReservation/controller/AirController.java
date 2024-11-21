@@ -4,10 +4,7 @@ import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.service.AirService;
 import groundToAir.airReservation.utils.AccessTokenUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -72,14 +69,6 @@ public class AirController {
 
         return airService.getIataCodes(keyword);
     }
-
-    // 항공사 이미지 파싱
-    @GetMapping("/airlineImage")
-    public String getAirlineImage() throws IOException {
-        return airService.getImageUrlFromHtml();
-    }
-
-
 
 
 }
