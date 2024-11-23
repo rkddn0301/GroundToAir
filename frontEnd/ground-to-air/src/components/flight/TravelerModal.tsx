@@ -4,6 +4,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import { InputData, SeatClass } from "../../router/FlightSearch";
 
+// TravelerModal 전체 컴포넌트 구성
 const Container = styled.div`
   position: absolute;
   width: 100%;
@@ -16,12 +17,14 @@ const Container = styled.div`
   padding: 10px;
 `;
 
+// 좌석 등급 제목 디자인
 const Label = styled.label`
   font-size: 12px;
   padding: 0 5px 0 0;
   margin-bottom: 8px;
 `;
 
+// 좌석 등급 구분 디자인
 const Field = styled.div`
   width: 20%;
   height: 85%;
@@ -33,16 +36,20 @@ const Field = styled.div`
   max-width: 200px; // 최대 크기 200px로 고정
 `;
 
+// 연령별 팁 관련 전체 디자인
 const QuestionGroups = styled.div`
   position: relative;
   display: inline-block; // 1줄로 표현
 `;
+
+// 연령별 팁 아이콘
 const QuestionIcon = styled.svg`
   width: 12px;
   height: 12px;
   cursor: pointer;
 `;
 
+// 연령별 팁
 const Tooltip = styled.div`
   position: absolute;
   bottom: 100%;
@@ -60,6 +67,7 @@ const Tooltip = styled.div`
   line-height: 1.2; // 글자 사이의 간격
 `;
 
+// 인원 카운팅 전체 디자인
 const CounterField = styled.div`
   display: flex;
   align-items: center;
@@ -67,11 +75,13 @@ const CounterField = styled.div`
   padding: 0.5em 0;
 `;
 
+// 인원 카운팅 제목
 const CounterLabel = styled.span`
   font-size: 1em;
   font-weight: 500;
 `;
 
+// 인원 카운팅 버튼 전체 디자인
 const CounterButtonGroup = styled.div`
   width: 50%;
   display: flex;
@@ -79,6 +89,7 @@ const CounterButtonGroup = styled.div`
   justify-content: space-between;
 `;
 
+// 인원 카운팅 버튼 디자인
 const CounterButton = styled.button<{ disabled?: boolean }>`
   width: 30px;
   height: 30px;
@@ -97,12 +108,14 @@ const CounterButton = styled.button<{ disabled?: boolean }>`
   }
 `;
 
+// 구분선 디자인
 const HorizontalLine = styled.hr`
   border: none;
   border-top: 1px solid #ccc;
   margin: 1em 0;
 `;
 
+// 선택완료 버튼 디자인
 const ChoiceBtn = styled.button`
   margin-top: 10px;
   width: 100%;

@@ -12,10 +12,12 @@ import { Alert } from "../utils/sweetAlert";
 import KakaoAuth from "../components/KakaoAuth";
 import GoogleAuth from "../components/GoogleAuth";
 
+// Login 전체 컴포넌트 구성
 const Container = styled.div`
   margin-top: -15px;
 `;
 
+// 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
   color: red;
   font-size: 11px;
@@ -23,6 +25,7 @@ const GuideLine = styled.div`
   justify-content: center;
 `;
 
+// 작성란 폼 전체 디자인 구성
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -32,6 +35,7 @@ const Form = styled.form`
   gap: 15px;
 `;
 
+// 작성란 구분 디자인 구성
 const Field = styled.div`
   position: relative;
   width: 80%;
@@ -40,6 +44,7 @@ const Field = styled.div`
   padding: 15px;
 `;
 
+// 작성란 제목 디자인 구성
 const Label = styled.label`
   position: absolute;
   top: -7px;
@@ -50,6 +55,7 @@ const Label = styled.label`
   background-color: ${(props) => props.theme.white.bg};
 `;
 
+// 작성란 디자인 구성
 const WriteInput = styled.input`
   border: none;
   background: transparent;
@@ -58,10 +64,12 @@ const WriteInput = styled.input`
   outline: none;
 `;
 
+// 버튼 전체 구분 디자인 구성
 const SubmitField = styled.div`
   width: 50%;
 `;
 
+// 버튼 디자인 구성
 const SubmitBtn = styled.button`
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
@@ -77,6 +85,7 @@ const SubmitBtn = styled.button`
   }
 `;
 
+// 타사 인증 전체 디자인 구성
 const FederationField = styled.div`
   width: 100%;
   display: flex;
@@ -85,6 +94,7 @@ const FederationField = styled.div`
   gap: 15px;
 `;
 
+// 타사 인증 버튼 전체 디자인 구성
 const FederationBtnField = styled.div`
   display: flex;
   flex-direction: row;

@@ -1,4 +1,4 @@
-// 모든 페이지에 전체적으로 보이는 메뉴바
+// 모든 페이지에 전체적으로 보이는 상단 메뉴바
 
 import { Link } from "react-router-dom";
 import styled from "styled-components";
@@ -7,8 +7,9 @@ import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../utils/atom";
 import { logout } from "../utils/jwtActivityTimer";
 
+// Layout의 전체 컴포넌트 구성
 const Nav = styled.nav`
-  position: fixed;
+  position: fixed; // 틀고정
   top: 0;
   width: 100%;
   z-index: 1;
@@ -19,12 +20,16 @@ const Nav = styled.nav`
   color: ${(props) => props.theme.black.font};
 `;
 
+// 좌측 메뉴 구성란(메인 로고)
 const LeftMenu = styled.div``;
+
+// 우측 메뉴 구성란(회원가입, 로그인 등)
 const RightMenu = styled.div`
   display: flex;
   gap: 15px;
 `;
 
+// 선택 메뉴 구성
 const Menus = styled.div`
   display: flex;
   flex-direction: column;
@@ -34,6 +39,7 @@ const Menus = styled.div`
   cursor: pointer;
 `;
 
+// 아이콘 조정
 const Icon = styled.svg`
   width: 48px;
 `;

@@ -12,10 +12,12 @@ import { useRecoilValue } from "recoil";
 import { JoinUserNo } from "../utils/atom";
 import { Alert, Confirm } from "../utils/sweetAlert";
 
+// PassportInfo 전체 컴포넌트 구성
 const Container = styled.div`
   margin-top: -15px;
 `;
 
+// 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
   color: red;
   font-size: 11px;
@@ -23,6 +25,7 @@ const GuideLine = styled.div`
   justify-content: center;
 `;
 
+// 작성란 폼 전체 디자인 구성
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -32,6 +35,7 @@ const Form = styled.form`
   gap: 15px;
 `;
 
+// 작성란 구분 디자인 구성
 const Field = styled.div`
   position: relative;
   width: 80%;
@@ -40,11 +44,14 @@ const Field = styled.div`
   padding: 15px;
 `;
 
+// 작은 크기 작성란 전체 디자인 구성
 const HalfFields = styled.div`
   width: 80%;
   display: flex;
   justify-content: space-between;
 `;
+
+// 작은 크기 작성란 구분 디자인 구성
 const HalfField = styled.div`
   position: relative;
   width: 45%;
@@ -53,6 +60,7 @@ const HalfField = styled.div`
   padding: 15px;
 `;
 
+// 작성란 제목 디자인 구성
 const Label = styled.label`
   position: absolute;
   top: -7px;
@@ -63,6 +71,7 @@ const Label = styled.label`
   background-color: ${(props) => props.theme.white.bg};
 `;
 
+// 작성란 디자인 구성
 const WriteInput = styled.input`
   border: none;
   background: transparent;
@@ -71,6 +80,7 @@ const WriteInput = styled.input`
   outline: none;
 `;
 
+// 달력 전체 디자인 구성
 const CalendarInput = styled.div`
   display: flex;
   justify-content: center;
@@ -103,11 +113,13 @@ const CalendarInput = styled.div`
   }
 `;
 
+// 선택란 전체 디자인 구성
 const SelectMenu = styled.div`
   display: flex;
   justify-content: center;
 `;
 
+// 국적, 여권발행국 선택란 디자인 구성
 const SelectInput = styled.select`
   width: 80%;
   border-radius: 5px;
@@ -116,9 +128,12 @@ const SelectInput = styled.select`
   // text-align: center;
 `;
 
+// 버튼 전체 디자인 구성
 const SubmitField = styled.div`
   width: 50%;
 `;
+
+// 버튼 디자인 구성
 const SubmitBtn = styled.button`
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};

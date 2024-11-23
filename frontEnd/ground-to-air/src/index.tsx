@@ -8,6 +8,8 @@ import { RecoilRoot } from "recoil";
 const GlobalStyle = createGlobalStyle`
 
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
+
+/* 해당 스타일 전부 초기화 */
   html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,

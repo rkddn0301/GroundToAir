@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { AutoCompleteKeywords, HotelOffer } from "../utils/api";
 
+// HotelSearch 전체 디자인 구성
 const Container = styled.div`
   width: 90%;
   margin: 0 auto;

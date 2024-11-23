@@ -1,7 +1,9 @@
+// 모든 페이지에서 전체적으로 보여주는 하단바
 import { useState } from "react";
 import styled from "styled-components";
 
-const Footers = styled.div`
+// Footer의 전체 컴포넌트 구성
+const Bottom = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +13,7 @@ const Footers = styled.div`
 `;
 
 function Footer() {
-  return <Footers>ⓒ GroundToAir {new Date().getFullYear()}</Footers>;
+  return <Bottom>ⓒ GroundToAir {new Date().getFullYear()}</Bottom>;
 }
 
 export default Footer;

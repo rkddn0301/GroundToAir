@@ -20,7 +20,7 @@ function ProtectedRoute({
 
   // restricted가 true로 제어된 것은 로그인이 안된 사용자만 접근 가능한 페이지
   if (restricted && isLoggedIn) {
-    // 로그인이 된 상태에서 로그인/회원가입 관련 페이지에 접근하던 메인 페이지로 이동
+    // 로그인이 된 상태에서 로그인/회원가입 관련 페이지에 접근하면 메인 페이지로 이동
     return <Redirect to="/" />;
   }
 

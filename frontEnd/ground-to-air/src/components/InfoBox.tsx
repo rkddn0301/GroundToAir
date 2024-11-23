@@ -3,6 +3,7 @@
 import { Link, useHistory } from "react-router-dom";
 import styled from "styled-components";
 
+// InfoBox 전체 컴포넌트 구성
 const Box = styled.div`
   width: 50%;
   min-height: 80vh;
@@ -13,17 +14,20 @@ const Box = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // 그림자 효과 추가
 `;
 
+// Header 부분 구성
 const BoxHeader = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 15px 15px 5px 15px; // 순서 : 위 오른 아래 왼
 `;
 
+// 클릭 버튼 아이콘 구성
 const Icon = styled.svg`
   width: 36px;
   cursor: pointer;
 `;
 
+// Footer 부분 구성
 const BoxFooter = styled.div`
   display: flex;
   justify-content: center;

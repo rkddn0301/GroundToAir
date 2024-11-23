@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import FlightImg from "../img/Flight.png";
 
+// Title 전체 컴포넌트 구성
 const Home = styled.div`
   display: flex;
   justify-content: center;
@@ -27,11 +28,13 @@ const Circle = styled.div<{ parentbgcolor: "black" | "white" }>`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 효과 추가
 `;
 
+// 아이콘 로고 구성
 const Flight = styled.img`
   width: 35px;
   height: 35px;
 `;
 
+// 제목 폰트 구성
 const TitleFont = styled.h3<{ parentbgcolor: "black" | "white" }>`
   font-size: 35px;
   margin-left: -10px;

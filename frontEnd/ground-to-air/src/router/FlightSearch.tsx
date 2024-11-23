@@ -12,15 +12,13 @@ import AutoComplete from "../components/flight/AutoComplete";
 import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
 
+// FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
   min-width: 100%;
   margin: 0 auto;
 `;
 
-const ArrowsIcon = styled.svg`
-  width: 25px;
-`;
-
+// 왕복/편도 전체 디자인 구성
 const OnewayCheckMenu = styled.div`
   width: 200px;
   margin-bottom: 15px;
@@ -39,6 +37,7 @@ const OnewayCheckMenu = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
 `;
 
+// 작성란 폼 전체 디자인 구성
 const Form = styled.form`
   display: flex;
   justify-content: center;
@@ -52,6 +51,7 @@ const Form = styled.form`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
 `;
 
+// 작성란 구분 디자인 구성
 const Field = styled.div`
   width: 20%;
   height: 85%;
@@ -63,6 +63,7 @@ const Field = styled.div`
   max-width: 200px; // 최대 크기 200px로 고정
 `;
 
+// 출발지/도착지 전환 버튼 구성
 const CircleField = styled.div`
   width: 50px;
   padding: 15px;
@@ -79,12 +80,19 @@ const CircleField = styled.div`
   }
 `;
 
+// 출발지/도착지 전환 버튼 아이콘
+const ArrowsIcon = styled.svg`
+  width: 25px;
+`;
+
+// 작성란 제목 디자인 구성
 const Label = styled.label`
   font-size: 12px;
   padding: 0 5px 0 0;
   margin-bottom: 8px;
 `;
 
+// 작성란 디자인 구성
 const WriteInput = styled.input`
   border: none;
   background: transparent;
@@ -92,10 +100,12 @@ const WriteInput = styled.input`
   margin-top: auto;
 `;
 
+// 달력 전체 디자인 구성
 const CalendarInput = styled.div`
   margin-top: 10px;
 `;
 
+// 인원 및 좌석등급 버튼 디자인 구성
 const TravelerButton = styled.button`
   position: relative;
   margin-top: 10px;
@@ -111,6 +121,7 @@ const TravelerButton = styled.button`
   text-overflow: ellipsis; // 숨겨진 텍스트 ... 표시
 `;
 
+// 버튼 디자인 구성
 const SubmitBtn = styled.button`
   height: 85%;
   background-color: skyblue;
@@ -125,6 +136,7 @@ const SubmitBtn = styled.button`
   }
 `;
 
+// 항공 조회 로딩 중 전체 디자인 구성
 const Loading = styled.div`
   height: 50vh;
   display: flex;
@@ -133,6 +145,7 @@ const Loading = styled.div`
   gap: 8px;
 `;
 
+// 로딩 중... 원형 디자인 구성
 const Spinner = styled(motion.div)`
   border: 4px solid ${(props) => props.theme.white.font};
   border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
@@ -141,6 +154,7 @@ const Spinner = styled(motion.div)`
   height: 16px;
 `;
 
+// 항공 조회 결과 전체 디자인 구성
 const ResultContainer = styled.div`
   //margin: 0 auto;
 `;

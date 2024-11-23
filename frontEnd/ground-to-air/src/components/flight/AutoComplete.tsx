@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { InputData } from "../../router/FlightSearch";
 import { IataCodes } from "../../utils/api";
 
+// AutoComplete 전체 컴포넌트 구성
 const AutoCompleteList = styled.ul`
   position: absolute;
   width: 15rem;
@@ -25,6 +26,7 @@ const AutoCompleteList = styled.ul`
   } */
 `;
 
+// 자동완성 목록 디자인 구성
 const AutoCompleteItem = styled.li`
   display: flex;
   flex-direction: column;
@@ -41,18 +43,21 @@ const AutoCompleteItem = styled.li`
   }
 `;
 
+// 도시 아이콘
 const BuildingIcon = styled.svg`
   width: 14px;
   height: 14px;
   margin-right: 8px;
 `;
 
+// 공항 아이콘
 const Flight = styled.span`
   width: 14px;
   height: 14px;
   margin-right: 8px;
 `;
 
+// 자동완성 컴포넌트에 필요한 props
 interface AutoCompleteProps {
   setInputData: React.Dispatch<React.SetStateAction<InputData>>;
   setAutoCompleteLocationSw: React.Dispatch<React.SetStateAction<boolean>>;

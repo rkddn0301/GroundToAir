@@ -13,6 +13,7 @@ import {
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
+// GoogleAuth 전체 컴포넌트 구성
 const Btn = styled.button<{
   width?: string;
   fontSize?: string;
@@ -31,6 +32,7 @@ const Btn = styled.button<{
   }
 `;
 
+// 구글 로고 이미지 구성
 const Img = styled.img`
   width: 10%;
   margin: 0 3% -1.5% 0;

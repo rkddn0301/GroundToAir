@@ -2,6 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 
+// ChoiceButton의 전체 컴포넌트 구성
 const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -9,6 +10,7 @@ const Container = styled.div`
   gap: 15px;
 `;
 
+// 버튼 디자인 구성
 const Btn = styled.button<{ isActive: boolean }>`
   width: 100px;
   display: flex;
@@ -29,12 +31,14 @@ const Btn = styled.button<{ isActive: boolean }>`
   }
 `;
 
+// 호텔 아이콘 표시
 const BuildingIcon = styled.svg`
   width: 14px;
   height: 14px;
   margin-right: 8px;
 `;
 
+// 항공편 아이콘 표시
 const Flight = styled.span`
   margin-right: 8px;
 `;

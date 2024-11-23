@@ -6,10 +6,12 @@ import InfoBox from "../components/InfoBox";
 import KakaoAuth from "../components/KakaoAuth";
 import GoogleAuth from "../components/GoogleAuth";
 
+// Join 전체 컴포넌트 구성
 const Container = styled.div`
   margin-top: -15px;
 `;
 
+// 클릭 메뉴 버튼 전체 구성
 const Menus = styled.div`
   height: 50vh;
   display: flex;
@@ -20,6 +22,7 @@ const Menus = styled.div`
   margin-top: 50px;
 `;
 
+// 각 버튼 디자인 구성
 const Btn = styled.button`
   width: 300px;
   padding: 20px;

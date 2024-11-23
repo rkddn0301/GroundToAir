@@ -18,6 +18,7 @@ import IdFind from "./router/IdFind";
 import MyInfo from "./router/MyInfo";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// 전체 컴포넌트를 구성
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -27,6 +28,7 @@ const Container = styled.div`
   min-height: 100vh; // 페이지 최소 높이를 100vh로 변경
 `;
 
+// Layout, Footer 사이에 있는 Main div 태그
 const MainContent = styled.main`
   flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
 `;
@@ -65,11 +67,10 @@ function App() {
   return (
     <Container>
       <Router>
+        <Route path={["/hotels", "/", "/myInfo"]} exact>
+          <Layout />
+        </Route>
         <MainContent>
-          <Route path={["/hotels", "/", "/myInfo"]} exact>
-            <Layout />
-          </Route>
-
           {/* ChoiceButton의 경우 항공, 호텔 조회 페이지에만 보여야함 */}
           <Route path={["/hotels", "/"]} exact>
             <ChoiceButton />

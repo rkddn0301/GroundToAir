@@ -5,6 +5,7 @@ import { formatDuration, formatTime } from "../../utils/formatTime";
 import { AirlineCodes, FlightOffer } from "../../utils/api";
 import axios from "axios";
 
+// FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
   width: 60%;
   max-height: 250px;
@@ -28,6 +29,7 @@ const Banner = styled.div`
 EX) ((flex-basis * 자식개수) - 부모 크기) / 자식개수
 * flex-basis : 부모 크기를 얼마나 차지할지 정함
 */
+// 항공 정보 디자인 구성
 const FlightInfo = styled.div`
   width: 100%;
   //flex: 1 0 27.5%;
@@ -37,6 +39,7 @@ const FlightInfo = styled.div`
   align-items: center;
 `;
 
+// 항공 예약 관련 디자인 구성
 const ReservationDetails = styled.div`
   width: 100%;
   //flex: 0 0 5%;
@@ -71,7 +74,7 @@ const DestinationLine = styled.div`
   gap: 5px;
 `;
 
-// 중간라인 구성
+// 중간라인(소요시간, 경유지) 구성
 const MiddleInfoLine = styled.div`
   width: 30%;
   display: flex;
@@ -80,14 +83,17 @@ const MiddleInfoLine = styled.div`
   gap: 5px;
 `;
 
+// 항공사 정보 관련 디자인 구성
 const AirlineCode = styled.div`
   font-size: 12px;
 `;
 
+// 출발지/도착지 공항 코드 디자인 구성
 const IataCode = styled.div`
   font-weight: 600;
 `;
 
+// 경유지 라인
 const StopLine = styled.div`
   position: relative;
   width: 100%;
@@ -97,6 +103,8 @@ const StopLine = styled.div`
   justify-content: center;
   opacity: 50%;
 `;
+
+// 경유지 여부에 따라 생성되는 원형 디자인
 const StopLineCircle = styled.div`
   position: absolute;
   width: 8px;
@@ -106,6 +114,7 @@ const StopLineCircle = styled.div`
   z-index: 1;
 `;
 
+// 예약 버튼 디자인
 const ReservationBtn = styled.button`
   padding: 10px;
   background-color: skyblue;
@@ -120,6 +129,7 @@ const ReservationBtn = styled.button`
   }
 `;
 
+// 조회 결과 컴포넌트에 필요한 props
 interface FlightResultProps {
   offer: FlightOffer;
   inputData: InputData; // inputData의 타입을 참조
