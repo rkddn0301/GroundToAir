@@ -2,7 +2,8 @@ import styled from "styled-components";
 import { InputData, LocationData } from "../../router/FlightSearch";
 import { useEffect } from "react";
 import { formatDuration, formatTime } from "../../utils/formatTime";
-import { FlightOffer } from "../../utils/api";
+import { AirlineCodes, FlightOffer } from "../../utils/api";
+import axios from "axios";
 
 const Banner = styled.div`
   width: 60%;
@@ -126,6 +127,7 @@ interface FlightResultProps {
   dictionaries: {
     carriers: { [key: string]: string };
   };
+  airlineCodeOffers: AirlineCodes[];
   setFilterMismatchCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -134,6 +136,7 @@ function FlightResult({
   inputData,
   locationData,
   dictionaries,
+  airlineCodeOffers,
   setFilterMismatchCount,
 }: FlightResultProps) {
   // 가는날
@@ -246,7 +249,7 @@ function FlightResult({
       console.log(returnDestinationLocationCode); */
       setFilterMismatchCount((prev) => prev + 1); // 카운팅만 업데이트
     }
-  }, [shouldReturnNull, setFilterMismatchCount]); // shouldReturnNull 값이 변경될 때만 실행
+  }, [shouldReturnNull]); // shouldReturnNull 값이 변경될 때만 실행
 
   if (shouldReturnNull) {
     return null; // 조건에 맞지 않으면 결과를 출력하지 않음

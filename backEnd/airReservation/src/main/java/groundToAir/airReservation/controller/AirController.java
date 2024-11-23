@@ -1,5 +1,6 @@
 package groundToAir.airReservation.controller;
 
+import groundToAir.airReservation.entity.AirlineCodeEntity;
 import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.service.AirService;
 import groundToAir.airReservation.utils.AccessTokenUtil;
@@ -65,9 +66,13 @@ public class AirController {
     public List<IataCodeEntity> getIataCode(
             @RequestParam("keyword") String keyword
     ){
-
-
         return airService.getIataCodes(keyword);
+    }
+
+    // 항공사 코드
+    @GetMapping("/airlineCode")
+    public List<AirlineCodeEntity> getAirlineCode() {
+        return airService.getAirlineCodes();
     }
 
 

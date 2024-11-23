@@ -12,6 +12,16 @@ export interface IataCodes {
   countryKor?: string; // 국가명(한국어)
 }
 
+// 항공사코드 데이터 수집(AIRLINE_CODE)
+export interface AirlineCodes {
+  codeNo: number;
+  airlines: string; // 항공사명
+  airlinesKor: string; // 항공사명(한국어)
+  airlinesLogo: string; // 항공사 로고 URL
+  iata: string; // 항공사코드(IATA)
+  icao: string; // 항공사코드(ICAO)
+}
+
 // AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
 export interface FlightOffer {
   type: string; // 응답 데이터의 유형

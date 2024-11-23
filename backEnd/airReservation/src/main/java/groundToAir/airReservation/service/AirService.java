@@ -73,6 +73,13 @@ public class AirService {
         );
     }
 
+    // 항공사 코드 가져오기
+    public List<AirlineCodeEntity> getAirlineCodes() {
+        return airlineCodeRepository.findAll();
+    }
+
+
+
 
 
 

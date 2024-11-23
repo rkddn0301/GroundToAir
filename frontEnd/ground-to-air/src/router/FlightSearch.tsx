@@ -9,7 +9,7 @@ import styled from "styled-components";
 import TravelerModal from "../components/flight/TravelerModal";
 import FlightResult from "../components/flight/FlightResult";
 import AutoComplete from "../components/flight/AutoComplete";
-import { FlightOffer, IataCodes } from "../utils/api";
+import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
 
 const Container = styled.div`
@@ -239,11 +239,15 @@ function FlightSearch() {
   const autoCompleteOriginLocationRef = useRef<HTMLDivElement>(null); // 출발지 자동완성 선택란 제어
   const autoCompleteDestinationLocationRef = useRef<HTMLDivElement>(null); // 도착지 자동완성 선택란 제어
 
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
   ); // 항공편 추출
 
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+  const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
+    []
+  ); // 항공사 코드 추출
 
   // modal 구간에서 벗어날 경우 비활성화
   const modalClickOutside = (e: MouseEvent) => {
@@ -278,8 +282,22 @@ function FlightSearch() {
     }
   };
 
+  // 항공사 코드 추출 함수
+  const airlineCodeFetch = async () => {
+    const response = await axios.get(`http://localhost:8080/air/airlineCode`);
+    setAirlineCodeOffers(response.data);
+  };
+
+  useEffect(() => {
+    if (airlineCodeOffers.length > 0) {
+      console.log(airlineCodeOffers);
+    }
+  }, [airlineCodeOffers]);
+
   // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
   useEffect(() => {
+    airlineCodeFetch(); // 항공사 코드 데이터 저장
+
     const currentDate = new Date();
     currentDate.setDate(currentDate.getDate() + 3);
     const initDepartureDate = currentDate.toISOString().split("T")[0]; // "YYYY-MM-DD" 형식
@@ -295,10 +313,6 @@ function FlightSearch() {
       document.removeEventListener("mousedown", modalClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    console.log(flightOffers);
-  }, [flightOffers]);
 
   // 편도/왕복 선택 radio
   const onewayCheckingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -742,6 +756,23 @@ function FlightSearch() {
 
         <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
       </Form>
+      {/* 11/23기준 항공 조회가 되지 않아 임시로 항공사 로고 삽입 테스트 */}
+      {airlineCodeOffers.map((airline, index) => {
+        return (
+          <div>
+            {airline.iata === "KE" && (
+              <img
+                src={
+                  airline.airlinesLogo.split("images/")[1] ===
+                  "pop_sample_img03.gif"
+                    ? ""
+                    : airline.airlinesLogo
+                }
+              />
+            )}
+          </div>
+        );
+      })}
 
       {isLoading ? (
         <Loading>
@@ -762,14 +793,17 @@ function FlightSearch() {
             {flightOffers.meta.count - filterMismatchCount}개
           </div>
           {flightOffers.data.slice(0, 90).map((offer: any) => (
-            <FlightResult
-              key={offer.id}
-              offer={offer}
-              inputData={inputData}
-              locationData={locationData}
-              dictionaries={flightOffers.dictionaries}
-              setFilterMismatchCount={setFilterMismatchCount}
-            />
+            <>
+              <FlightResult
+                key={offer.id}
+                offer={offer}
+                inputData={inputData}
+                locationData={locationData}
+                dictionaries={flightOffers.dictionaries}
+                airlineCodeOffers={airlineCodeOffers}
+                setFilterMismatchCount={setFilterMismatchCount}
+              />
+            </>
           ))}
         </ResultContainer>
       ) : (
