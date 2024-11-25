@@ -151,10 +151,28 @@ function FlightResult({
 }: FlightResultProps) {
   // 가는날
 
+  /*
+   * 운행항공사 로고 로직
+   * 1. matchesIata, isLogoValid가 일치하는 값이 나올 때까지 진행
+   * 2. matchesIata : 항공사 테이블(airlineCodeOffers)에서 일치하는 항공사 코드랑 일치하는지 확인
+   * 3. isLogoValid : 항공사 테이블에서 일치하는 로고가 있는지 확인
+   */
   const operatingCarrierCode =
-    dictionaries.carriers[
-      offer.itineraries[0]?.segments[0]?.operating?.carrierCode || ""
-    ]; // 메인 항공사
+    airlineCodeOffers.find((airline) => {
+      const matchesIata =
+        airline.iata ===
+          offer.itineraries[0]?.segments[
+            offer.itineraries[0]?.segments.length - 1
+          ]?.operating?.carrierCode || "";
+
+      const isLogoValid =
+        airline.airlinesLogo &&
+        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
+
+      return matchesIata && isLogoValid;
+    }) || ""; // 기본값을 객체로 설정
+
+  console.log(operatingCarrierCode);
 
   const airlineCode = `${
     offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
@@ -184,10 +202,32 @@ function FlightResult({
 
   // 오는날
 
-  const returnOperatingCarrierCode =
+  /*   const returnOperatingCarrierCode =
     dictionaries.carriers[
       offer.itineraries[1]?.segments[0]?.operating?.carrierCode || ""
-    ]; // 메인 항공사
+    ]; */ // 메인 항공사
+
+  const returnOperatingCarrierCode =
+    airlineCodeOffers.find((airline) => {
+      const matchesIata =
+        airline.iata ===
+          offer.itineraries[1]?.segments[
+            offer.itineraries[1]?.segments.length - 1
+          ]?.operating?.carrierCode || "";
+
+      const isLogoValid =
+        airline.airlinesLogo &&
+        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
+
+      return matchesIata && isLogoValid;
+    }) || "";
+
+  /*  const returnOperatingCarrierCode =
+    airlineCodeOffers.find(
+      (airline) =>
+        airline.iata ===
+        offer.itineraries[1]?.segments[0]?.operating?.carrierCode
+    ) || ""; */
 
   const returnAirlineCode = `${
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
@@ -269,7 +309,20 @@ function FlightResult({
     <Banner key={offer.id}>
       <FlightInfo>
         <Airline>
-          {operatingCarrierCode}
+          {operatingCarrierCode !== "" ? (
+            <img src={operatingCarrierCode.airlinesLogo} />
+          ) : (
+            <>
+              {
+                dictionaries.carriers[
+                  offer.itineraries[0]?.segments[
+                    offer.itineraries[0]?.segments.length - 1
+                  ]?.operating?.carrierCode || ""
+                ]
+              }
+            </>
+          )}
+
           <AirlineCode>{airlineCode}</AirlineCode>
         </Airline>
         <OriginLine>
@@ -307,7 +360,19 @@ function FlightResult({
       {inputData.returnDate !== "" && (
         <FlightInfo>
           <Airline>
-            {returnOperatingCarrierCode}
+            {returnOperatingCarrierCode !== "" ? (
+              <img src={returnOperatingCarrierCode.airlinesLogo} />
+            ) : (
+              <>
+                {
+                  dictionaries.carriers[
+                    offer.itineraries[1]?.segments[
+                      offer.itineraries[1]?.segments.length - 1
+                    ]?.operating?.carrierCode || ""
+                  ]
+                }
+              </>
+            )}
 
             <AirlineCode>{returnAirlineCode}</AirlineCode>
           </Airline>

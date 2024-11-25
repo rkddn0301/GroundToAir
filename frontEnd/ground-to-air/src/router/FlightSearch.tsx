@@ -770,23 +770,6 @@ function FlightSearch() {
 
         <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
       </Form>
-      {/* 11/23기준 항공 조회가 되지 않아 임시로 항공사 로고 삽입 테스트 */}
-      {airlineCodeOffers.map((airline, index) => {
-        return (
-          <div>
-            {airline.iata === "KE" && (
-              <img
-                src={
-                  airline.airlinesLogo.split("images/")[1] ===
-                  "pop_sample_img03.gif"
-                    ? ""
-                    : airline.airlinesLogo
-                }
-              />
-            )}
-          </div>
-        );
-      })}
 
       {isLoading ? (
         <Loading>
