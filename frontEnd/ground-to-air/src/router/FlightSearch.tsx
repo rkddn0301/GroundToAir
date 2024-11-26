@@ -159,6 +159,31 @@ const ResultContainer = styled.div`
   //margin: 0 auto;
 `;
 
+// 더 보기 버튼 디자인 구성
+const MoreBtnField = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+// 더 보기 버튼 구성
+const MoreBtn = styled.button`
+  width: 200px;
+  background-color: ${(props) => props.theme.white.bg};
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 5px;
+  cursor: pointer;
+
+  padding: 5px;
+  font-weight: 600;
+
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
+`;
+
 // 다른 컴포넌트에서 inputData를 props로 이용 시 필요
 export interface InputData {
   originLocationCode: string;
@@ -255,6 +280,8 @@ function FlightSearch() {
 
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
+  /* 항공 조회 결과 적용 시작 */
+
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
   ); // 항공편 추출
@@ -262,6 +289,23 @@ function FlightSearch() {
   const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
     []
   ); // 항공사 코드 추출
+
+  const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 항공편 코드 추출
+
+  const [showTooltip, setShowTooltip] = useState<{
+    [key: string]: { departureDate: boolean; returnDate: boolean };
+  }>({}); // 경유지 툴팁으로 map 형식으로 지정
+
+  /* 항공 조회 결과 적용 끝 */
+
+  /* 더 보기 기능 적용 시작 */
+  const [moreCount, setMoreCount] = useState(10); // 더 보기 state
+
+  const loadMore = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setMoreCount((prev) => prev + 30);
+  };
+
+  /* 더 보기 기능 적용 끝 */
 
   // modal 구간에서 벗어날 경우 비활성화
   const modalClickOutside = (e: MouseEvent) => {
@@ -297,9 +341,15 @@ function FlightSearch() {
   };
 
   // 항공사 코드 추출 함수
-  const airlineCodeFetch = async () => {
-    const response = await axios.get(`http://localhost:8080/air/airlineCode`);
-    setAirlineCodeOffers(response.data);
+  const airCodeFetch = async () => {
+    const airlineCodeResponse = await axios.get(
+      `http://localhost:8080/air/airlineCode`
+    );
+    const iataCodeResponse = await axios.get(
+      `http://localhost:8080/air/iataCode`
+    );
+    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
+    setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
   };
 
   useEffect(() => {
@@ -310,7 +360,7 @@ function FlightSearch() {
 
   // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
   useEffect(() => {
-    airlineCodeFetch(); // 항공사 코드 데이터 저장
+    airCodeFetch(); // 항공 코드 데이터 저장
 
     const currentDate = new Date();
     currentDate.setDate(currentDate.getDate() + 3);
@@ -375,9 +425,12 @@ function FlightSearch() {
 
     if (value.length > 1) {
       try {
-        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
-          params: { keyword: value },
-        });
+        const response = await axios.get(
+          `http://localhost:8080/air/autoCompleteIataCodes`,
+          {
+            params: { keyword: value },
+          }
+        );
         if (response.data) {
           setAutoCompleteOriginLocationSw(true);
           setAutoCompleteOriginLocations(response.data);
@@ -400,9 +453,12 @@ function FlightSearch() {
 
     if (value.length > 1) {
       try {
-        const response = await axios.get(`http://localhost:8080/air/iataCode`, {
-          params: { keyword: value },
-        });
+        const response = await axios.get(
+          `http://localhost:8080/air/autoCompleteIataCodes`,
+          {
+            params: { keyword: value },
+          }
+        );
         if (response.data) {
           setAutoCompleteDestinationLocationSw(true);
           setAutoCompleteDestinationLocations(response.data);
@@ -419,7 +475,7 @@ function FlightSearch() {
   };
 
   // 왕복 달력 선택
-  const rountTripDateChange = (dates: [Date | null, Date | null]) => {
+  const roundTripDateChange = (dates: [Date | null, Date | null]) => {
     const [start, end] = dates;
 
     setInputData({
@@ -576,6 +632,8 @@ function FlightSearch() {
 
     setIsLoading(true); // 항공 검색 이전까지 로딩
 
+    setMoreCount(10); // 항공 더 보기 초기화
+
     try {
       const response = await axios.get(
         `http://localhost:8080/air/flightOffers`,
@@ -696,7 +754,7 @@ function FlightSearch() {
             <CalendarInput>
               <DatePicker
                 showIcon
-                onChange={rountTripDateChange} // 범위 선택을 위한 onChange
+                onChange={roundTripDateChange} // 범위 선택을 위한 onChange
                 startDate={
                   inputData.departureDate
                     ? new Date(inputData.departureDate)
@@ -789,7 +847,7 @@ function FlightSearch() {
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
             {flightOffers.meta.count - filterMismatchCount}개
           </div>
-          {flightOffers.data.slice(0, 90).map((offer: any) => (
+          {flightOffers.data.slice(0, moreCount).map((offer: any) => (
             <>
               <FlightResult
                 key={offer.id}
@@ -798,10 +856,34 @@ function FlightSearch() {
                 locationData={locationData}
                 dictionaries={flightOffers.dictionaries}
                 airlineCodeOffers={airlineCodeOffers}
+                iataCodeOffers={iataCodeOffers}
                 setFilterMismatchCount={setFilterMismatchCount}
+                showTooltip={
+                  showTooltip[offer.id] || {
+                    departureDate: false,
+                    returnDate: false,
+                  }
+                } // 고유아이디인 offer.id로 key를 지정, value들(departureDate, returnDate)은 기본값으로 false
+                setShowTooltip={(field, value) =>
+                  setShowTooltip((prev) => ({
+                    ...prev,
+                    [offer.id]: {
+                      ...prev[offer.id],
+                      [field]: value,
+                    },
+                  }))
+                }
+                // 첫 번째 ...prev는 offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
+                // 두 번째 ...prev는 특정 offer.id 안에 있는 기존 key,value(departureDate : false, returnDate : false)를 가져오는 것
+                // field는 내가 변경한 key, value는 내가 변경한 boolean
               />
             </>
           ))}
+          {moreCount < flightOffers.meta.count - filterMismatchCount && (
+            <MoreBtnField>
+              <MoreBtn onClick={loadMore}>더 보기</MoreBtn>
+            </MoreBtnField>
+          )}
         </ResultContainer>
       ) : (
         ""

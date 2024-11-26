@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import { InputData, LocationData } from "../../router/FlightSearch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatDuration, formatTime } from "../../utils/formatTime";
-import { AirlineCodes, FlightOffer } from "../../utils/api";
+import { AirlineCodes, FlightOffer, IataCodes } from "../../utils/api";
 import axios from "axios";
 
 // FlightResult 전체 컴포넌트 구성
@@ -14,7 +14,8 @@ const Banner = styled.div`
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
   margin: 0 auto;
-  border: 1px solid ${(props) => props.theme.white.font};
+  box-shadow: 3px 2px 4px rgba(0, 0, 0, 0.2); // 그림자 순서 : x축, y축, 흐림효과, 색상
+  //border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 25px;
   padding: 25px;
   margin-bottom: 20px;
@@ -114,6 +115,23 @@ const StopLineCircle = styled.div`
   z-index: 1;
 `;
 
+const Tooltip = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 50%; // left+transform 을 통해 Tooltip을 출력시키는 부모 요소의 수평 중앙에 위치
+  transform: translateX(-50%);
+  background-color: ${(props) => props.theme.black.bg};
+  color: ${(props) => props.theme.black.font};
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 100;
+  margin-top: 4px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1.2; // 글자 사이의 간격
+`;
+
 // 예약 버튼 디자인
 const ReservationBtn = styled.button`
   padding: 10px;
@@ -137,8 +155,17 @@ interface FlightResultProps {
   dictionaries: {
     carriers: { [key: string]: string };
   };
-  airlineCodeOffers: AirlineCodes[];
+  airlineCodeOffers: AirlineCodes[]; // 항공사 코드 DB
+  iataCodeOffers: IataCodes[]; // 항공편 코드 DB
   setFilterMismatchCount: React.Dispatch<React.SetStateAction<number>>;
+  showTooltip: {
+    departureDate: boolean;
+    returnDate: boolean;
+  };
+  setShowTooltip: (
+    field: "departureDate" | "returnDate",
+    value: boolean
+  ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
 }
 
 function FlightResult({
@@ -147,7 +174,10 @@ function FlightResult({
   locationData,
   dictionaries,
   airlineCodeOffers,
+  iataCodeOffers,
   setFilterMismatchCount,
+  showTooltip,
+  setShowTooltip,
 }: FlightResultProps) {
   // 가는날
 
@@ -161,9 +191,12 @@ function FlightResult({
     airlineCodeOffers.find((airline) => {
       const matchesIata =
         airline.iata ===
+          offer.itineraries[0]?.segments[0]?.operating?.carrierCode ||
+        airline.iata ===
           offer.itineraries[0]?.segments[
             offer.itineraries[0]?.segments.length - 1
-          ]?.operating?.carrierCode || "";
+          ]?.operating?.carrierCode ||
+        "";
 
       const isLogoValid =
         airline.airlinesLogo &&
@@ -171,8 +204,6 @@ function FlightResult({
 
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
-
-  console.log(operatingCarrierCode);
 
   const airlineCode = `${
     offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
@@ -202,18 +233,16 @@ function FlightResult({
 
   // 오는날
 
-  /*   const returnOperatingCarrierCode =
-    dictionaries.carriers[
-      offer.itineraries[1]?.segments[0]?.operating?.carrierCode || ""
-    ]; */ // 메인 항공사
-
   const returnOperatingCarrierCode =
     airlineCodeOffers.find((airline) => {
       const matchesIata =
         airline.iata ===
+          offer.itineraries[1]?.segments[0]?.operating?.carrierCode ||
+        airline.iata ===
           offer.itineraries[1]?.segments[
             offer.itineraries[1]?.segments.length - 1
-          ]?.operating?.carrierCode || "";
+          ]?.operating?.carrierCode ||
+        "";
 
       const isLogoValid =
         airline.airlinesLogo &&
@@ -221,13 +250,6 @@ function FlightResult({
 
       return matchesIata && isLogoValid;
     }) || "";
-
-  /*  const returnOperatingCarrierCode =
-    airlineCodeOffers.find(
-      (airline) =>
-        airline.iata ===
-        offer.itineraries[1]?.segments[0]?.operating?.carrierCode
-    ) || ""; */
 
   const returnAirlineCode = `${
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
@@ -333,18 +355,32 @@ function FlightResult({
           {duration}
 
           <StopLine>{numberOfStops > 0 && <StopLineCircle />}</StopLine>
-
-          <div>
+          <div style={{ position: "relative" }}>
             {numberOfStops === 0 ? (
               "직항"
             ) : (
               <>
                 {`${numberOfStops}회 경유`}{" "}
-                {airportStopover.segments.map(
-                  (segments: any, index: any) =>
-                    index < numberOfStops && (
-                      <span key={index}>{segments.arrival.iataCode} </span>
-                    )
+                {airportStopover.segments.map((segments: any, index: number) =>
+                  index < numberOfStops ? (
+                    <span
+                      key={index}
+                      onMouseEnter={() => setShowTooltip("departureDate", true)}
+                      onMouseLeave={() =>
+                        setShowTooltip("departureDate", false)
+                      }
+                    >
+                      {segments.arrival.iataCode}{" "}
+                      {showTooltip.departureDate &&
+                        iataCodeOffers
+                          .filter(
+                            (iata) => iata.iata === segments.arrival.iataCode
+                          )
+                          .map((filteredIata, i) => (
+                            <Tooltip key={i}>{filteredIata.airportKor}</Tooltip>
+                          ))}
+                    </span>
+                  ) : null
                 )}
               </>
             )}
@@ -357,7 +393,7 @@ function FlightResult({
       </FlightInfo>
 
       {/* 왕복일경우 */}
-      {inputData.returnDate !== "" && (
+      {offer.itineraries[1] && (
         <FlightInfo>
           <Airline>
             {returnOperatingCarrierCode !== "" ? (
@@ -389,15 +425,36 @@ function FlightResult({
               {returnNumberOfStops === 0 ? (
                 "직항"
               ) : (
-                <>
+                <div style={{ position: "relative" }}>
                   {`${returnNumberOfStops}회 경유`}{" "}
                   {returnAirportStopover.segments.map(
                     (segments: any, index: any) =>
-                      index < returnNumberOfStops && (
-                        <span key={index}>{segments.arrival.iataCode} </span>
-                      )
+                      index < returnNumberOfStops ? (
+                        <span
+                          key={index}
+                          onMouseEnter={() =>
+                            setShowTooltip("returnDate", true)
+                          }
+                          onMouseLeave={() =>
+                            setShowTooltip("returnDate", false)
+                          }
+                        >
+                          {segments.arrival.iataCode}{" "}
+                          {showTooltip.returnDate &&
+                            iataCodeOffers
+                              .filter(
+                                (iata) =>
+                                  iata.iata === segments.arrival.iataCode
+                              )
+                              .map((filteredIata, i) => (
+                                <Tooltip key={i}>
+                                  {filteredIata.airportKor}
+                                </Tooltip>
+                              ))}
+                        </span>
+                      ) : null
                   )}
-                </>
+                </div>
               )}
             </div>
           </MiddleInfoLine>

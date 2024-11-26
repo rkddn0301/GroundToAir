@@ -62,7 +62,8 @@ public class AirService {
         return response.getBody();
     }
 
-    public List<IataCodeEntity> getIataCodes(String keyword) {
+    // 자동완성 항공편 코드 가져오기
+    public List<IataCodeEntity> getAutoCompleteIataCodes(String keyword) {
         if (keyword == null || keyword.length() < 2) {
             return Collections.emptyList(); // 빈 리스트 반환
         }
@@ -78,7 +79,10 @@ public class AirService {
         return airlineCodeRepository.findAll();
     }
 
-
+    // 항공편 코드 가져오기
+    public List<IataCodeEntity> getIataCodes() {
+        return iataCodeRepository.findAll();
+    }
 
 
 

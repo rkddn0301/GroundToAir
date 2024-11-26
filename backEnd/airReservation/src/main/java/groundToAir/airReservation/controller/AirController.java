@@ -61,18 +61,24 @@ public class AirController {
         return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode);
     }
 
-    // 항공편 코드
-    @GetMapping("/iataCode")
-    public List<IataCodeEntity> getIataCode(
+    // 자동완성 항공편 코드
+    @GetMapping("/autoCompleteIataCodes")
+    public List<IataCodeEntity> getAutoCompleteIataCode(
             @RequestParam("keyword") String keyword
     ){
-        return airService.getIataCodes(keyword);
+        return airService.getAutoCompleteIataCodes(keyword);
     }
 
     // 항공사 코드
     @GetMapping("/airlineCode")
     public List<AirlineCodeEntity> getAirlineCode() {
         return airService.getAirlineCodes();
+    }
+
+    // 항공편 코드
+    @GetMapping("/iataCode")
+    public List<IataCodeEntity> getIataCode() {
+        return airService.getIataCodes();
     }
 
 
