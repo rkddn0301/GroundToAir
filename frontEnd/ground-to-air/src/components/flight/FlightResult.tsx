@@ -159,11 +159,14 @@ interface FlightResultProps {
   iataCodeOffers: IataCodes[]; // 항공편 코드 DB
   setFilterMismatchCount: React.Dispatch<React.SetStateAction<number>>;
   showTooltip: {
-    departureDate: boolean;
-    returnDate: boolean;
-  };
+    [index: number]: {
+      departureDate: boolean;
+      returnDate: boolean;
+    };
+  }; // offer.id는 이미 부모 컴포넌트에서 선언하여 보냈기 때문에 자식 컴포넌트에서는 index부터 선언
   setShowTooltip: (
     field: "departureDate" | "returnDate",
+    index: number,
     value: boolean
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
 }
@@ -365,13 +368,15 @@ function FlightResult({
                   index < numberOfStops ? (
                     <span
                       key={index}
-                      onMouseEnter={() => setShowTooltip("departureDate", true)}
+                      onMouseEnter={() =>
+                        setShowTooltip("departureDate", index, true)
+                      }
                       onMouseLeave={() =>
-                        setShowTooltip("departureDate", false)
+                        setShowTooltip("departureDate", index, false)
                       }
                     >
                       {segments.arrival.iataCode}{" "}
-                      {showTooltip.departureDate &&
+                      {showTooltip[index]?.departureDate &&
                         iataCodeOffers
                           .filter(
                             (iata) => iata.iata === segments.arrival.iataCode
@@ -433,14 +438,14 @@ function FlightResult({
                         <span
                           key={index}
                           onMouseEnter={() =>
-                            setShowTooltip("returnDate", true)
+                            setShowTooltip("returnDate", index, true)
                           }
                           onMouseLeave={() =>
-                            setShowTooltip("returnDate", false)
+                            setShowTooltip("returnDate", index, false)
                           }
                         >
                           {segments.arrival.iataCode}{" "}
-                          {showTooltip.returnDate &&
+                          {showTooltip[index]?.returnDate &&
                             iataCodeOffers
                               .filter(
                                 (iata) =>

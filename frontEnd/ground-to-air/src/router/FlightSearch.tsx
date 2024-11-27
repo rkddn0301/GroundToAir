@@ -293,8 +293,10 @@ function FlightSearch() {
   const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 항공편 코드 추출
 
   const [showTooltip, setShowTooltip] = useState<{
-    [key: string]: { departureDate: boolean; returnDate: boolean };
-  }>({}); // 경유지 툴팁으로 map 형식으로 지정
+    [key: string]: {
+      [index: number]: { departureDate: boolean; returnDate: boolean };
+    };
+  }>({}); // 경유지 툴팁으로 고유 key, 경유지 구분 index, 왕복 내용 중 hover 여부를 관리하는 state
 
   /* 항공 조회 결과 적용 끝 */
 
@@ -858,23 +860,22 @@ function FlightSearch() {
                 airlineCodeOffers={airlineCodeOffers}
                 iataCodeOffers={iataCodeOffers}
                 setFilterMismatchCount={setFilterMismatchCount}
-                showTooltip={
-                  showTooltip[offer.id] || {
-                    departureDate: false,
-                    returnDate: false,
-                  }
-                } // 고유아이디인 offer.id로 key를 지정, value들(departureDate, returnDate)은 기본값으로 false
-                setShowTooltip={(field, value) =>
+                showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                setShowTooltip={(field, index, value) =>
                   setShowTooltip((prev) => ({
                     ...prev,
                     [offer.id]: {
-                      ...prev[offer.id],
-                      [field]: value,
+                      ...(prev[offer.id] || {}),
+                      [index]: {
+                        ...(prev[offer.id]?.[index] || {}),
+                        [field]: value,
+                      },
                     },
                   }))
                 }
-                // 첫 번째 ...prev는 offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
-                // 두 번째 ...prev는 특정 offer.id 안에 있는 기존 key,value(departureDate : false, returnDate : false)를 가져오는 것
+                // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
+                // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
+                // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
                 // field는 내가 변경한 key, value는 내가 변경한 boolean
               />
             </>
