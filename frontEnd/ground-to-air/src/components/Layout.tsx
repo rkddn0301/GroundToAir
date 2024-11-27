@@ -12,7 +12,7 @@ const Nav = styled.nav`
   position: fixed; // 틀고정
   top: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   padding: 20px;

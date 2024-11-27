@@ -24,6 +24,8 @@ const AutoCompleteList = styled.ul`
   &::-webkit-scrollbar { // 스크롤바 없애는건데 잠시 보류 11/16
     display: none;
   } */
+
+  z-index: 10;
 `;
 
 // 자동완성 목록 디자인 구성

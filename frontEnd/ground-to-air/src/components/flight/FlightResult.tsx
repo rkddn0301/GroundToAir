@@ -7,10 +7,10 @@ import axios from "axios";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
-  width: 60%;
+  width: 70%;
   max-height: 250px;
   display: flex;
-  flex-direction: column;
+  // flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
   margin: 0 auto;
@@ -21,6 +21,17 @@ const Banner = styled.div`
   margin-bottom: 20px;
   gap: 25px;
 `;
+
+// FlightInfo 왕복 컴포넌트 구성
+const FlightInfoGroups = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: space-around;
+  align-items: center;
+`;
+
 /*
 * flex : {flex-grow} {flex-shrink} {flex-basis}
 * flex-grow : flex-basis 크기를 기준으로 안에 있는 자식끼리 주어진 비율에 따라 나눔.
@@ -34,7 +45,6 @@ EX) ((flex-basis * 자식개수) - 부모 크기) / 자식개수
 const FlightInfo = styled.div`
   width: 100%;
   //flex: 1 0 27.5%;
-  height: 30%;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -42,14 +52,12 @@ const FlightInfo = styled.div`
 
 // 항공 예약 관련 디자인 구성
 const ReservationDetails = styled.div`
-  width: 100%;
+  width: 25%;
   //flex: 0 0 5%;
-  height: 10%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  border-top: 1px solid #ccc;
-  padding: 5px 10px 0 0;
+  //padding: 5px 10px 0 0;
 `;
 
 // 항공사 라인
@@ -115,6 +123,7 @@ const StopLineCircle = styled.div`
   z-index: 1;
 `;
 
+// 경유지 툴팁 구성 디자인
 const Tooltip = styled.div`
   position: absolute;
   bottom: 100%;
@@ -126,10 +135,17 @@ const Tooltip = styled.div`
   border-radius: 4px;
   font-size: 0.8rem;
   white-space: nowrap;
-  z-index: 100;
+  z-index: 10;
   margin-top: 4px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   line-height: 1.2; // 글자 사이의 간격
+`;
+
+// 예약 버튼 그룹 디자인
+const ReservationBtnGroups = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 // 예약 버튼 디자인
@@ -332,120 +348,53 @@ function FlightResult({
 
   return (
     <Banner key={offer.id}>
-      <FlightInfo>
-        <Airline>
-          {operatingCarrierCode !== "" ? (
-            <img src={operatingCarrierCode.airlinesLogo} />
-          ) : (
-            <>
-              {
-                dictionaries.carriers[
-                  offer.itineraries[0]?.segments[
-                    offer.itineraries[0]?.segments.length - 1
-                  ]?.operating?.carrierCode || ""
-                ]
-              }
-            </>
-          )}
-
-          <AirlineCode>{airlineCode}</AirlineCode>
-        </Airline>
-        <OriginLine>
-          {departureTime}
-          <div style={{ fontWeight: "600" }}>{originLocationCode}</div>
-        </OriginLine>
-        <MiddleInfoLine>
-          {duration}
-
-          <StopLine>{numberOfStops > 0 && <StopLineCircle />}</StopLine>
-          <div style={{ position: "relative" }}>
-            {numberOfStops === 0 ? (
-              "직항"
-            ) : (
-              <>
-                {`${numberOfStops}회 경유`}{" "}
-                {airportStopover.segments.map((segments: any, index: number) =>
-                  index < numberOfStops ? (
-                    <span
-                      key={index}
-                      onMouseEnter={() =>
-                        setShowTooltip("departureDate", index, true)
-                      }
-                      onMouseLeave={() =>
-                        setShowTooltip("departureDate", index, false)
-                      }
-                    >
-                      {segments.arrival.iataCode}{" "}
-                      {showTooltip[index]?.departureDate &&
-                        iataCodeOffers
-                          .filter(
-                            (iata) => iata.iata === segments.arrival.iataCode
-                          )
-                          .map((filteredIata, i) => (
-                            <Tooltip key={i}>{filteredIata.airportKor}</Tooltip>
-                          ))}
-                    </span>
-                  ) : null
-                )}
-              </>
-            )}
-          </div>
-        </MiddleInfoLine>
-        <DestinationLine>
-          {arrieveTime}
-          <IataCode>{destinationLocationCode}</IataCode>
-        </DestinationLine>
-      </FlightInfo>
-
-      {/* 왕복일경우 */}
-      {offer.itineraries[1] && (
+      <FlightInfoGroups>
         <FlightInfo>
           <Airline>
-            {returnOperatingCarrierCode !== "" ? (
-              <img src={returnOperatingCarrierCode.airlinesLogo} />
+            {operatingCarrierCode !== "" ? (
+              <img src={operatingCarrierCode.airlinesLogo} />
             ) : (
               <>
                 {
                   dictionaries.carriers[
-                    offer.itineraries[1]?.segments[
-                      offer.itineraries[1]?.segments.length - 1
+                    offer.itineraries[0]?.segments[
+                      offer.itineraries[0]?.segments.length - 1
                     ]?.operating?.carrierCode || ""
                   ]
                 }
               </>
             )}
 
-            <AirlineCode>{returnAirlineCode}</AirlineCode>
+            <AirlineCode>{airlineCode}</AirlineCode>
           </Airline>
           <OriginLine>
-            {returnDepartureTime}
-            <div style={{ fontWeight: "600" }}>{returnOriginLocationCode}</div>
+            {departureTime}
+            <div style={{ fontWeight: "600" }}>{originLocationCode}</div>
           </OriginLine>
           <MiddleInfoLine>
-            {returnDuration}
+            {duration}
 
-            <StopLine>{returnNumberOfStops > 0 && <StopLineCircle />}</StopLine>
-
-            <div>
-              {returnNumberOfStops === 0 ? (
+            <StopLine>{numberOfStops > 0 && <StopLineCircle />}</StopLine>
+            <div style={{ position: "relative" }}>
+              {numberOfStops === 0 ? (
                 "직항"
               ) : (
-                <div style={{ position: "relative" }}>
-                  {`${returnNumberOfStops}회 경유`}{" "}
-                  {returnAirportStopover.segments.map(
-                    (segments: any, index: any) =>
-                      index < returnNumberOfStops ? (
+                <>
+                  {`${numberOfStops}회 경유`}{" "}
+                  {airportStopover.segments.map(
+                    (segments: any, index: number) =>
+                      index < numberOfStops ? (
                         <span
                           key={index}
                           onMouseEnter={() =>
-                            setShowTooltip("returnDate", index, true)
+                            setShowTooltip("departureDate", index, true)
                           }
                           onMouseLeave={() =>
-                            setShowTooltip("returnDate", index, false)
+                            setShowTooltip("departureDate", index, false)
                           }
                         >
                           {segments.arrival.iataCode}{" "}
-                          {showTooltip[index]?.returnDate &&
+                          {showTooltip[index]?.departureDate &&
                             iataCodeOffers
                               .filter(
                                 (iata) =>
@@ -459,24 +408,103 @@ function FlightResult({
                         </span>
                       ) : null
                   )}
-                </div>
+                </>
               )}
             </div>
           </MiddleInfoLine>
           <DestinationLine>
-            {returnArrieveTime}
-            <IataCode>{returnDestinationLocationCode}</IataCode>
+            {arrieveTime}
+            <IataCode>{destinationLocationCode}</IataCode>
           </DestinationLine>
         </FlightInfo>
-      )}
+
+        {/* 왕복일경우 */}
+        {offer.itineraries[1] && (
+          <FlightInfo>
+            <Airline>
+              {returnOperatingCarrierCode !== "" ? (
+                <img src={returnOperatingCarrierCode.airlinesLogo} />
+              ) : (
+                <>
+                  {
+                    dictionaries.carriers[
+                      offer.itineraries[1]?.segments[
+                        offer.itineraries[1]?.segments.length - 1
+                      ]?.operating?.carrierCode || ""
+                    ]
+                  }
+                </>
+              )}
+
+              <AirlineCode>{returnAirlineCode}</AirlineCode>
+            </Airline>
+            <OriginLine>
+              {returnDepartureTime}
+              <div style={{ fontWeight: "600" }}>
+                {returnOriginLocationCode}
+              </div>
+            </OriginLine>
+            <MiddleInfoLine>
+              {returnDuration}
+
+              <StopLine>
+                {returnNumberOfStops > 0 && <StopLineCircle />}
+              </StopLine>
+
+              <div>
+                {returnNumberOfStops === 0 ? (
+                  "직항"
+                ) : (
+                  <div style={{ position: "relative" }}>
+                    {`${returnNumberOfStops}회 경유`}{" "}
+                    {returnAirportStopover.segments.map(
+                      (segments: any, index: any) =>
+                        index < returnNumberOfStops ? (
+                          <span
+                            key={index}
+                            onMouseEnter={() =>
+                              setShowTooltip("returnDate", index, true)
+                            }
+                            onMouseLeave={() =>
+                              setShowTooltip("returnDate", index, false)
+                            }
+                          >
+                            {segments.arrival.iataCode}{" "}
+                            {showTooltip[index]?.returnDate &&
+                              iataCodeOffers
+                                .filter(
+                                  (iata) =>
+                                    iata.iata === segments.arrival.iataCode
+                                )
+                                .map((filteredIata, i) => (
+                                  <Tooltip key={i}>
+                                    {filteredIata.airportKor}
+                                  </Tooltip>
+                                ))}
+                          </span>
+                        ) : null
+                    )}
+                  </div>
+                )}
+              </div>
+            </MiddleInfoLine>
+            <DestinationLine>
+              {returnArrieveTime}
+              <IataCode>{returnDestinationLocationCode}</IataCode>
+            </DestinationLine>
+          </FlightInfo>
+        )}
+      </FlightInfoGroups>
 
       <ReservationDetails>
         {/* <div style={{ fontSize: "12px" }}>{numberOfBookableSeats}석 남음</div> */}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <ReservationBtnGroups>
           <ReservationBtn>예약하기</ReservationBtn>
-          {`\\${new Intl.NumberFormat().format(parseFloat(totalPrice))}`}
-        </div>
+          <div style={{ fontWeight: 600 }}>{`\\${new Intl.NumberFormat().format(
+            parseFloat(totalPrice)
+          )}`}</div>
+        </ReservationBtnGroups>
       </ReservationDetails>
     </Banner>
   );
