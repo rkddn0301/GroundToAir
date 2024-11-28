@@ -13,7 +13,7 @@ const Banner = styled.div`
   // flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
-  margin: 0 auto;
+  margin: 0 10% 0 23%;
   box-shadow: 3px 2px 4px rgba(0, 0, 0, 0.2); // 그림자 순서 : x축, y축, 흐림효과, 색상
   //border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 25px;

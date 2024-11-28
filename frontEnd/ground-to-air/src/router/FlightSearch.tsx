@@ -11,6 +11,7 @@ import FlightResult from "../components/flight/FlightResult";
 import AutoComplete from "../components/flight/AutoComplete";
 import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
+import FlightFiltering from "../components/flight/FlightFiltering";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -47,8 +48,8 @@ const Form = styled.form`
   height: 15vh;
   padding: 15px;
   margin: 0 auto;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
+  // border-radius: 5px;
+  // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
 `;
 
 // 작성란 구분 디자인 구성
@@ -156,14 +157,26 @@ const Spinner = styled(motion.div)`
 
 // 항공 조회 결과 전체 디자인 구성
 const ResultContainer = styled.div`
-  //margin: 0 auto;
+  //background-color: ${(props) => props.theme.white.bg};
+  position: relative;
+`;
+
+// 항공 조회 결과 폰트 디자인 구성
+const ResultFont = styled.div`
+  font-weight: 600;
+  padding: 0 0 1% 8%;
+  background-color: ${(props) => props.theme.white.bg};
+  margin: 0 0 20px 15%;
+  box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2); // 아래쪽 그림자만
+  position: relative; // FlightFiltering을 덮도록
+  z-index: 1; // FlightFiltering 위에 위치
 `;
 
 // 더 보기 버튼 디자인 구성
 const MoreBtnField = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin: 0 10% 10px 27%;
 `;
 
 // 더 보기 버튼 구성
@@ -845,10 +858,12 @@ function FlightSearch() {
         </Loading>
       ) : flightOffers ? (
         <ResultContainer>
-          <div style={{ margin: "10px", fontWeight: "600" }}>
+          <FlightFiltering />
+          <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
             {flightOffers.meta.count - filterMismatchCount}개
-          </div>
+          </ResultFont>
+
           {flightOffers.data.slice(0, moreCount).map((offer: any) => (
             <>
               <FlightResult
