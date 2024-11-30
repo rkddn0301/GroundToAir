@@ -229,7 +229,7 @@ export interface LocationData {
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출 데이터 배열로 변환
-interface FlightOffersResponse {
+export interface FlightOffersResponse {
   meta: {
     count: number;
   };
@@ -858,7 +858,10 @@ function FlightSearch() {
         </Loading>
       ) : flightOffers ? (
         <ResultContainer>
-          <FlightFiltering />
+          <FlightFiltering
+            flightOffers={flightOffers}
+            setFlightOffers={setFlightOffers}
+          />
           <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
             {flightOffers.meta.count - filterMismatchCount}개
