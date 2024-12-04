@@ -1,11 +1,17 @@
 // 시간 유틸 포맷 함수
 
-export function formatTime(dateTime?: string) {
-  if (!dateTime) return "";
+// 매개변수로 오는 데이터에 따라 시간 변환 해주는 함수
+// string 일 경우 'YYYYMMDD TT:MM:SS' 데이터로 date에서 직접 변환을 시도
+// number 일 경우 시간 데이터로 1시간(60분) 기준으로 나누기 시도
+export function formatTime(input?: string | number) {
+  if (input === undefined) return "";
 
-  const date = new Date(dateTime);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+  // !(Non-Null Assertion Operator) : date 뒤에 '!'는 null 또는 undefined가 아님을 보장한다는 의미.
+  const date = typeof input === "string" ? new Date(input) : null;
+  const hours =
+    typeof input === "string" ? date!.getHours() : Math.floor(input / 60);
+  const minutes = typeof input === "string" ? date!.getMinutes() : input % 60;
+
   const period = hours >= 12 ? "오후" : "오전";
 
   // 12시간제로 변환
