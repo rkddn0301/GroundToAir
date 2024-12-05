@@ -169,7 +169,7 @@ const ResultFont = styled.div`
   margin: 0 0 20px 15%;
   box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2); // 아래쪽 그림자만
   position: relative; // FlightFiltering을 덮도록
-  z-index: 1; // FlightFiltering 위에 위치
+  //z-index: 1; // FlightFiltering 위에 위치
 `;
 
 // 더 보기 버튼 디자인 구성

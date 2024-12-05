@@ -12,9 +12,8 @@ const Banner = styled.div`
   padding-left: 5px;
   margin-bottom: 10px;
   background-color: ${(props) => props.theme.white.bg};
-  height: 250px;
+  height: 350px;
   box-shadow: 5px 3px 2px rgba(0, 0, 0, 0.2); // 오른쪽 + 아래쪽 그림자
-  z-index: 0; // 검색결과(ResultFont)가 덮어써야해서 적용
 `;
 
 // 경유지 필터
@@ -38,7 +37,8 @@ const DepartureTime = styled.div``;
 // 출발 시간대 슬라이더 전체 디자인
 const SliderContainer = styled.div`
   position: relative;
-  width: 100%;
+  width: 90%;
+  margin: 0 auto;
   height: 50px;
 `;
 
@@ -189,13 +189,25 @@ function FlightFiltering({
   /* 경유지 데이터 끝 */
 
   /* 출발 시간대 조정 데이터 시작 */
-  const [startTime, setStartTime] = useState(0); // 출발 시간 시작 state
-  const [endTime, setEndTime] = useState(1439); // 출발 시간 끝 state
+  const [adjustTime, setAdjustTime] = useState({
+    departureStartTime: 0, // 가는편 출발시간 시작
+    departureEndTime: 1439, // 가는편 출발시간 끝
+    returnStartTime: 0, // 오는편 출발시간 시작
+    returnEndTime: 1439, // 오는편 출발시간 끝
+
+    tempDepartureStartTime: 0, // 가는편 출발시간 임시 시작
+    tempDepartureEndTime: 1439, // 가는편 출발시간 임시 끝
+    tempReturnStartTime: 0, // 오는편 출발시간 임시 시작
+    tempReturnEndTime: 1439, // 오는편 출발시간 임시 끝
+  });
 
   const maxValue = 1439; // 하루 총 시간
 
   // 슬라이더 바를 클릭했을 경우
-  const sliderTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const sliderTrackClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    type: "departure" | "return"
+  ) => {
     const trackWidth = e.currentTarget.offsetWidth; // 클릭된 track의 너비(px)
     const clickPosition = e.nativeEvent.offsetX; // 브라우저의 기본 이벤트 객체(nativeEvent)에서 클릭한 위치의 수평좌표를 반환
     const clickValue = Math.round((clickPosition / trackWidth) * maxValue); // 전체 track에서 차지하는 비율을 계산
@@ -204,19 +216,45 @@ function FlightFiltering({
       maxValue
     ); // 30분 단위로 조정, 최대는 maxValue 까지
 
-    if (adjustClickValue < startTime) {
-      // 클릭한 구간이 startTime보다 낮을 경우 startTime이 지정
-      setStartTime(adjustClickValue);
-    } else {
-      // 그 외에는 endTime이 지정
-      setEndTime(adjustClickValue);
+    if (type === "departure") {
+      if (adjustClickValue < adjustTime.departureStartTime) {
+        // 클릭한 구간이 departureStartTime보다 낮을 경우 tempDepartureStartTime 설정
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempDepartureStartTime: adjustClickValue,
+          departureStartTime: adjustClickValue,
+        }));
+      } else {
+        // 그 외에는 tempDepartureEndTime 설정
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempDepartureEndTime: adjustClickValue,
+          departureEndTime: adjustClickValue,
+        }));
+      }
+    } else if (type === "return") {
+      if (adjustClickValue < adjustTime.returnStartTime) {
+        // 클릭한 구간이 returnStartTime 낮을 경우 tempReturnStartTime 설정
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempReturnStartTime: adjustClickValue,
+          returnStartTime: adjustClickValue,
+        }));
+      } else {
+        // 그 외에는 tempDepartureEndTime 설정
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempReturnEndTime: adjustClickValue,
+          returnEndTime: adjustClickValue,
+        }));
+      }
     }
   };
 
   // 원형을 드래그 했을 경우
   const circleDrag = (
     e: React.MouseEvent<HTMLSpanElement>,
-    type: "start" | "end"
+    type: "departureStart" | "departureEnd" | "returnStart" | "returnEnd"
   ) => {
     const track = e.currentTarget.parentElement!; // e.currentTarget의 부모 요소를 참조
     const trackWidth = track.offsetWidth; // SliderTrack의 너비를 가져옴
@@ -228,20 +266,56 @@ function FlightFiltering({
 
       const adjustedValue = Math.min(Math.round(dragValue / 30) * 30, maxValue); // 30분 단위로 조정, 최대는 maxValue 까지
 
-      if (type === "start" && adjustedValue >= 0 && adjustedValue <= endTime) {
-        setStartTime(adjustedValue);
+      if (
+        type === "departureStart" &&
+        adjustedValue >= 0 &&
+        adjustedValue < adjustTime.tempDepartureEndTime // start는 end보다 무조건 밑이여야함.
+      ) {
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempDepartureStartTime: adjustedValue,
+        }));
       } else if (
-        type === "end" &&
-        adjustedValue >= startTime &&
+        type === "departureEnd" &&
+        adjustedValue >= adjustTime.tempDepartureStartTime &&
         adjustedValue <= maxValue
       ) {
-        setEndTime(adjustedValue);
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempDepartureEndTime: adjustedValue,
+        }));
+      } else if (
+        type === "returnStart" &&
+        adjustedValue >= 0 &&
+        adjustedValue < adjustTime.tempReturnEndTime // start는 end보다 무조건 밑이여야함.
+      ) {
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempReturnStartTime: adjustedValue,
+        }));
+      } else if (
+        type === "returnEnd" &&
+        adjustedValue >= adjustTime.tempReturnStartTime &&
+        adjustedValue <= maxValue
+      ) {
+        setAdjustTime((prev) => ({
+          ...prev,
+          tempReturnEndTime: adjustedValue,
+        }));
       }
     };
 
     const onStop = () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onStop);
+      // mouseup 시에 실제 데이터 업데이트
+      setAdjustTime((prev) => ({
+        ...prev,
+        departureStartTime: prev.tempDepartureStartTime,
+        departureEndTime: prev.tempDepartureEndTime,
+        returnStartTime: prev.tempReturnStartTime,
+        returnEndTime: prev.tempReturnEndTime,
+      }));
     };
 
     window.addEventListener("mousemove", onMove);
@@ -280,48 +354,54 @@ function FlightFiltering({
     if (!originalOffers) return;
 
     const filteredOffers = originalOffers.data.filter((offer) => {
-      const departureSegments = offer.itineraries[0]?.segments || [];
-      const returnSegments = offer.itineraries[1]?.segments || [];
+      const departureSegments = offer.itineraries[0]?.segments || []; // 가는편
+      const returnSegments = offer.itineraries[1]?.segments || []; // 오는편
 
       // 출발 시간대 필터링
-      const departureTime = departureSegments[0]?.departure?.at;
-      if (!departureTime) return false;
 
-      const departureDate = new Date(departureTime);
-      const departureMinutes =
+      // 가는편
+      const departureTimestamp = departureSegments[0]?.departure?.at;
+      if (!departureTimestamp) return false;
+
+      const departureDate = new Date(departureTimestamp);
+      const departureTime =
         departureDate.getHours() * 60 + departureDate.getMinutes(); // 시간과 분을 분으로 합침
 
       // 출발 시간이 startTime과 endTime 사이에 있는지 확인
       const isDepartureInTimeRange =
-        departureMinutes >= startTime && departureMinutes <= endTime;
+        departureTime >= adjustTime.departureStartTime &&
+        departureTime <= adjustTime.departureEndTime;
 
       // 경유지 조건 필터링
-      const isValidSegment = (segments: any) => {
-        if (nonStop) return segments.length === 1;
-        if (oneStop) return segments.length === 2;
-        if (multipleStops) return segments.length > 2;
-        return true; // 기본적으로 모든 조건을 허용
+      const isStopover = (segments: any) => {
+        return (
+          (nonStop && segments.length === 1) ||
+          (oneStop && segments.length === 2) ||
+          (multipleStops && segments.length > 2)
+        );
       };
-
-      // 경유지 체크가 해제되었을 때 모든 데이터를 반환하지 않게 처리
-      const isAnyStopChecked = nonStop || oneStop || multipleStops;
-
-      // 경유지 체크가 해제되었을 때, 출발 시간과 경유지 조건 모두 만족하지 않으면 필터링됨
-      if (!isAnyStopChecked) {
-        return false; // 경유지 체크가 없으면 출발시간에 관계없이 필터링됨
-      }
-
-      // 경유지와 출발시간 모두 조건에 맞아야 함
-      const isValidDeparture =
-        isDepartureInTimeRange &&
-        (isValidSegment(departureSegments) || isValidSegment(returnSegments));
 
       // 왕복일 경우, 가는편과 오는편 중 하나라도 조건을 만족해야 함
       if (returnSegments.length > 0) {
-        return isValidDeparture; // 경유지와 출발시간 조건이 모두 맞아야 필터링됨
+        // 오는편
+        const returnTimestamp = returnSegments[0]?.departure?.at;
+        if (!returnTimestamp) return false;
+
+        const returnDate = new Date(returnTimestamp);
+        const returnTime = returnDate.getHours() * 60 + returnDate.getMinutes();
+
+        const isReturnInTimeRange =
+          returnTime >= adjustTime.returnStartTime &&
+          returnTime <= adjustTime.returnEndTime;
+
+        return (
+          isDepartureInTimeRange &&
+          isReturnInTimeRange &&
+          (isStopover(departureSegments) || isStopover(returnSegments))
+        ); // 경유지와 출발시간 조건이 모두 맞아야 필터링됨
       } else {
         // 편도일 경우, 경유지가 없을 수도 있음
-        return isValidDeparture; // 경유지가 없을 경우, 출발시간만 조건에 맞으면 필터링됨
+        return isDepartureInTimeRange && isStopover(departureSegments); // 경유지가 없을 경우, 출발시간만 조건에 맞으면 필터링됨
       }
     });
 
@@ -333,7 +413,7 @@ function FlightFiltering({
       meta: { count: filteredOffers.length },
       dictionaries: originalOffers.dictionaries,
     });
-  }, [startTime, endTime, nonStop, oneStop, multipleStops, originalOffers]);
+  }, [adjustTime, nonStop, oneStop, multipleStops, originalOffers]);
 
   return (
     <Banner>
@@ -375,34 +455,80 @@ function FlightFiltering({
       </Stopover>
       <DepartureTime>
         <Title>출발 시간대</Title>
+        <div style={{ marginTop: "10px" }}>가는편</div>
         <SliderContainer>
           {/* 배경 슬라이더 바 */}
           <SliderTrack
-            startTime={startTime}
-            endTime={endTime}
-            onClick={(e) => sliderTrackClick(e)} // 첫 번째 슬라이더 영역 우선
+            startTime={adjustTime.tempDepartureStartTime}
+            endTime={adjustTime.tempDepartureEndTime}
+            onClick={(e) => sliderTrackClick(e, "departure")} // 첫 번째 슬라이더 영역 우선
           />
 
           {/* 첫 번째 슬라이더 */}
           <SliderCircle
-            position={startTime}
-            onMouseDown={(e) => circleDrag(e, "start")}
+            position={adjustTime.tempDepartureStartTime}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              circleDrag(e, "departureStart");
+            }}
           ></SliderCircle>
 
           {/* 두 번째 슬라이더 */}
           <SliderCircle
-            position={endTime}
-            onMouseDown={(e) => circleDrag(e, "end")}
+            position={adjustTime.tempDepartureEndTime}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              circleDrag(e, "departureEnd");
+            }}
           ></SliderCircle>
           <SliderLabels>
             <span style={{ fontSize: "12px", color: "#555" }}>
-              {formatTime(startTime)}
+              {formatTime(adjustTime.tempDepartureStartTime)}
             </span>
             <span style={{ fontSize: "12px", color: "#555" }}>
-              {formatTime(endTime)}
+              {formatTime(adjustTime.tempDepartureEndTime)}
             </span>
           </SliderLabels>
         </SliderContainer>
+        {originalOffers?.data[0].itineraries[1] ? (
+          <>
+            <div>오는편</div>
+            <SliderContainer>
+              {/* 배경 슬라이더 바 */}
+              <SliderTrack
+                startTime={adjustTime.tempReturnStartTime}
+                endTime={adjustTime.tempReturnEndTime}
+                onClick={(e) => sliderTrackClick(e, "return")} // 첫 번째 슬라이더 영역 우선
+              />
+
+              {/* 첫 번째 슬라이더 */}
+              <SliderCircle
+                position={adjustTime.tempReturnStartTime}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  circleDrag(e, "returnStart");
+                }}
+              ></SliderCircle>
+
+              {/* 두 번째 슬라이더 */}
+              <SliderCircle
+                position={adjustTime.tempReturnEndTime}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  circleDrag(e, "returnEnd");
+                }}
+              ></SliderCircle>
+              <SliderLabels>
+                <span style={{ fontSize: "12px", color: "#555" }}>
+                  {formatTime(adjustTime.tempReturnStartTime)}
+                </span>
+                <span style={{ fontSize: "12px", color: "#555" }}>
+                  {formatTime(adjustTime.tempReturnEndTime)}
+                </span>
+              </SliderLabels>
+            </SliderContainer>
+          </>
+        ) : null}
       </DepartureTime>
       <Price>
         <Title>가격 조정</Title>
