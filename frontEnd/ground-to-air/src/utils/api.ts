@@ -56,6 +56,7 @@ export interface FlightOffer {
     // 가격 정보
     total: string;
   };
+  validatingAirlineCodes: string[]; // 판매 항공사
 }
 
 // 호텔

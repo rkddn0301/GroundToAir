@@ -33,7 +33,7 @@ public class AirService {
     }
 
 
-    public String getFlightOffers(String accessToken, String originLocationCode, String destinationLocationCode, String departureDate, String returnDate, int adults, int children, int infants, String travelClass, String currencyCode) {
+    public String getFlightOffers(String accessToken, String originLocationCode, String destinationLocationCode, String departureDate, String returnDate, int adults, int children, int infants, String travelClass, String currencyCode, String excludedAirlineCodes) {
         String url = "https://test.api.amadeus.com/v2/shopping/flight-offers";
 
         // URL에 쿼리 파라미터 추가
@@ -45,7 +45,8 @@ public class AirService {
                 .queryParam("children", children)
                 .queryParam("infants", infants)
                 .queryParam("travelClass", travelClass)
-                .queryParam("currencyCode", currencyCode);
+                .queryParam("currencyCode", currencyCode)
+                .queryParam("excludedAirlineCodes", excludedAirlineCodes);
 
         // 비어있을 경우 편도, 존재할 경우 왕복
         if (returnDate != null && !returnDate.isEmpty()) {

@@ -663,6 +663,7 @@ function FlightSearch() {
             infants: inputData.infants,
             travelClass: inputData.travelClass,
             currencyCode: "KRW",
+            excludedAirlineCodes: "H1", // 한에어는 판매대행사이기 때문에 해당 관련된 데이터를 모두 제거한다.
           },
         }
       );

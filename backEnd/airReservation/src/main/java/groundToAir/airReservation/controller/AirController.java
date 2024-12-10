@@ -49,7 +49,8 @@ public class AirController {
             @RequestParam("children") int children,
             @RequestParam("infants") int infants,
             @RequestParam("travelClass") String travelClass,
-            @RequestParam("currencyCode") String currencyCode
+            @RequestParam("currencyCode") String currencyCode,
+            @RequestParam("excludedAirlineCodes") String excludedAirlineCodes
     ) throws Exception {
 
         log.info("출발지 : {}, 도착지 : {}, 가는날 : {}, 오는날 : {}, 성인 : {}, 어린이 : {}, 유아 : {}, 좌석등급 : {}, 화폐 : {}",
@@ -58,7 +59,7 @@ public class AirController {
 
 
         String accessToken = accessTokenUtil.checkAndRefreshToken();
-        return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode);
+        return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode, excludedAirlineCodes);
     }
 
     // 자동완성 항공편 코드

@@ -55,7 +55,7 @@ const SliderTrack = styled.div<{
   top: 50%;
   width: 100%;
   height: 5px;
-  background-color: #ddd;
+  background-color: ${(props) => props.theme.black.bg}; // #ddd
   border-radius: 5px;
   transform: translateY(-50%);
   z-index: 1;
@@ -76,7 +76,7 @@ const SliderTrack = styled.div<{
     // 출발 시간대 EX) (1439-0)(오후 11시 59분) - (360-0)(오전 6시) / (1439-0)(전체시간) * 100 = 74.93...% 구간을 차지
     // 가격 조정 EX) ((573500 - 225100 - (425500-225100)) / 348400) * 100 = 42.47...% 구간을 차지
     height: 100%;
-    background-color: #00aaff;
+    background-color: skyblue; // #00aaff
     border-radius: 5px;
   }
 `;
@@ -88,7 +88,7 @@ const SliderCircle = styled.span<{
   max: number;
 }>`
   position: absolute;
-  background: #007aff;
+  background: skyblue; // #00aaff
   top: 30%;
   left: ${(props) =>
     ((props.position - props.min) / (props.max - props.min)) *
@@ -341,6 +341,25 @@ function FlightFiltering({
 
         minPrice: parseFloat(originalOffers?.data[0].price.total ?? "0"),
         maxPrice: parseFloat(originalOffers?.data.at(-1)?.price.total ?? "0"),
+      });
+
+      originalOffers.data.map((offer) => {
+        console.log(
+          `가는편 운항 항공사 [${offer.id}] : `,
+          offer.itineraries?.[0]?.segments?.[0]?.operating?.carrierCode
+        );
+
+        console.log(
+          `가는편 마지막 운항 항공사 [${offer.id}] : `,
+          offer.itineraries[0]?.segments[
+            offer.itineraries[0]?.segments.length - 1
+          ]?.operating?.carrierCode
+        );
+
+        console.log(
+          `판매 항공사 [${offer.id}] : `,
+          offer.validatingAirlineCodes
+        );
       });
     }
   }, [originalOffers]);

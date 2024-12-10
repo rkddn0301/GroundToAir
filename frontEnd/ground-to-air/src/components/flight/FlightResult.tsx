@@ -208,19 +208,34 @@ function FlightResult({
    */
   const operatingCarrierCode =
     airlineCodeOffers.find((airline) => {
+      // 판매항공사를 carrierCode로 대체 (12/10)
       const matchesIata =
+        airline.iata === offer.itineraries[0]?.segments[0]?.carrierCode ||
+        airline.iata ===
+          offer.itineraries[0]?.segments[
+            offer.itineraries[0]?.segments.length - 1
+          ]?.carrierCode ||
+        "";
+
+      /* 운항항공사
+     const matchesIata =
         airline.iata ===
           offer.itineraries[0]?.segments[0]?.operating?.carrierCode ||
         airline.iata ===
           offer.itineraries[0]?.segments[
             offer.itineraries[0]?.segments.length - 1
           ]?.operating?.carrierCode ||
-        "";
+        ""; */
+
+      /* 판매항공사
+       const matchesValidatingAirline =
+        offer.validatingAirlineCodes?.includes(airline.iata) || ""; */
 
       const isLogoValid =
         airline.airlinesLogo &&
         airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
 
+      //return matchesIata && isLogoValid;
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
 
@@ -254,6 +269,16 @@ function FlightResult({
 
   const returnOperatingCarrierCode =
     airlineCodeOffers.find((airline) => {
+      // 판매항공사를 carrierCode로 대체 (12/10)
+      const matchesIata =
+        airline.iata === offer.itineraries[1]?.segments[0]?.carrierCode ||
+        airline.iata ===
+          offer.itineraries[1]?.segments[
+            offer.itineraries[1]?.segments.length - 1
+          ]?.carrierCode ||
+        "";
+
+      /* 운항항공사
       const matchesIata =
         airline.iata ===
           offer.itineraries[1]?.segments[0]?.operating?.carrierCode ||
@@ -261,7 +286,11 @@ function FlightResult({
           offer.itineraries[1]?.segments[
             offer.itineraries[1]?.segments.length - 1
           ]?.operating?.carrierCode ||
-        "";
+        ""; */
+
+      /* 판매항공사
+       const matchesValidatingAirline =
+        offer.validatingAirlineCodes?.includes(airline.iata) || ""; */
 
       const isLogoValid =
         airline.airlinesLogo &&
@@ -355,13 +384,25 @@ function FlightResult({
               <img src={operatingCarrierCode.airlinesLogo} />
             ) : (
               <>
+                {/*  */}
+                {
+                  dictionaries.carriers[
+                    offer.itineraries[0]?.segments[0]?.carrierCode || ""
+                  ]
+                }
+                {/* 운항항공사
                 {
                   dictionaries.carriers[
                     offer.itineraries[0]?.segments[
                       offer.itineraries[0]?.segments.length - 1
                     ]?.operating?.carrierCode || ""
                   ]
-                }
+                } */}
+
+                {/* 판매항공사
+                   {dictionaries.carriers[
+                    offer.validatingAirlineCodes?.[0] || ""
+                  ] || ""} */}
               </>
             )}
 
@@ -428,11 +469,21 @@ function FlightResult({
                 <>
                   {
                     dictionaries.carriers[
+                      offer.itineraries[1]?.segments[0]?.carrierCode || ""
+                    ]
+                  }
+                  {/* 운항항공사 
+                   {
+                    dictionaries.carriers[
                       offer.itineraries[1]?.segments[
                         offer.itineraries[1]?.segments.length - 1
                       ]?.operating?.carrierCode || ""
                     ]
-                  }
+                  } */}
+                  {/* 판매항공사
+                   {dictionaries.carriers[
+                    offer.validatingAirlineCodes?.[0] || ""
+                  ] || ""} */}
                 </>
               )}
 
