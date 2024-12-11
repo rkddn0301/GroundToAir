@@ -239,13 +239,16 @@ function FlightResult({
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
 
-  const airlineCode = `${
+  const airlineCode = `${offer.itineraries[0]?.segments[0]?.carrierCode}${offer.itineraries[0]?.segments[0]?.number}`; // 항공편 번호
+  /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
+  
+  `${
     offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
       ?.carrierCode
   }${
     offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
       ?.number
-  }`; // 항공편 번호
+  }`;  */
 
   const departureTime = formatTime(
     offer.itineraries[0]?.segments[0]?.departure?.at
@@ -299,13 +302,16 @@ function FlightResult({
       return matchesIata && isLogoValid;
     }) || "";
 
-  const returnAirlineCode = `${
+  const returnAirlineCode = `${offer.itineraries[1]?.segments[0]?.carrierCode}${offer.itineraries[1]?.segments[0]?.number}`; // 항공편 번호
+  /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
+  
+  `${
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
       ?.carrierCode
   }${
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
       ?.number
-  }`; // 항공편 번호
+  }`; */
 
   const returnDepartureTime = formatTime(
     offer.itineraries[1]?.segments[0]?.departure?.at
@@ -363,10 +369,10 @@ function FlightResult({
 
   useEffect(() => {
     if (shouldReturnNull) {
-      /*   console.log("틀림");
+      console.log("틀림");
       console.log(offer.id);
       console.log(returnOriginLocationCode);
-      console.log(returnDestinationLocationCode); */
+      console.log(returnDestinationLocationCode);
       setFilterMismatchCount((prev) => prev + 1); // 카운팅만 업데이트
     }
   }, [shouldReturnNull]); // shouldReturnNull 값이 변경될 때만 실행
@@ -384,7 +390,6 @@ function FlightResult({
               <img src={operatingCarrierCode.airlinesLogo} />
             ) : (
               <>
-                {/*  */}
                 {
                   dictionaries.carriers[
                     offer.itineraries[0]?.segments[0]?.carrierCode || ""

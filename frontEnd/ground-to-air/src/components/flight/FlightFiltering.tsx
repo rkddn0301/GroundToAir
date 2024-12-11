@@ -267,7 +267,7 @@ function FlightFiltering({
         }));
       } else if (
         type === "departureEnd" &&
-        adjustedValue >= adjustTime.tempDepartureStartTime &&
+        adjustedValue > adjustTime.tempDepartureStartTime && // end는 start보다 무조건 위여야함.
         adjustedValue <= adjustTime.maxTime
       ) {
         setAdjustTime((prev) => ({
@@ -285,7 +285,7 @@ function FlightFiltering({
         }));
       } else if (
         type === "returnEnd" &&
-        adjustedValue >= adjustTime.tempReturnStartTime &&
+        adjustedValue > adjustTime.tempReturnStartTime && // end는 start보다 무조건 위여야함.
         adjustedValue <= adjustTime.maxTime
       ) {
         setAdjustTime((prev) => ({
@@ -343,24 +343,22 @@ function FlightFiltering({
         maxPrice: parseFloat(originalOffers?.data.at(-1)?.price.total ?? "0"),
       });
 
-      originalOffers.data.map((offer) => {
+      /*  originalOffers.data.map((offer) => {
         console.log(
           `가는편 운항 항공사 [${offer.id}] : `,
           offer.itineraries?.[0]?.segments?.[0]?.operating?.carrierCode
         );
 
         console.log(
-          `가는편 마지막 운항 항공사 [${offer.id}] : `,
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.operating?.carrierCode
+          `오는편 운항 항공사 [${offer.id}] : `,
+          offer.itineraries[1]?.segments?.[0]?.operating?.carrierCode
         );
 
         console.log(
           `판매 항공사 [${offer.id}] : `,
           offer.validatingAirlineCodes
         );
-      });
+      }); */
     }
   }, [originalOffers]);
 
@@ -444,7 +442,7 @@ function FlightFiltering({
         }));
       } else if (
         type === "end" &&
-        dragValue >= adjustPrice.tempStartPrice &&
+        dragValue > adjustPrice.tempStartPrice && // end는 start보다 무조건 위여야함.
         dragValue <= adjustPrice.maxPrice
       ) {
         setAdjustPrice((prev) => ({
@@ -638,7 +636,7 @@ function FlightFiltering({
             </span>
           </SliderLabels>
         </SliderContainer>
-        {originalOffers?.data[0].itineraries[1] ? (
+        {originalOffers?.data[0]?.itineraries[1] ? (
           <>
             <div>오는편</div>
             <SliderContainer>
