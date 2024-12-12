@@ -219,15 +219,6 @@ export enum SeatClass {
   FIRST = "FIRST", // 일등석
 }
 
-// 다른 컴포넌트에서 locationData를 props로 이용 시 필요
-export interface LocationData {
-  originLocationIataCodeChecking: boolean;
-  destinationLocationIataCodeChecking: boolean;
-
-  originIataCode: string;
-  destinationIataCode: string;
-}
-
 // AmadeusAPI(FlightOfferSearch) 호출 데이터 배열로 변환
 export interface FlightOffersResponse {
   meta: {
@@ -254,20 +245,6 @@ function FlightSearch() {
     originLocationCodeNo: "", // 출발지가 선택된 코드(도시/공항 구분용)
     destinationLocationCodeNo: "", // 도착지가 선택된 코드(도시/공항 구분용)
   }); // input 입력 state
-
-  /*
-  * 생성한 이유 
-  - Amadeus API에서 도시코드와 공항코드 검색이라는 구분이 따로 존재하지 않음
-  - 상하이(SHA) === 상하이 훙차오 공항(SHA)과 같이 도시코드와 공항코드가 동일 할 경우 도시코드로 검색이 되버려서 구분이 필요
-  */
-  const [filterMismatchCount, setFilterMismatchCount] = useState(0); // 총 개수 - 필터링 된 개수
-  const [locationData, setLocationData] = useState({
-    originLocationIataCodeChecking: false,
-    destinationLocationIataCodeChecking: false,
-
-    originIataCode: "",
-    destinationIataCode: "",
-  });
 
   const [onewayChecking, setOnewayChecking] = useState(false); // 편도/왕복 여부 스위칭 state
 
@@ -525,16 +502,9 @@ function FlightSearch() {
     let searchOriginLocation: string; // 실질적으로 검색될 출발지 데이터
     let searchDestinationLocation: string; // 실질적으로 검색될 도착지 데이터
 
-    // 구분 초기화
-    setLocationData({
-      originLocationIataCodeChecking: false,
-      destinationLocationIataCodeChecking: false,
-
-      originIataCode: "",
-      destinationIataCode: "",
-    });
-
-    setFilterMismatchCount(0);
+    // 공항코드 검색 여부 확인하는 변수
+    let originLocationCheck = false;
+    let destinationLocationCheck = false;
 
     // 출발지/도착지 조건
     /*
@@ -557,11 +527,7 @@ function FlightSearch() {
       }));
       console.log("출발지에 공항명칭으로 검색함");
 
-      setLocationData((prev) => ({
-        ...prev,
-        originLocationIataCodeChecking: true,
-        originIataCode: searchOriginLocation,
-      }));
+      originLocationCheck = true; // 공항코드 검색 확인
     } else if (/\(.*\)/.test(inputData.originLocationCode)) {
       searchOriginLocation = inputData.originLocationCode
         .split("(")[1]
@@ -570,11 +536,8 @@ function FlightSearch() {
       // 검색한게 도시코드/공항코드 인지 확인
       if (inputData.originLocationCodeNo.endsWith("_airport")) {
         console.log("출발지에 공항명칭으로 검색함");
-        setLocationData((prev) => ({
-          ...prev,
-          originLocationIataCodeChecking: true,
-          originIataCode: searchOriginLocation,
-        }));
+
+        originLocationCheck = true; // 공항코드 검색 확인
       }
     } else {
       document.getElementById("originLocation")?.focus();
@@ -597,11 +560,7 @@ function FlightSearch() {
 
       console.log("도착지에 공항명칭으로 검색함");
 
-      setLocationData((prev) => ({
-        ...prev,
-        destinationLocationIataCodeChecking: true,
-        destinationIataCode: searchDestinationLocation,
-      }));
+      destinationLocationCheck = true; // 공항코드 검색 확인
     } else if (/\(.*\)/.test(inputData.destinationLocationCode)) {
       searchDestinationLocation = inputData.destinationLocationCode
         .split("(")[1]
@@ -610,11 +569,8 @@ function FlightSearch() {
       // 검색한게 도시코드/공항코드 인지 확인
       if (inputData.destinationLocationCodeNo.endsWith("_airport")) {
         console.log("도착지에 공항명칭으로 검색함");
-        setLocationData((prev) => ({
-          ...prev,
-          destinationLocationIataCodeChecking: true,
-          destinationIataCode: searchDestinationLocation,
-        }));
+
+        destinationLocationCheck = true; // 공항코드 검색 확인
       }
     } else {
       document.getElementById("destinationLocation")?.focus();
@@ -667,8 +623,64 @@ function FlightSearch() {
           },
         }
       );
-      setFlightOffers(response.data);
       console.log(response.data);
+
+      /* 
+      - 검색결과는 아래 조건대로 출력됨.
+      1. 출발지 공항 코드가 검색된 값과 같아야함 .
+      2. 도착지 공항 코드가 검색된 값과 같아야함.
+      3. 왕복 날짜가 있고, 오는날 출발지 공항 코드가 가는날 도착지 검색된 값과 같아야 함.
+      4. 왕복 날짜가 있고, 오는날 도착지 공항 코드가 가는날 출발지 검색된 값과 같아야 함.
+
+      --> 위 결과는 공항코드로 검색했을 경우이며, 도시코드로 검색 할 경우 해당되지 않음. 
+      EX) 출발지를 도시로 검색 할 경우 1, 3번은 해당되지 않음
+      EX) 도착지를 도시로 검색 할 경우 2, 4번은 해당되지 않음
+      EX) 전부 도시로 검색 할 경우 아예 해당되지 않음  
+  
+      */
+
+      if (response.data && (originLocationCheck || destinationLocationCheck)) {
+        const filteredOffers = response.data.data.filter((offer: any) => {
+          const originLocationCode =
+            offer.itineraries[0]?.segments[0]?.departure?.iataCode;
+          const destinationLocationCode =
+            offer.itineraries[0]?.segments[
+              offer.itineraries[0]?.segments.length - 1
+            ]?.arrival?.iataCode;
+
+          const returnDestinationLocationCode =
+            offer.itineraries[1]?.segments[
+              offer.itineraries[1]?.segments.length - 1
+            ]?.arrival?.iataCode;
+          const returnOriginLocationCode =
+            offer.itineraries[1]?.segments[0]?.departure?.iataCode;
+
+          const nullChecking =
+            (originLocationCheck &&
+              searchOriginLocation !== originLocationCode) ||
+            (destinationLocationCheck &&
+              searchDestinationLocation !== destinationLocationCode) ||
+            (inputData.returnDate !== "" &&
+              originLocationCheck &&
+              searchOriginLocation !== returnDestinationLocationCode) ||
+            (inputData.returnDate !== "" &&
+              destinationLocationCheck &&
+              searchDestinationLocation !== returnOriginLocationCode);
+
+          if (nullChecking) {
+            //  setFilterMismatchCount((prev) => prev + 1);
+          }
+
+          return !nullChecking;
+        });
+        console.log(filteredOffers);
+        setFlightOffers({
+          ...response.data, // 원래 데이터의 meta, dictionaries 등을 유지
+          data: filteredOffers, // 필터링된 데이터로 교체
+        });
+      } else {
+        setFlightOffers(response.data);
+      }
     } catch (error) {
       console.error("항공 검색 도중 오류 발생 : ", error);
     } finally {
@@ -865,7 +877,7 @@ function FlightSearch() {
           />
           <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
-            {flightOffers.meta.count - filterMismatchCount}개
+            {flightOffers.meta.count}개
           </ResultFont>
 
           {flightOffers.data.slice(0, moreCount).map((offer: any) => (
@@ -873,12 +885,9 @@ function FlightSearch() {
               <FlightResult
                 key={offer.id}
                 offer={offer}
-                inputData={inputData}
-                locationData={locationData}
                 dictionaries={flightOffers.dictionaries}
                 airlineCodeOffers={airlineCodeOffers}
                 iataCodeOffers={iataCodeOffers}
-                setFilterMismatchCount={setFilterMismatchCount}
                 showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
                 setShowTooltip={(field, index, value) =>
                   setShowTooltip((prev) => ({
@@ -899,7 +908,7 @@ function FlightSearch() {
               />
             </>
           ))}
-          {moreCount < flightOffers.meta.count - filterMismatchCount && (
+          {moreCount < flightOffers.meta.count && (
             <MoreBtnField>
               <MoreBtn onClick={loadMore}>더 보기</MoreBtn>
             </MoreBtnField>
