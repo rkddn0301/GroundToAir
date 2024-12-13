@@ -167,7 +167,7 @@ interface FlightResultProps {
     carriers: { [key: string]: string };
   };
   airlineCodeOffers: AirlineCodes[]; // 항공사 코드 DB
-  iataCodeOffers: IataCodes[]; // 항공편 코드 DB
+  iataCodeOffers: IataCodes[]; // 공항 코드 DB
   showTooltip: {
     [index: number]: {
       departureDate: boolean;
@@ -201,12 +201,7 @@ function FlightResult({
     airlineCodeOffers.find((airline) => {
       // 판매항공사를 carrierCode로 대체 (12/10)
       const matchesIata =
-        airline.iata === offer.itineraries[0]?.segments[0]?.carrierCode ||
-        airline.iata ===
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.carrierCode ||
-        "";
+        airline.iata === offer.itineraries[0]?.segments[0]?.carrierCode || "";
 
       /* 운항항공사
      const matchesIata =
@@ -265,12 +260,7 @@ function FlightResult({
     airlineCodeOffers.find((airline) => {
       // 판매항공사를 carrierCode로 대체 (12/10)
       const matchesIata =
-        airline.iata === offer.itineraries[1]?.segments[0]?.carrierCode ||
-        airline.iata ===
-          offer.itineraries[1]?.segments[
-            offer.itineraries[1]?.segments.length - 1
-          ]?.carrierCode ||
-        "";
+        airline.iata === offer.itineraries[1]?.segments[0]?.carrierCode || "";
 
       /* 운항항공사
       const matchesIata =

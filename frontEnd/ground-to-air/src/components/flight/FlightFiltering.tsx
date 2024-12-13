@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { FlightOffersResponse } from "../../router/FlightSearch";
 import { useEffect, useState } from "react";
 import { formatTime } from "../../utils/formatTime";
+import { AirlineCodes } from "../../utils/api";
 
 // FlightFiltering 전체 컴포넌트 구성
 const Banner = styled.div`
@@ -130,11 +131,13 @@ interface FlightFilteringProps {
   setFlightOffers: React.Dispatch<
     React.SetStateAction<FlightOffersResponse | null>
   >; // 항공 조회 수정 state
+  airlineCodeOffers: AirlineCodes[]; // 항공사 코드 DB
 }
 
 function FlightFiltering({
   flightOffers,
   setFlightOffers,
+  airlineCodeOffers,
 }: FlightFilteringProps) {
   const [originalOffers, setOriginalOffers] =
     useState<FlightOffersResponse | null>(null); // 항공 조회 원본 데이터
@@ -343,7 +346,9 @@ function FlightFiltering({
         maxPrice: parseFloat(originalOffers?.data.at(-1)?.price.total ?? "0"),
       });
 
-      /*  originalOffers.data.map((offer) => {
+      /* 공동운항 구현 시 테스트용
+      
+      originalOffers.data.map((offer) => {
         console.log(
           `가는편 운항 항공사 [${offer.id}] : `,
           offer.itineraries?.[0]?.segments?.[0]?.operating?.carrierCode
@@ -469,15 +474,66 @@ function FlightFiltering({
 
   /* 가격 조정 데이터 끝 */
 
+  /* 항공사 구분 데이터 시작 */
+
+  const [selectedAirlines, setSelectedAirlines] = useState<string[]>([]); // 선택된 항공사를 상태로 관리
+  const [airlineCount, setAirlineCount] = useState<Record<string, number>>({}); // 항공사별 데이터 개수를 저장
+  // + Record<key, value> : Java의 Collection인 Map<key, value>과 유사한 기능
+
+  // 각 항공사의 횟수를 계산
+  useEffect(() => {
+    if (originalOffers?.data?.length) {
+      const count = originalOffers.data.reduce((acc, offer) => {
+        const outboundCarrier =
+          offer.itineraries?.[0]?.segments?.[0]?.carrierCode; // 가는편 항공사의 코드 추출
+        const inboundCarrier =
+          offer.itineraries?.[1]?.segments?.[0]?.carrierCode; // 오는편 항공사의 코드 추출
+
+        // 왕복
+        if (outboundCarrier && inboundCarrier) {
+          if (outboundCarrier === inboundCarrier) {
+            acc[outboundCarrier] = (acc[outboundCarrier] || 0) + 1; // acc[outboundCarrier]가 존재할 시 기존 값에서 +1 아니면 0+1. (증가연산자)
+          } else {
+            acc["기타"] = (acc["기타"] || 0) + 1; // 가는편/오는편이 다르면 기타에 추가
+          }
+        } else if (outboundCarrier && !inboundCarrier) {
+          // 편도
+          acc[outboundCarrier] = (acc[outboundCarrier] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<string, number>); // {}를 초기값으로 사용하여 reduce를 통해 값을 채워넣는 방식
+
+      console.log(count);
+      console.log(Object.keys(count));
+
+      setAirlineCount(count); // EX) KE: 24, LJ: 10, 기타: 15
+      setSelectedAirlines(Object.keys(count)); // object.keys : count의 key만 배열로 반환하는 방식 EX) ["KE", "LJ", "기타"]
+    }
+  }, [originalOffers]);
+
+  // 항공사 체크 클릭 시 동작되는 함수
+  const checkboxChange = (airline: string) => {
+    setSelectedAirlines(
+      (prevSelected) =>
+        prevSelected.includes(airline) // 선택된 항공사 리스트에 매개변수 airline이 있는지 확인
+          ? prevSelected.filter((item) => item !== airline) // 있으면 선택 해제
+          : [...prevSelected, airline] // 없으면 선택 추가
+    );
+  };
+  /* 항공사 구분 데이터 끝 */
+
   // 필터링 구간
+  /* 
+    1. 경유지 / 2. 출발 시간대 / 3. 가격 조정 / 4. 항공사 선택
+  */
   useEffect(() => {
     if (!originalOffers) return;
 
-    const filteredOffers = originalOffers.data.filter((offer) => {
+    const filteredOffers = originalOffers.data.filter((offer: any) => {
       const departureSegments = offer.itineraries[0]?.segments || []; // 가는편
       const returnSegments = offer.itineraries[1]?.segments || []; // 오는편
 
-      // 경유지 조건 필터링
+      /*  1. 경유지 조건 필터링 시작 */
       const isStopover = (segments: any) => {
         return (
           (nonStop && segments.length === 1) ||
@@ -485,8 +541,9 @@ function FlightFiltering({
           (multipleStops && segments.length > 2)
         );
       };
+      /*  1. 경유지 조건 필터링 끝 */
 
-      // 출발 시간대 필터링
+      /* 2. 출발 시간대 필터링 시작 */
 
       // 가는편
       const departureTimestamp = departureSegments[0]?.departure?.at;
@@ -501,16 +558,20 @@ function FlightFiltering({
         departureTime >= adjustTime.departureStartTime &&
         departureTime <= adjustTime.departureEndTime;
 
-      // 가격 조정 필터링
+      /* 2. 출발 시간대 필터링 끝 */
+
+      /*  3. 가격 조정 필터링 시작 */
       const totalPrice = parseFloat(offer.price.total ?? "0");
 
       // 가격이 내가 조정한 startPrice와 endPrice 사이에 있는지 확인
       const isTotalPriceRange =
         totalPrice >= adjustPrice.startPrice &&
         totalPrice <= adjustPrice.endPrice;
+      /*  3. 가격 조정 필터링 끝 */
 
       // 왕복일 경우, 가는편과 오는편 중 하나라도 조건을 만족해야 함
       if (returnSegments.length > 0) {
+        /* 2. 출발 시간대 필터링 시작 */
         // 오는편
         const returnTimestamp = returnSegments[0]?.departure?.at;
         if (!returnTimestamp) return false;
@@ -521,19 +582,43 @@ function FlightFiltering({
         const isReturnInTimeRange =
           returnTime >= adjustTime.returnStartTime &&
           returnTime <= adjustTime.returnEndTime;
+        /* 2. 출발 시간대 필터링 끝 */
+
+        /* 4. 항공사 선택 필터링 시작 */
+
+        // 'selectedAirlines'에 포함된 항공사만 필터링
+        const isAirlineSelected =
+          (selectedAirlines.includes(departureSegments[0].carrierCode) &&
+            departureSegments[0].carrierCode ===
+              returnSegments[0].carrierCode) ||
+          (selectedAirlines.includes("기타") &&
+            departureSegments[0].carrierCode !== returnSegments[0].carrierCode); // 기타는 가는편/오는편 항공사가 다른 데이터만 필터링
+
+        /* 4. 항공사 선택 필터링 끝 */
 
         return (
           isDepartureInTimeRange &&
           isReturnInTimeRange &&
           isTotalPriceRange &&
-          (isStopover(departureSegments) || isStopover(returnSegments))
+          (isStopover(departureSegments) || isStopover(returnSegments)) &&
+          isAirlineSelected
         ); // 경유지와 출발시간 조건이 모두 맞아야 필터링됨
       } else {
         // 편도일 경우, 경유지가 없을 수도 있음
+
+        /* 4. 항공사 선택 필터링 시작 */
+
+        // 'selectedAirlines'에 포함된 항공사만 필터링 (편도는 왕복과 다르게 가는편에서 존재여부에 따라 필터링)
+        const isAirlineSelected = selectedAirlines.includes(
+          departureSegments[0].carrierCode
+        );
+
+        /* 4. 항공사 선택 필터링 끝 */
         return (
           isDepartureInTimeRange &&
           isTotalPriceRange &&
-          isStopover(departureSegments)
+          isStopover(departureSegments) &&
+          isAirlineSelected
         ); // 경유지가 없을 경우, 출발시간만 조건에 맞으면 필터링됨
       }
     });
@@ -553,6 +638,7 @@ function FlightFiltering({
     oneStop,
     multipleStops,
     originalOffers,
+    selectedAirlines,
   ]);
 
   return (
@@ -727,6 +813,45 @@ function FlightFiltering({
       </Price>
       <Airlines>
         <Title>항공사</Title>
+        <div>
+          {Object.entries(airlineCount) // Object.entries: key-value를 쌍으로 반환
+
+            /* 
+            sort : 배열을 정렬하는 메서드로, 동작은 아래와 같이 진행된다. (2가지를 비교하기 때문에 버블 정렬 방식으로 됨)
+            - airlineA(전방)과 airlineB(후방)를 비교해서 airlineA에 '기타'가 있으면 airlineB랑 바꾼다. (1 : airlineA를 airlineB 뒤로 한 칸 보냄)
+            - airlineB에 '기타'가 있으면 무조건 맨 뒤로 위치하게된다. (-1 : airlineB를 맨 뒤로 보냄)
+          */
+            .sort(([airlineA], [airlineB]) =>
+              airlineA === "기타" ? 1 : airlineB === "기타" ? -1 : 0
+            )
+            .map(([carrierCode, count]) => {
+              // carrierCode : key인 항공사 코드, count : value인 개수
+
+              // 항공사 코드(carrierCode)와 DB(airlineCodeOffers)에 있는 코드랑 비교하여 항공사명으로 변환하는 함수
+              const getAirlineName = (carrierCode: string): string => {
+                const airline = airlineCodeOffers.find(
+                  (item) => item.iata === carrierCode
+                );
+                return airline ? airline.airlinesKor : "기타";
+              };
+
+              const airlineName = getAirlineName(carrierCode); // 항공사명이 삽입 되어 있는 변수
+
+              return (
+                <div key={carrierCode}>
+                  <input
+                    type="checkbox"
+                    id={carrierCode}
+                    checked={selectedAirlines.includes(carrierCode)} // selectedAirlines에 carrierCode 포함 여부에 따라 체크
+                    onChange={() => checkboxChange(carrierCode)} // 체크박스 상태 변경
+                  />
+                  <label htmlFor={carrierCode}>
+                    {airlineName} ({count})
+                  </label>
+                </div>
+              );
+            })}
+        </div>
       </Airlines>
     </Banner>
   );

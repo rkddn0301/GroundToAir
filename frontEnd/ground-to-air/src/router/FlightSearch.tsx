@@ -874,6 +874,7 @@ function FlightSearch() {
           <FlightFiltering
             flightOffers={flightOffers}
             setFlightOffers={setFlightOffers}
+            airlineCodeOffers={airlineCodeOffers}
           />
           <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
