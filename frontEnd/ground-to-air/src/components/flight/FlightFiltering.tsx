@@ -829,10 +829,33 @@ function FlightFiltering({
 
               // 항공사 코드(carrierCode)와 DB(airlineCodeOffers)에 있는 코드랑 비교하여 항공사명으로 변환하는 함수
               const getAirlineName = (carrierCode: string): string => {
-                const airline = airlineCodeOffers.find(
+                // 항공사 코드와 일치하는 데이터 필터링
+                const airline = airlineCodeOffers.filter(
                   (item) => item.iata === carrierCode
                 );
-                return airline ? airline.airlinesKor : "기타";
+
+                // 2개 이상일 경우 : 공항코드가 겹치므로 아래 조건에 따름
+                if (airline.length > 1) {
+                  const dictionaries =
+                    originalOffers?.dictionaries?.carriers[carrierCode] || ""; // API 데이터 항공사명
+
+                  // API 데이터의 항공사명과 비교하여 일치하는 항공사명 추출
+                  let matchingAirline = airline.find(
+                    (matchingAirline) =>
+                      matchingAirline.airlines.trim().toLowerCase() ===
+                      dictionaries.trim().toLowerCase()
+                  );
+
+                  if (matchingAirline) {
+                    return matchingAirline.airlinesKor;
+                  }
+                }
+                // 1개 일 경우 : 추출된 코드 그대로 출력
+                else if (airline.length === 1) {
+                  return airline[0].airlinesKor;
+                }
+                // 일치하지 않을 경우 : '기타'로 처리
+                return "기타";
               };
 
               const airlineName = getAirlineName(carrierCode); // 항공사명이 삽입 되어 있는 변수
