@@ -13,7 +13,8 @@ const Banner = styled.div`
   padding-left: 5px;
   margin-bottom: 10px;
   background-color: ${(props) => props.theme.white.bg};
-  height: 700px;
+  min-height: 450px;
+  //height: 100%;
   box-shadow: 5px 3px 2px rgba(0, 0, 0, 0.2); // 오른쪽 + 아래쪽 그림자
 `;
 
@@ -37,7 +38,12 @@ const DepartureTime = styled.div`
   margin: 30px 0 20px 0;
 `;
 
-// 출발 시간대 슬라이더 전체 디자인
+// 가격 조정 필터
+const Price = styled.div`
+  margin: 30px 0 20px 0;
+`;
+
+// 출발 시간대, 가격 조정 슬라이더 전체 디자인
 const SliderContainer = styled.div`
   position: relative;
   width: 90%;
@@ -106,17 +112,21 @@ const SliderCircle = styled.span<{
 const SliderLabels = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-`;
-
-// 가격 조정 필터
-const Price = styled.div`
-  margin: 30px 0 20px 0;
+  margin-top: 3%;
 `;
 
 // 항공사 선택 필터
 const Airlines = styled.div`
   margin: 30px 0 20px 0;
+`;
+
+// 항공사 전체 디자인
+const AirlinesContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 5px;
+  margin-top: 10px;
 `;
 
 // 필터 제목
@@ -503,22 +513,57 @@ function FlightFiltering({
         return acc;
       }, {} as Record<string, number>); // {}를 초기값으로 사용하여 reduce를 통해 값을 채워넣는 방식
 
+      // 전체 추가
+      const totalCount = Object.values(count).reduce(
+        (sum, value) => sum + value,
+        0
+      ); // sum : 누적해서 추가하는 값이며 초기값은 0, value : 배열 안에 값을 순차적으로 추가
+      count["전체"] = totalCount; // '전체'에 합계 값 추가
+
       console.log(count);
       console.log(Object.keys(count));
 
-      setAirlineCount(count); // EX) KE: 24, LJ: 10, 기타: 15
-      setSelectedAirlines(Object.keys(count)); // object.keys : count의 key만 배열로 반환하는 방식 EX) ["KE", "LJ", "기타"]
+      setAirlineCount(count); // EX) KE: 24, LJ: 10, 기타: 15, 전체 : 49
+      setSelectedAirlines(Object.keys(count)); // object.keys : count의 key만 배열로 반환하는 방식 EX) ["KE", "LJ", "기타", "전체"]
     }
   }, [originalOffers]);
 
   // 항공사 체크 클릭 시 동작되는 함수
   const checkboxChange = (airline: string) => {
-    setSelectedAirlines(
-      (prevSelected) =>
-        prevSelected.includes(airline) // 선택된 항공사 리스트에 매개변수 airline이 있는지 확인
-          ? prevSelected.filter((item) => item !== airline) // 있으면 선택 해제
-          : [...prevSelected, airline] // 없으면 선택 추가
-    );
+    /*
+    @ '전체' 필터링
+    1. '전체' 체크를 클릭해서 해제시키면 모든 필터가 체크 해제되어야함
+    2. '전체' 체크가 풀려있는 상태에서 체크하면 모든 필터가 체크되어야함
+    3. 모든 특정 필터가 체크 되어있을 경우 '전체'도 체크 되어야함
+    4. 모든 특정 필터 중 하나라도 체크 해제 되어있을 경우 '전체'도 체크 해제 되어야함
+    */
+
+    // 1번과 2번 내용
+    if (airline === "전체") {
+      setSelectedAirlines(
+        (prevSelected) =>
+          prevSelected.includes("전체")
+            ? [] // "전체"가 선택된 경우 모든 항목 해제
+            : [...Object.keys(airlineCount)] // "전체"를 체크한 경우 모든 항목 추가
+      );
+    } else {
+      setSelectedAirlines((prevSelected) => {
+        // 4번 내용.
+        // 클릭한 체크박스 airline이 selectedAirlines에 포함되어 있으면 체크 해제
+        // 포함되어 있지 않으면 추가
+        let newSelected = prevSelected.includes(airline)
+          ? prevSelected.filter((item) => item !== airline && item !== "전체")
+          : [...prevSelected, airline];
+
+        // 3번 내용.
+        // 전체를 제외하기 위해 length - 1로 처리
+        if (newSelected.length === Object.keys(airlineCount).length - 1) {
+          newSelected = [...newSelected, "전체"];
+        }
+
+        return newSelected;
+      });
+    }
   };
   /* 항공사 구분 데이터 끝 */
 
@@ -813,7 +858,7 @@ function FlightFiltering({
       </Price>
       <Airlines>
         <Title>항공사</Title>
-        <div>
+        <AirlinesContainer>
           {Object.entries(airlineCount) // Object.entries: key-value를 쌍으로 반환
 
             /* 
@@ -821,9 +866,15 @@ function FlightFiltering({
             - airlineA(전방)과 airlineB(후방)를 비교해서 airlineA에 '기타'가 있으면 airlineB랑 바꾼다. (1 : airlineA를 airlineB 뒤로 한 칸 보냄)
             - airlineB에 '기타'가 있으면 무조건 맨 뒤로 위치하게된다. (-1 : airlineB를 맨 뒤로 보냄)
           */
-            .sort(([airlineA], [airlineB]) =>
-              airlineA === "기타" ? 1 : airlineB === "기타" ? -1 : 0
-            )
+            .sort(([airlineA], [airlineB]) => {
+              if (airlineA === "전체") return -1;
+              if (airlineB === "전체") return 1;
+
+              if (airlineA === "기타") return 1;
+              if (airlineB === "기타") return -1;
+
+              return 0;
+            })
             .map(([carrierCode, count]) => {
               // carrierCode : key인 항공사 코드, count : value인 개수
 
@@ -833,6 +884,10 @@ function FlightFiltering({
                 const airline = airlineCodeOffers.filter(
                   (item) => item.iata === carrierCode
                 );
+
+                if (carrierCode === "전체") {
+                  return "전체";
+                }
 
                 // 2개 이상일 경우 : 공항코드가 겹치므로 아래 조건에 따름
                 if (airline.length > 1) {
@@ -854,6 +909,7 @@ function FlightFiltering({
                 else if (airline.length === 1) {
                   return airline[0].airlinesKor;
                 }
+
                 // 일치하지 않을 경우 : '기타'로 처리
                 return "기타";
               };
@@ -874,7 +930,7 @@ function FlightFiltering({
                 </div>
               );
             })}
-        </div>
+        </AirlinesContainer>
       </Airlines>
     </Banner>
   );

@@ -25,7 +25,7 @@ const Container = styled.div`
   background-color: skyblue;
   padding-top: 114px;
   //width: 100%;
-  min-height: 100vh; // 페이지 최소 높이를 100vh로 변경
+  min-height: 150vh; // 페이지 최소 높이를 150vh로 변경
 `;
 
 // Layout, Footer 사이에 있는 Main div 태그

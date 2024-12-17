@@ -48,6 +48,7 @@ const Form = styled.form`
   height: 15vh;
   padding: 15px;
   margin: 0 auto;
+  box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2); // 아래쪽 그림자만
   // border-radius: 5px;
   // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
 `;
