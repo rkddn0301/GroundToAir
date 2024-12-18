@@ -135,6 +135,20 @@ const Title = styled.h2`
   font-weight: 600px;
 `;
 
+// 더 보기 버튼 구성
+const MoreBtn = styled.button`
+  padding: 5px;
+  color: ${(props) => props.theme.white.font};
+  font-weight: 600;
+  border: transparent;
+  background-color: transparent;
+  cursor: pointer;
+`;
+
+const MoreIcon = styled.svg`
+  width: 12px;
+`;
+
 // FlightFiltering 컴포넌트가 요구하는 props
 interface FlightFilteringProps {
   flightOffers: FlightOffersResponse | null; // 항공 조회 데이터
@@ -504,7 +518,7 @@ function FlightFiltering({
           if (outboundCarrier === inboundCarrier) {
             acc[outboundCarrier] = (acc[outboundCarrier] || 0) + 1; // acc[outboundCarrier]가 존재할 시 기존 값에서 +1 아니면 0+1. (증가연산자)
           } else {
-            acc["기타"] = (acc["기타"] || 0) + 1; // 가는편/오는편이 다르면 기타에 추가
+            acc["다중 항공사"] = (acc["다중 항공사"] || 0) + 1; // 가는편/오는편이 다르면 '다중 항공사'에 추가
           }
         } else if (outboundCarrier && !inboundCarrier) {
           // 편도
@@ -565,6 +579,18 @@ function FlightFiltering({
       });
     }
   };
+
+  /* 항공사 구분 더 보기 */
+  const [moreCount, setMoreCount] = useState(6);
+
+  const loadMore = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (e.currentTarget.name === "more") {
+      setMoreCount(Object.keys(airlineCount).length);
+    } else {
+      setMoreCount(6);
+    }
+  };
+
   /* 항공사 구분 데이터 끝 */
 
   // 필터링 구간
@@ -863,18 +889,19 @@ function FlightFiltering({
 
             /* 
             sort : 배열을 정렬하는 메서드로, 동작은 아래와 같이 진행된다. (2가지를 비교하기 때문에 버블 정렬 방식으로 됨)
-            - airlineA(전방)과 airlineB(후방)를 비교해서 airlineA에 '기타'가 있으면 airlineB랑 바꾼다. (1 : airlineA를 airlineB 뒤로 한 칸 보냄)
-            - airlineB에 '기타'가 있으면 무조건 맨 뒤로 위치하게된다. (-1 : airlineB를 맨 뒤로 보냄)
+            - airlineA(전방)과 airlineB(후방)를 비교해서 airlineA에 '다중 항공사'가 있으면 airlineB랑 바꾼다. (1 : airlineA를 airlineB 뒤로 한 칸 보냄)
+            - airlineB에 '다중 항공사'가 있으면 무조건 맨 뒤로 위치하게된다. (-1 : airlineB를 맨 뒤로 보냄)
           */
             .sort(([airlineA], [airlineB]) => {
               if (airlineA === "전체") return -1;
               if (airlineB === "전체") return 1;
 
-              if (airlineA === "기타") return 1;
-              if (airlineB === "기타") return -1;
+              if (airlineA === "다중 항공사") return 1;
+              if (airlineB === "다중 항공사") return -1;
 
               return 0;
             })
+            .slice(0, moreCount)
             .map(([carrierCode, count]) => {
               // carrierCode : key인 항공사 코드, count : value인 개수
 
@@ -910,8 +937,8 @@ function FlightFiltering({
                   return airline[0].airlinesKor;
                 }
 
-                // 일치하지 않을 경우 : '기타'로 처리
-                return "기타";
+                // 일치하지 않을 경우 : '다중 항공사'로 처리
+                return "다중 항공사";
               };
 
               const airlineName = getAirlineName(carrierCode); // 항공사명이 삽입 되어 있는 변수
@@ -930,6 +957,47 @@ function FlightFiltering({
                 </div>
               );
             })}
+          {moreCount < Object.keys(airlineCount).length ? (
+            <div>
+              <MoreBtn name="more" onClick={loadMore}>
+                더 보기{" "}
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </MoreIcon>
+              </MoreBtn>
+            </div>
+          ) : (
+            <div>
+              <MoreBtn name="fold" onClick={loadMore}>
+                접기{" "}
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                  />
+                </MoreIcon>
+              </MoreBtn>
+            </div>
+          )}
         </AirlinesContainer>
       </Airlines>
     </Banner>
