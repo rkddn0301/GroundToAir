@@ -172,10 +172,16 @@ interface FlightResultProps {
     [index: number]: {
       departureDate: boolean;
       returnDate: boolean;
+      departureCodeshare: boolean;
+      returnCodeshare: boolean;
     };
   }; // offer.id는 이미 부모 컴포넌트에서 선언하여 보냈기 때문에 자식 컴포넌트에서는 index부터 선언
   setShowTooltip: (
-    field: "departureDate" | "returnDate",
+    field:
+      | "departureDate"
+      | "returnDate"
+      | "departureCodeshare"
+      | "returnCodeshare",
     index: number,
     value: boolean
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
@@ -191,17 +197,21 @@ function FlightResult({
 }: FlightResultProps) {
   // 가는날
 
+  const operatingCode =
+    offer.itineraries?.[0]?.segments?.[0]?.operating?.carrierCode; // 운항 항공사
+
+  const validatingCode = offer.itineraries[0]?.segments[0]?.carrierCode; // 판매 항공사
+
   /*
-   * 운행항공사 로고 로직
+   * 항공사 로고 로직
    * 1. matchesIata, isLogoValid가 일치하는 값이 나올 때까지 진행
    * 2. matchesIata : 항공사 테이블(airlineCodeOffers)에서 일치하는 항공사 코드랑 일치하는지 확인
    * 3. isLogoValid : 항공사 테이블에서 일치하는 로고가 있는지 확인
    */
-  const operatingCarrierCode =
+  const carrierCodeLogo =
     airlineCodeOffers.find((airline) => {
       // 판매항공사를 carrierCode로 대체 (12/10)
-      const matchesIata =
-        airline.iata === offer.itineraries[0]?.segments[0]?.carrierCode || "";
+      const matchesIata = airline.iata === validatingCode || "";
 
       /* 운항항공사
      const matchesIata =
@@ -221,7 +231,6 @@ function FlightResult({
         airline.airlinesLogo &&
         airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
 
-      //return matchesIata && isLogoValid;
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
 
@@ -256,11 +265,15 @@ function FlightResult({
 
   // 오는날
 
-  const returnOperatingCarrierCode =
+  const returnOperatingCode =
+    offer.itineraries?.[1]?.segments?.[0]?.operating?.carrierCode; // 운항 항공사
+
+  const returnValidatingCode = offer.itineraries[1]?.segments[0]?.carrierCode; // 판매 항공사
+
+  const returnCarrierCodeLogo =
     airlineCodeOffers.find((airline) => {
       // 판매항공사를 carrierCode로 대체 (12/10)
-      const matchesIata =
-        airline.iata === offer.itineraries[1]?.segments[0]?.carrierCode || "";
+      const matchesIata = airline.iata === returnValidatingCode || "";
 
       /* 운항항공사
       const matchesIata =
@@ -317,13 +330,48 @@ function FlightResult({
   const numberOfBookableSeats = offer.numberOfBookableSeats; // 예약 가능한 좌석
   const totalPrice = offer.price.total; // 총 가격
 
+  const getAirlineName = (carrierCode: string | undefined): string => {
+    // carrierCode가 undefined일 경우 처리
+    if (!carrierCode) {
+      return "알 수 없음"; // carrierCode가 없으면 기본값으로 "알 수 없음" 반환
+    }
+
+    // 항공사 코드와 일치하는 데이터 필터링
+    const airline = airlineCodeOffers.filter(
+      (item) => item.iata === carrierCode
+    );
+
+    // 2개 이상일 경우 : 공항코드가 겹치므로 아래 조건에 따름
+    if (airline.length > 1) {
+      const dictionariesCarrier = dictionaries?.carriers?.[carrierCode] ?? ""; // undefined일 경우 빈 문자열로 처리
+
+      // API 데이터의 항공사명과 비교하여 일치하는 항공사명 추출
+      let matchingAirline = airline.find(
+        (matchingAirline) =>
+          matchingAirline.airlines.trim().toLowerCase() ===
+          dictionariesCarrier.trim().toLowerCase()
+      );
+
+      if (matchingAirline) {
+        return matchingAirline.airlinesKor;
+      }
+    }
+    // 1개 일 경우 : 추출된 코드 그대로 출력
+    else if (airline.length === 1) {
+      return airline[0].airlinesKor;
+    }
+
+    // 항공사가 없을 경우 : '알 수 없음'으로 처리
+    return "알 수 없음";
+  };
+
   return (
     <Banner key={offer.id}>
       <FlightInfoGroups>
         <FlightInfo>
           <Airline>
-            {operatingCarrierCode !== "" ? (
-              <img src={operatingCarrierCode.airlinesLogo} />
+            {carrierCodeLogo !== "" ? (
+              <img src={carrierCodeLogo.airlinesLogo} />
             ) : (
               <>
                 {
@@ -347,7 +395,28 @@ function FlightResult({
               </>
             )}
 
-            <AirlineCode>{airlineCode}</AirlineCode>
+            <AirlineCode>
+              <span>{airlineCode}</span>
+              {operatingCode !== validatingCode && (
+                <span
+                  style={{ position: "relative" }}
+                  onMouseEnter={() =>
+                    setShowTooltip("departureCodeshare", 0, true)
+                  }
+                  onMouseLeave={() =>
+                    setShowTooltip("departureCodeshare", 0, false)
+                  }
+                >
+                  {" "}
+                  공동운항{" "}
+                  {showTooltip[0]?.departureCodeshare && (
+                    <Tooltip>
+                      실제운항 : {getAirlineName(operatingCode)}
+                    </Tooltip>
+                  )}
+                </span>
+              )}
+            </AirlineCode>
           </Airline>
           <OriginLine>
             {departureTime}
@@ -357,6 +426,15 @@ function FlightResult({
             {duration}
 
             <StopLine>{numberOfStops > 0 && <StopLineCircle />}</StopLine>
+            {/* EX) 5번째 offer.id에 첫 번째 경유지를 가는편인 곳에 마우스를 갖다댔을 경우
+                {
+                    "5": {
+                        "0": {
+                            "departureDate": true
+                        }
+                    }
+                }
+            */}
             <div style={{ position: "relative" }}>
               {numberOfStops === 0 ? (
                 "직항"
@@ -404,8 +482,8 @@ function FlightResult({
         {offer.itineraries[1] && (
           <FlightInfo>
             <Airline>
-              {returnOperatingCarrierCode !== "" ? (
-                <img src={returnOperatingCarrierCode.airlinesLogo} />
+              {returnCarrierCodeLogo !== "" ? (
+                <img src={returnCarrierCodeLogo.airlinesLogo} />
               ) : (
                 <>
                   {
@@ -427,8 +505,29 @@ function FlightResult({
                   ] || ""} */}
                 </>
               )}
+              <AirlineCode>
+                <span>{returnAirlineCode}</span>
 
-              <AirlineCode>{returnAirlineCode}</AirlineCode>
+                {returnOperatingCode !== returnValidatingCode && (
+                  <span
+                    style={{ position: "relative" }}
+                    onMouseEnter={() =>
+                      setShowTooltip("returnCodeshare", 0, true)
+                    }
+                    onMouseLeave={() =>
+                      setShowTooltip("returnCodeshare", 0, false)
+                    }
+                  >
+                    {" "}
+                    공동운항{" "}
+                    {showTooltip[0]?.returnCodeshare && (
+                      <Tooltip>
+                        실제운항 : {getAirlineName(returnOperatingCode)}
+                      </Tooltip>
+                    )}
+                  </span>
+                )}
+              </AirlineCode>
             </Airline>
             <OriginLine>
               {returnDepartureTime}

@@ -371,25 +371,6 @@ function FlightFiltering({
         minPrice: parseFloat(originalOffers?.data[0].price.total ?? "0"),
         maxPrice: parseFloat(originalOffers?.data.at(-1)?.price.total ?? "0"),
       });
-
-      /* 공동운항 구현 시 테스트용
-      
-      originalOffers.data.map((offer) => {
-        console.log(
-          `가는편 운항 항공사 [${offer.id}] : `,
-          offer.itineraries?.[0]?.segments?.[0]?.operating?.carrierCode
-        );
-
-        console.log(
-          `오는편 운항 항공사 [${offer.id}] : `,
-          offer.itineraries[1]?.segments?.[0]?.operating?.carrierCode
-        );
-
-        console.log(
-          `판매 항공사 [${offer.id}] : `,
-          offer.validatingAirlineCodes
-        );
-      }); */
     }
   }, [originalOffers]);
 
@@ -959,47 +940,48 @@ function FlightFiltering({
                 </div>
               );
             })}
-          {moreCount < Object.keys(airlineCount).length ? (
-            <div>
-              <MoreBtn name="more" onClick={loadMore}>
-                더 보기{" "}
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                  />
-                </MoreIcon>
-              </MoreBtn>
-            </div>
-          ) : (
-            <div>
-              <MoreBtn name="fold" onClick={loadMore}>
-                접기{" "}
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                  />
-                </MoreIcon>
-              </MoreBtn>
-            </div>
-          )}
+          {Object.keys(airlineCount).length > 6 &&
+            (moreCount < Object.keys(airlineCount).length ? (
+              <div>
+                <MoreBtn name="more" onClick={loadMore}>
+                  더 보기{" "}
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </MoreIcon>
+                </MoreBtn>
+              </div>
+            ) : (
+              <div>
+                <MoreBtn name="fold" onClick={loadMore}>
+                  접기{" "}
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                    />
+                  </MoreIcon>
+                </MoreBtn>
+              </div>
+            ))}
         </AirlinesContainer>
       </Airlines>
     </Banner>

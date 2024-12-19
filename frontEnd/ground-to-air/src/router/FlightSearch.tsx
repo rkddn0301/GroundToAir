@@ -313,14 +313,24 @@ function FlightSearch() {
 
   const [showTooltip, setShowTooltip] = useState<{
     [key: string]: {
-      [index: number]: { departureDate: boolean; returnDate: boolean };
+      [index: number]: {
+        departureDate: boolean;
+        returnDate: boolean;
+        departureCodeshare: boolean;
+        returnCodeshare: boolean;
+      };
     };
   }>({}); // 경유지 툴팁으로 고유 key, 경유지 구분 index, 왕복 내용 중 hover 여부를 관리하는 state
+  // EX) 경유지 : 3번째 데이터에서 2회 경유 일 경우 고유 key는 '3', index는 0,1이 발생함. 따라서 key[0]에는 첫 번째 경유지, key[1]에는 두 번째 경유지가 있는 것.
 
   const [isNonstop, setIsNonstop] = useState({
     checking: false, // 체크박스 선택
     search: false, // 검색 후 필터링
   }); // '직항만' 스위칭
+
+  useEffect(() => {
+    console.log(showTooltip);
+  }, [showTooltip]);
 
   /* 항공 조회 결과 적용 끝 */
 
