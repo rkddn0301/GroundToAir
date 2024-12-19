@@ -156,12 +156,14 @@ interface FlightFilteringProps {
     React.SetStateAction<FlightOffersResponse | null>
   >; // 항공 조회 수정 state
   airlineCodeOffers: AirlineCodes[]; // 항공사 코드 DB
+  isNonstop: boolean; // '직항만' 여부
 }
 
 function FlightFiltering({
   flightOffers,
   setFlightOffers,
   airlineCodeOffers,
+  isNonstop,
 }: FlightFilteringProps) {
   const [originalOffers, setOriginalOffers] =
     useState<FlightOffersResponse | null>(null); // 항공 조회 원본 데이터
@@ -174,8 +176,8 @@ function FlightFiltering({
   /* 경유지 데이터 시작 */
 
   const [nonStop, setNonStop] = useState(true); // 직항 state
-  const [oneStop, setOneStop] = useState(true); // 경유 1회 state
-  const [multipleStops, setMultipleStops] = useState(true); // 경유 2회 이상 state
+  const [oneStop, setOneStop] = useState(isNonstop ? false : true); // 경유 1회 state
+  const [multipleStops, setMultipleStops] = useState(isNonstop ? false : true); // 경유 2회 이상 state
 
   // 경유지 체크박스 적용 함수
   const stopoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -662,8 +664,8 @@ function FlightFiltering({
           (selectedAirlines.includes(departureSegments[0].carrierCode) &&
             departureSegments[0].carrierCode ===
               returnSegments[0].carrierCode) ||
-          (selectedAirlines.includes("기타") &&
-            departureSegments[0].carrierCode !== returnSegments[0].carrierCode); // 기타는 가는편/오는편 항공사가 다른 데이터만 필터링
+          (selectedAirlines.includes("다중 항공사") &&
+            departureSegments[0].carrierCode !== returnSegments[0].carrierCode); // 다중 항공사는 가는편/오는편 항공사가 다른 데이터만 필터링
 
         /* 4. 항공사 선택 필터링 끝 */
 

@@ -39,24 +39,47 @@ const OnewayCheckMenu = styled.div`
 `;
 
 // 작성란 폼 전체 디자인 구성
+const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: ${(props) => props.theme.white.bg};
+  height: 15vh;
+  box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  gap: 5px;
+  width: 100%;
+`;
+
+// '직항만' 디자인 구성
+const NonStopWrapper = styled.div`
+  width: 47.5%;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+// 폼 디자인 구성
 const Form = styled.form`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${(props) => props.theme.white.bg};
-  gap: 5px;
-  height: 15vh;
-  padding: 15px;
-  margin: 0 auto;
-  box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2); // 아래쪽 그림자만
-  // border-radius: 5px;
-  // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
+  gap: 10px;
+  width: 85%;
+`;
+
+// Field 디자인 부분 구성
+const FieldWrapper = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25%;
+  gap: 10px;
 `;
 
 // 작성란 구분 디자인 구성
 const Field = styled.div`
   width: 20%;
-  height: 85%;
   border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 10px;
   display: flex;
@@ -67,14 +90,17 @@ const Field = styled.div`
 
 // 출발지/도착지 전환 버튼 구성
 const CircleField = styled.div`
+  position: absolute;
   width: 50px;
   padding: 15px;
   display: flex;
+  background-color: ${(props) => props.theme.white.bg};
   border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 50%;
   font-size: 15px;
   justify-content: center;
   align-items: center;
+  z-index: 1;
   cursor: pointer;
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
@@ -110,7 +136,7 @@ const CalendarInput = styled.div`
 // 인원 및 좌석등급 버튼 디자인 구성
 const TravelerButton = styled.button`
   position: relative;
-  margin-top: 10px;
+  margin-top: 5%;
   padding: 5px;
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 7px;
@@ -125,12 +151,14 @@ const TravelerButton = styled.button`
 
 // 버튼 디자인 구성
 const SubmitBtn = styled.button`
-  height: 85%;
+  width: 10%;
+  height: 100%;
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
 
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
@@ -288,6 +316,11 @@ function FlightSearch() {
       [index: number]: { departureDate: boolean; returnDate: boolean };
     };
   }>({}); // 경유지 툴팁으로 고유 key, 경유지 구분 index, 왕복 내용 중 hover 여부를 관리하는 state
+
+  const [isNonstop, setIsNonstop] = useState({
+    checking: false, // 체크박스 선택
+    search: false, // 검색 후 필터링
+  }); // '직항만' 스위칭
 
   /* 항공 조회 결과 적용 끝 */
 
@@ -606,6 +639,13 @@ function FlightSearch() {
 
     setMoreCount(10); // 항공 더 보기 초기화
 
+    // '직항만' 체크 여부에 따라 검색 boolean 변경
+    if (isNonstop.checking) {
+      setIsNonstop({ ...isNonstop, search: true });
+    } else {
+      setIsNonstop({ ...isNonstop, search: false });
+    }
+
     try {
       const response = await axios.get(
         `http://localhost:8080/air/flightOffers`,
@@ -712,151 +752,174 @@ function FlightSearch() {
           편도
         </label>
       </OnewayCheckMenu>
-      <Form>
-        <Field
-          style={{ position: "relative" }}
-          ref={autoCompleteOriginLocationRef}
-        >
-          <Label htmlFor="originLocation">출발지</Label>
-          <WriteInput
-            type="search"
-            id="originLocation"
-            value={inputData.originLocationCode}
-            onChange={originChange}
-            placeholder="도시 또는 공항명"
-            autoComplete="off"
-          />
-          {autoCompleteOriginLocationSw &&
-            autoCompleteOriginLocations.length > 0 && (
-              <AutoComplete
-                setInputData={setInputData}
-                setAutoCompleteLocationSw={setAutoCompleteOriginLocationSw}
-                autoCompleteLocations={autoCompleteOriginLocations}
-                setAutoCompleteLocations={setAutoCompleteOriginLocations}
-                type="origin"
-              />
-            )}
-        </Field>
-        <CircleField onClick={locationChange}>
-          <ArrowsIcon
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            className="size-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+      <FormWrapper>
+        <NonStopWrapper>
+          <div>
+            <input
+              type="checkbox"
+              onClick={() =>
+                setIsNonstop((prev) => ({ ...prev, checking: !prev.checking }))
+              }
             />
-          </ArrowsIcon>
-        </CircleField>
-        <Field
-          style={{ position: "relative" }}
-          ref={autoCompleteDestinationLocationRef}
-        >
-          <Label htmlFor="destinationLocation">도착지</Label>
-          <WriteInput
-            type="search"
-            id="destinationLocation"
-            value={inputData.destinationLocationCode}
-            onChange={destinationChange}
-            placeholder="도시 또는 공항명"
-            autoComplete="off"
-          />
-          {autoCompleteDestinationLocationSw &&
-            autoCompleteDestinationLocations.length > 0 && (
-              <AutoComplete
-                setInputData={setInputData}
-                setAutoCompleteLocationSw={setAutoCompleteDestinationLocationSw}
-                autoCompleteLocations={autoCompleteDestinationLocations}
-                setAutoCompleteLocations={setAutoCompleteDestinationLocations}
-                type="destination"
+            <label>직항만</label>
+          </div>
+        </NonStopWrapper>
+        <Form>
+          <FieldWrapper>
+            <Field
+              style={{ position: "relative", width: "50%" }}
+              ref={autoCompleteOriginLocationRef}
+            >
+              <Label htmlFor="originLocation">출발지</Label>
+              <WriteInput
+                type="search"
+                id="originLocation"
+                value={inputData.originLocationCode}
+                onChange={originChange}
+                placeholder="도시 또는 공항명"
+                autoComplete="off"
               />
-            )}
-        </Field>
-        {!onewayChecking && (
-          <Field>
-            <Label>가는날/오는날</Label>
-            <CalendarInput>
-              <DatePicker
-                showIcon
-                onChange={roundTripDateChange} // 범위 선택을 위한 onChange
-                startDate={
-                  inputData.departureDate
-                    ? new Date(inputData.departureDate)
-                    : undefined
-                }
-                endDate={
-                  inputData.returnDate
-                    ? new Date(inputData.returnDate)
-                    : undefined
-                }
-                minDate={new Date()} // 금일 이전 날짜 비활성화
-                maxDate={
-                  new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                } // 금일로부터 1년 뒤까지 선택 가능
-                swapRange
-                selectsRange
-                monthsShown={2} // 달력을 2개월치로 표시
-                locale={ko} // 한국어 설정
-                dateFormat="yyyy-MM-dd" // 날짜 형식
-                placeholderText="가는날/오는날(왕복)"
+              {autoCompleteOriginLocationSw &&
+                autoCompleteOriginLocations.length > 0 && (
+                  <AutoComplete
+                    setInputData={setInputData}
+                    setAutoCompleteLocationSw={setAutoCompleteOriginLocationSw}
+                    autoCompleteLocations={autoCompleteOriginLocations}
+                    setAutoCompleteLocations={setAutoCompleteOriginLocations}
+                    type="origin"
+                  />
+                )}
+            </Field>
+            <CircleField onClick={locationChange}>
+              <ArrowsIcon
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                />
+              </ArrowsIcon>
+            </CircleField>
+            <Field
+              style={{ position: "relative", width: "50%" }}
+              ref={autoCompleteDestinationLocationRef}
+            >
+              <Label htmlFor="destinationLocation">도착지</Label>
+              <WriteInput
+                type="search"
+                id="destinationLocation"
+                value={inputData.destinationLocationCode}
+                onChange={destinationChange}
+                placeholder="도시 또는 공항명"
+                autoComplete="off"
               />
-            </CalendarInput>
-          </Field>
-        )}
-
-        {onewayChecking && (
-          <Field>
-            <Label>가는날</Label>
-            <CalendarInput>
-              <DatePicker
-                showIcon
-                onChange={onewayDateChange}
-                selected={
-                  inputData.departureDate
-                    ? new Date(inputData.departureDate)
-                    : null
-                }
-                minDate={new Date()} // 금일 이전 날짜 비활성화
-                maxDate={
-                  new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                } // 금일로부터 1년 뒤까지 선택 가능
-                monthsShown={2} // 달력을 2개월치로 표시
-                locale={ko} // 한국어 설정
-                dateFormat="yyyy-MM-dd" // 날짜 형식
-                placeholderText="가는날(편도)"
-              />
-            </CalendarInput>
-          </Field>
-        )}
-        <Field style={{ position: "relative" }} ref={travelerModalRef}>
-          <Label>인원 및 좌석 등급</Label>
-          <TravelerButton onClick={travelerClick}>
-            인원&nbsp;
-            {Number(inputData.adults) +
-              Number(inputData.children) +
-              Number(inputData.infants)}
-            명 &nbsp;ㆍ{" "}
-            {inputData.travelClass === SeatClass.ECONOMY && "일반석"}
-            {inputData.travelClass === SeatClass.PREMIUM_ECONOMY &&
-              "프리미엄 일반석"}
-            {inputData.travelClass === SeatClass.BUSINESS && "비즈니스석"}
-            {inputData.travelClass === SeatClass.FIRST && "일등석"}
-          </TravelerButton>
-          {travelerBtnSw && (
-            <TravelerModal
-              setInputData={setInputData}
-              setTravelerBtnSw={setTravelerBtnSw}
-            />
+              {autoCompleteDestinationLocationSw &&
+                autoCompleteDestinationLocations.length > 0 && (
+                  <AutoComplete
+                    setInputData={setInputData}
+                    setAutoCompleteLocationSw={
+                      setAutoCompleteDestinationLocationSw
+                    }
+                    autoCompleteLocations={autoCompleteDestinationLocations}
+                    setAutoCompleteLocations={
+                      setAutoCompleteDestinationLocations
+                    }
+                    type="destination"
+                  />
+                )}
+            </Field>
+          </FieldWrapper>
+          {!onewayChecking && (
+            <Field>
+              <Label>가는날/오는날</Label>
+              <CalendarInput>
+                <DatePicker
+                  showIcon
+                  onChange={roundTripDateChange} // 범위 선택을 위한 onChange
+                  startDate={
+                    inputData.departureDate
+                      ? new Date(inputData.departureDate)
+                      : undefined
+                  }
+                  endDate={
+                    inputData.returnDate
+                      ? new Date(inputData.returnDate)
+                      : undefined
+                  }
+                  minDate={new Date()} // 금일 이전 날짜 비활성화
+                  maxDate={
+                    new Date(
+                      new Date().setFullYear(new Date().getFullYear() + 1)
+                    )
+                  } // 금일로부터 1년 뒤까지 선택 가능
+                  swapRange
+                  selectsRange
+                  monthsShown={2} // 달력을 2개월치로 표시
+                  locale={ko} // 한국어 설정
+                  dateFormat="yyyy-MM-dd" // 날짜 형식
+                  placeholderText="가는날/오는날(왕복)"
+                />
+              </CalendarInput>
+            </Field>
           )}
-        </Field>
 
-        <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
-      </Form>
+          {onewayChecking && (
+            <Field>
+              <Label>가는날</Label>
+              <CalendarInput>
+                <DatePicker
+                  showIcon
+                  onChange={onewayDateChange}
+                  selected={
+                    inputData.departureDate
+                      ? new Date(inputData.departureDate)
+                      : null
+                  }
+                  minDate={new Date()} // 금일 이전 날짜 비활성화
+                  maxDate={
+                    new Date(
+                      new Date().setFullYear(new Date().getFullYear() + 1)
+                    )
+                  } // 금일로부터 1년 뒤까지 선택 가능
+                  monthsShown={2} // 달력을 2개월치로 표시
+                  locale={ko} // 한국어 설정
+                  dateFormat="yyyy-MM-dd" // 날짜 형식
+                  placeholderText="가는날(편도)"
+                />
+              </CalendarInput>
+            </Field>
+          )}
+          <Field style={{ position: "relative" }} ref={travelerModalRef}>
+            <Label>인원 및 좌석 등급</Label>
+            <TravelerButton onClick={travelerClick}>
+              인원&nbsp;
+              {Number(inputData.adults) +
+                Number(inputData.children) +
+                Number(inputData.infants)}
+              명 &nbsp;ㆍ{" "}
+              {inputData.travelClass === SeatClass.ECONOMY && "일반석"}
+              {inputData.travelClass === SeatClass.PREMIUM_ECONOMY &&
+                "프리미엄 일반석"}
+              {inputData.travelClass === SeatClass.BUSINESS && "비즈니스석"}
+              {inputData.travelClass === SeatClass.FIRST && "일등석"}
+            </TravelerButton>
+            {travelerBtnSw && (
+              <TravelerModal
+                setInputData={setInputData}
+                setTravelerBtnSw={setTravelerBtnSw}
+              />
+            )}
+          </Field>
+
+          <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
+        </Form>
+      </FormWrapper>
 
       {isLoading ? (
         <Loading>
@@ -876,6 +939,7 @@ function FlightSearch() {
             flightOffers={flightOffers}
             setFlightOffers={setFlightOffers}
             airlineCodeOffers={airlineCodeOffers}
+            isNonstop={isNonstop.search}
           />
           <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
