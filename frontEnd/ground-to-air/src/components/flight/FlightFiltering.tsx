@@ -33,6 +33,28 @@ const StopoverField = styled.div`
   padding-left: 5px;
 `;
 
+// 공동운항 필터
+const CodeShare = styled.div`
+  margin: 30px 0 20px 0;
+`;
+
+// 공동운항 버튼
+const CodeShareButton = styled.button<{ isActive: boolean }>`
+  margin-top: 5%;
+  background-color: ${(props) =>
+    props.isActive ? props.theme.black.bg : props.theme.white.bg};
+  color: ${(props) =>
+    props.isActive ? props.theme.black.font : props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
+`;
+
 // 출발 시간대 필터
 const DepartureTime = styled.div`
   margin: 30px 0 20px 0;
@@ -198,6 +220,11 @@ function FlightFiltering({
   };
 
   /* 경유지 데이터 끝 */
+
+  /* 공동운항 데이터 시작 */
+  const [isCodeShare, setIsCodeShare] = useState(false); // 공동운항 버튼 클릭 여부
+
+  /* 공동운항 데이터 끝 */
 
   /* 출발 시간대 조정 데이터 시작 */
   const [adjustTime, setAdjustTime] = useState({
@@ -578,102 +605,127 @@ function FlightFiltering({
 
   // 필터링 구간
   /* 
-    1. 경유지 / 2. 출발 시간대 / 3. 가격 조정 / 4. 항공사 선택
+    1. 경유지 / 2. 공동운항 / 3. 출발 시간대 / 4. 가격 조정 / 5. 항공사 선택
   */
   useEffect(() => {
     if (!originalOffers) return;
+
+    /*  1. 경유지 조건 필터링 시작 */
+    const filterByStops = (segments: any) => {
+      const segmentLength = segments.length;
+      return (
+        (nonStop && segmentLength === 1) ||
+        (oneStop && segmentLength === 2) ||
+        (multipleStops && segmentLength > 2)
+      );
+    };
+    /*  1. 경유지 조건 필터링 끝 */
+
+    /* 2. 공동운항 필터링 시작 */
+
+    const filterByCodeShare = (segments: any) => {
+      if (!isCodeShare) return true; // 공동운항 필터링 비활성화 시 모든 데이터 통과
+      return segments.every(
+        // every : segments 배열 내부를 순환하여 아래 조건을 만족하는지 확인 후 반환
+        (segment: any) => segment.operating?.carrierCode === segment.carrierCode
+      );
+    };
+
+    /* 2. 공동운항 필터링 끝 */
+
+    /* 3. 출발 시간대 필터링 시작 */
+
+    const filterByTime = (
+      segments: any,
+      startTime: number,
+      endTime: number
+    ) => {
+      const timeStamp = segments[0]?.departure?.at; // 시간 존재여부 확인
+      if (!timeStamp) return false;
+
+      const dateExtraction = new Date(timeStamp);
+      const timeExtraction =
+        dateExtraction.getHours() * 60 + dateExtraction.getMinutes(); // 시와 분을 분으로 합침
+
+      // 출발 시간이 startTime과 endTime 사이에 있는지 확인
+      return timeExtraction >= startTime && timeExtraction <= endTime;
+    };
+    /* 3. 출발 시간대 필터링 끝 */
+
+    /*  4. 가격 조정 필터링 시작 */
+
+    const filterByPrice = (price: string | undefined) => {
+      const totalPrice = parseFloat(price ?? "0");
+
+      // 가격이 내가 조정한 startPrice와 endPrice 사이에 있는지 확인
+      return (
+        totalPrice >= adjustPrice.startPrice &&
+        totalPrice <= adjustPrice.endPrice
+      );
+    };
+    /*  4. 가격 조정 필터링 끝 */
+
+    /* 5. 항공사 선택 필터링 시작 */
+    const filterByAirlines = (
+      departureSegments: any,
+      returnSegments: any,
+      isRoundTrip: boolean
+    ) => {
+      const departureCarrier = departureSegments[0]?.carrierCode; // 가는편 항공사
+      const returnCarrier = returnSegments?.[0]?.carrierCode; // 오는편 항공사
+
+      if (isRoundTrip) {
+        // 왕복
+        // 왕복일 때는 가는편과 오는편의 항공사가 동일해야 함
+        return (
+          (selectedAirlines.includes(departureCarrier) &&
+            departureCarrier === returnCarrier) ||
+          (selectedAirlines.includes("다중 항공사") &&
+            departureCarrier !== returnCarrier) // 다중 항공사는 가는편/오는편 항공사가 다른 데이터만 필터링
+        );
+      } else {
+        // 편도
+        // 편도는 왕복과 다르게 가는편에서 존재여부에 따라 필터링
+        return selectedAirlines.includes(departureCarrier);
+      }
+    };
+
+    /* 5. 항공사 선택 필터링 끝 */
 
     const filteredOffers = originalOffers.data.filter((offer: any) => {
       const departureSegments = offer.itineraries[0]?.segments || []; // 가는편
       const returnSegments = offer.itineraries[1]?.segments || []; // 오는편
 
-      /*  1. 경유지 조건 필터링 시작 */
-      const isStopover = (segments: any) => {
-        return (
-          (nonStop && segments.length === 1) ||
-          (oneStop && segments.length === 2) ||
-          (multipleStops && segments.length > 2)
-        );
-      };
-      /*  1. 경유지 조건 필터링 끝 */
-
-      /* 2. 출발 시간대 필터링 시작 */
-
       // 가는편
-      const departureTimestamp = departureSegments[0]?.departure?.at;
-      if (!departureTimestamp) return false;
+      const isDepartureValid =
+        filterByStops(departureSegments) &&
+        filterByCodeShare(departureSegments) &&
+        filterByTime(
+          departureSegments,
+          adjustTime.departureStartTime,
+          adjustTime.departureEndTime
+        ) &&
+        filterByPrice(offer.price.total);
 
-      const departureDate = new Date(departureTimestamp);
-      const departureTime =
-        departureDate.getHours() * 60 + departureDate.getMinutes(); // 시간과 분을 분으로 합침
-
-      // 출발 시간이 startTime과 endTime 사이에 있는지 확인
-      const isDepartureInTimeRange =
-        departureTime >= adjustTime.departureStartTime &&
-        departureTime <= adjustTime.departureEndTime;
-
-      /* 2. 출발 시간대 필터링 끝 */
-
-      /*  3. 가격 조정 필터링 시작 */
-      const totalPrice = parseFloat(offer.price.total ?? "0");
-
-      // 가격이 내가 조정한 startPrice와 endPrice 사이에 있는지 확인
-      const isTotalPriceRange =
-        totalPrice >= adjustPrice.startPrice &&
-        totalPrice <= adjustPrice.endPrice;
-      /*  3. 가격 조정 필터링 끝 */
-
-      // 왕복일 경우, 가는편과 오는편 중 하나라도 조건을 만족해야 함
+      // 왕복여부를 확인
       if (returnSegments.length > 0) {
-        /* 2. 출발 시간대 필터링 시작 */
-        // 오는편
-        const returnTimestamp = returnSegments[0]?.departure?.at;
-        if (!returnTimestamp) return false;
+        // 왕복일 경우 오는편도 필터링
+        const isReturnValid =
+          filterByStops(returnSegments) &&
+          filterByCodeShare(returnSegments) &&
+          filterByTime(
+            returnSegments,
+            adjustTime.returnStartTime,
+            adjustTime.returnEndTime
+          ) &&
+          filterByAirlines(departureSegments, returnSegments, true);
 
-        const returnDate = new Date(returnTimestamp);
-        const returnTime = returnDate.getHours() * 60 + returnDate.getMinutes();
-
-        const isReturnInTimeRange =
-          returnTime >= adjustTime.returnStartTime &&
-          returnTime <= adjustTime.returnEndTime;
-        /* 2. 출발 시간대 필터링 끝 */
-
-        /* 4. 항공사 선택 필터링 시작 */
-
-        // 'selectedAirlines'에 포함된 항공사만 필터링
-        const isAirlineSelected =
-          (selectedAirlines.includes(departureSegments[0].carrierCode) &&
-            departureSegments[0].carrierCode ===
-              returnSegments[0].carrierCode) ||
-          (selectedAirlines.includes("다중 항공사") &&
-            departureSegments[0].carrierCode !== returnSegments[0].carrierCode); // 다중 항공사는 가는편/오는편 항공사가 다른 데이터만 필터링
-
-        /* 4. 항공사 선택 필터링 끝 */
-
-        return (
-          isDepartureInTimeRange &&
-          isReturnInTimeRange &&
-          isTotalPriceRange &&
-          (isStopover(departureSegments) || isStopover(returnSegments)) &&
-          isAirlineSelected
-        ); // 경유지와 출발시간 조건이 모두 맞아야 필터링됨
+        return isDepartureValid && isReturnValid;
       } else {
-        // 편도일 경우, 경유지가 없을 수도 있음
-
-        /* 4. 항공사 선택 필터링 시작 */
-
-        // 'selectedAirlines'에 포함된 항공사만 필터링 (편도는 왕복과 다르게 가는편에서 존재여부에 따라 필터링)
-        const isAirlineSelected = selectedAirlines.includes(
-          departureSegments[0].carrierCode
-        );
-
-        /* 4. 항공사 선택 필터링 끝 */
+        // 편도일 경우 가는편만 필터링
         return (
-          isDepartureInTimeRange &&
-          isTotalPriceRange &&
-          isStopover(departureSegments) &&
-          isAirlineSelected
-        ); // 경유지가 없을 경우, 출발시간만 조건에 맞으면 필터링됨
+          isDepartureValid && filterByAirlines(departureSegments, null, false)
+        );
       }
     });
 
@@ -686,6 +738,7 @@ function FlightFiltering({
       dictionaries: originalOffers.dictionaries,
     });
   }, [
+    isCodeShare,
     adjustTime,
     adjustPrice,
     nonStop,
@@ -733,6 +786,17 @@ function FlightFiltering({
           <label>경유 2회 이상</label>
         </StopoverField>
       </Stopover>
+
+      <CodeShare>
+        <Title>공동운항</Title>
+        <CodeShareButton
+          isActive={isCodeShare}
+          onClick={() => setIsCodeShare((prev) => !prev)}
+        >
+          공동운항 제외
+        </CodeShareButton>
+      </CodeShare>
+
       <DepartureTime>
         <Title>출발 시간대</Title>
         <div style={{ marginTop: "10px" }}>가는편</div>

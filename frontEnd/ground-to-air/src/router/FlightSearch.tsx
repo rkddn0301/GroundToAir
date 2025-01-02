@@ -328,10 +328,6 @@ function FlightSearch() {
     search: false, // 검색 후 필터링
   }); // '직항만' 스위칭
 
-  useEffect(() => {
-    console.log(showTooltip);
-  }, [showTooltip]);
-
   /* 항공 조회 결과 적용 끝 */
 
   /* 더 보기 기능 적용 시작 */

@@ -330,7 +330,8 @@ function FlightResult({
   const numberOfBookableSeats = offer.numberOfBookableSeats; // 예약 가능한 좌석
   const totalPrice = offer.price.total; // 총 가격
 
-  const getAirlineName = (carrierCode: string | undefined): string => {
+  // 공동운항 툴팁
+  const getAirlineTooltip = (carrierCode: string | undefined): string => {
     // carrierCode가 undefined일 경우 처리
     if (!carrierCode) {
       return "알 수 없음"; // carrierCode가 없으면 기본값으로 "알 수 없음" 반환
@@ -411,7 +412,7 @@ function FlightResult({
                   공동운항{" "}
                   {showTooltip[0]?.departureCodeshare && (
                     <Tooltip>
-                      실제운항 : {getAirlineName(operatingCode)}
+                      실제운항 : {getAirlineTooltip(operatingCode)}
                     </Tooltip>
                   )}
                 </span>
@@ -522,7 +523,7 @@ function FlightResult({
                     공동운항{" "}
                     {showTooltip[0]?.returnCodeshare && (
                       <Tooltip>
-                        실제운항 : {getAirlineName(returnOperatingCode)}
+                        실제운항 : {getAirlineTooltip(returnOperatingCode)}
                       </Tooltip>
                     )}
                   </span>
