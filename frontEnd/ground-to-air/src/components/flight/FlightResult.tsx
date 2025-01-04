@@ -53,7 +53,6 @@ const ReservationDetails = styled.div`
   //flex: 0 0 5%;
   display: flex;
   justify-content: center;
-  align-items: center;
   //padding: 5px 10px 0 0;
 `;
 
@@ -142,6 +141,7 @@ const Tooltip = styled.div`
 const ReservationBtnGroups = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
 `;
 
@@ -158,6 +158,11 @@ const ReservationBtn = styled.button`
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
   }
+`;
+
+// 아이콘 디자인
+const Icon = styled.svg`
+  width: 24px;
 `;
 
 // 조회 결과 컴포넌트에 필요한 props
@@ -185,6 +190,8 @@ interface FlightResultProps {
     index: number,
     value: boolean
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
+  isWish: boolean; // 찜 상태 업데이트 후 출력
+  setIsWish: () => void; // 찜 상태를 단순히 함수 방식으로만 업데이트하고 나머지는 부모가 처리
 }
 
 function FlightResult({
@@ -194,6 +201,8 @@ function FlightResult({
   iataCodeOffers,
   showTooltip,
   setShowTooltip,
+  isWish,
+  setIsWish,
 }: FlightResultProps) {
   // 가는날
 
@@ -327,7 +336,7 @@ function FlightResult({
   const returnAirportStopover = offer.itineraries[1]; // 경유지 공항코드
 
   // 공통
-  const numberOfBookableSeats = offer.numberOfBookableSeats; // 예약 가능한 좌석
+  // const numberOfBookableSeats = offer.numberOfBookableSeats; // 예약 가능한 좌석
   const totalPrice = offer.price.total; // 총 가격
 
   // 공동운항 툴팁
@@ -597,6 +606,38 @@ function FlightResult({
             parseFloat(totalPrice)
           )}`}</div>
         </ReservationBtnGroups>
+        <div
+          style={{ cursor: "pointer" }}
+          onClick={(e) => {
+            setIsWish;
+          }}
+        >
+          {isWish ? (
+            <Icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="size-6"
+            >
+              <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
+            </Icon>
+          ) : (
+            <Icon
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+              />
+            </Icon>
+          )}
+        </div>
       </ReservationDetails>
     </Banner>
   );

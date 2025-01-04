@@ -328,6 +328,16 @@ function FlightSearch() {
     search: false, // 검색 후 필터링
   }); // '직항만' 스위칭
 
+  /* 찜(wishList) state 구성 시작 */
+
+  const [isWish, setIsWish] = useState<{
+    [key: string]: boolean;
+  }>({}); // 찜 스위칭
+
+  const [wishList, setWishList] = useState({}); // 찜 데이터 등록 state
+
+  /* 찜(wishList) state 구성 끝 */
+
   /* 항공 조회 결과 적용 끝 */
 
   /* 더 보기 기능 적용 시작 */
@@ -735,6 +745,10 @@ function FlightSearch() {
     }
   };
 
+  useEffect(() => {
+    console.log(isWish);
+  }, [isWish]);
+
   return (
     <Container>
       <OnewayCheckMenu>
@@ -977,6 +991,14 @@ function FlightSearch() {
                 // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
                 // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
                 // field는 내가 변경한 key, value는 내가 변경한 boolean
+
+                isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                setIsWish={() =>
+                  setIsWish((prev) => ({
+                    ...prev,
+                    [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
+                  }))
+                } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
               />
             </>
           ))}
