@@ -1,6 +1,9 @@
 import styled from "styled-components";
 import { formatDuration, formatTime } from "../../utils/formatTime";
 import { AirlineCodes, FlightOffer, IataCodes } from "../../utils/api";
+import { useRecoilValue } from "recoil";
+import { isLoggedInState } from "../../utils/atom";
+import { Alert } from "../../utils/sweetAlert";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
@@ -204,6 +207,8 @@ function FlightResult({
   isWish,
   setIsWish,
 }: FlightResultProps) {
+  const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 확인
+
   // 가는날
 
   const operatingCode =
@@ -373,6 +378,65 @@ function FlightResult({
 
     // 항공사가 없을 경우 : '알 수 없음'으로 처리
     return "알 수 없음";
+  };
+
+  // 찜 추가/삭제 여부
+  const wishListUpdate = async () => {
+    // 로그인 여부 확인
+    if (isLoggedIn) {
+      // 로그인 o
+      setIsWish();
+      console.log(
+        "가는편 - ",
+        "항공사 : ",
+        validatingCode,
+        "항공편번호 : ",
+        airlineCode,
+        "출발지 : ",
+        originLocationCode,
+        "출발시간 : ",
+        offer.itineraries[0]?.segments[0]?.departure?.at,
+        "도착지 : ",
+        destinationLocationCode,
+        "도착시간 : ",
+        offer.itineraries[0]?.segments[
+          offer.itineraries[0]?.segments.length - 1
+        ]?.arrival?.at,
+        "소요시간 : ",
+        offer.itineraries[0]?.duration
+      );
+
+      console.log(
+        "오는편 - ",
+        "항공사 : ",
+        returnValidatingCode,
+        "항공편번호 : ",
+        returnAirlineCode,
+        "출발지 : ",
+        returnOriginLocationCode,
+        "출발시간 : ",
+        offer.itineraries[1]?.segments[0]?.departure?.at,
+        "도착지 : ",
+        returnDestinationLocationCode,
+        "도착시간 : ",
+        offer.itineraries[1]?.segments[
+          offer.itineraries[1]?.segments.length - 1
+        ]?.arrival?.at,
+        "소요시간 : ",
+        offer.itineraries[1]?.duration
+      );
+
+      console.log("가격 : ", totalPrice, "경유지 수 : ", numberOfStops);
+    } else {
+      // 로그인 x
+      const sessionOutAlert = await Alert(
+        "로그인이 필요한 기능입니다.",
+        "info"
+      );
+      if (sessionOutAlert.isConfirmed) {
+        window.location.href = "/login"; // 로그인 페이지로 이동
+      }
+    }
   };
 
   return (
@@ -606,12 +670,7 @@ function FlightResult({
             parseFloat(totalPrice)
           )}`}</div>
         </ReservationBtnGroups>
-        <div
-          style={{ cursor: "pointer" }}
-          onClick={(e) => {
-            setIsWish;
-          }}
-        >
+        <div style={{ cursor: "pointer" }} onClick={wishListUpdate}>
           {isWish ? (
             <Icon
               xmlns="http://www.w3.org/2000/svg"

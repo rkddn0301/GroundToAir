@@ -12,6 +12,8 @@ import AutoComplete from "../components/flight/AutoComplete";
 import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
 import FlightFiltering from "../components/flight/FlightFiltering";
+import { useRecoilValue } from "recoil";
+import { isLoggedInState } from "../utils/atom";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -744,8 +746,20 @@ function FlightSearch() {
       setIsLoading(false);
     }
   };
-
+  const isLoggedIn = useRecoilValue(isLoggedInState);
   useEffect(() => {
+    if (isLoggedIn) {
+      console.log(
+        "성인 수 : ",
+        inputData.adults,
+        "어린이 수 : ",
+        inputData.children,
+        "유아 수 : ",
+        inputData.infants,
+        "좌석 등급 : ",
+        inputData.travelClass
+      );
+    }
     console.log(isWish);
   }, [isWish]);
 
