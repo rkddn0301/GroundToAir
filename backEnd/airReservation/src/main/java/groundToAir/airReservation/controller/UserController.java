@@ -2,6 +2,7 @@ package groundToAir.airReservation.controller;
 
 import groundToAir.airReservation.entity.UserEntity;
 import groundToAir.airReservation.entity.UserPassportEntity;
+import groundToAir.airReservation.entity.WishListEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -214,6 +215,35 @@ public class UserController {
 
         return userService.googleUnlink(userInfo);
     }
+
+    // 찜 추가 및 제거
+    @PostMapping("/wish")
+    public boolean wish(@RequestHeader("Authorization") String accessToken, @RequestBody WishListEntity wishList) {
+        // Bearer 토큰에서 "Bearer " 부분 제거
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+
+        // 토큰에서 사용자 번호 추출
+        int userNo = jwtUtil.extractUserNo(accessToken);
+
+        // 위시리스트 데이터 로깅
+        log.info(String.format(
+                "회원번호: %d, 성인: %d, 어린이: %d, 유아: %d, 좌석등급: %s, 가는편 항공사: %s, 가는편 출발지: %s, 오는편 항공사: %s, 오는편 출발지: %s",
+                userNo,
+                wishList.getAdults(),
+                wishList.getChildrens(),
+                wishList.getInfants(),
+                wishList.getSeatClass(),
+                wishList.getAirlinesIata(),
+                wishList.getDepartureIata(),
+                wishList.getReAirlinesIata(),
+                wishList.getReDepartureIata()
+        ));
+
+        return true;
+    }
+
 
 
 }

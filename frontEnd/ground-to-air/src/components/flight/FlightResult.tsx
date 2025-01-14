@@ -4,6 +4,7 @@ import { AirlineCodes, FlightOffer, IataCodes } from "../../utils/api";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../utils/atom";
 import { Alert } from "../../utils/sweetAlert";
+import { WishList } from "../../router/FlightSearch";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
@@ -195,6 +196,7 @@ interface FlightResultProps {
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
   isWish: boolean; // 찜 상태 업데이트 후 출력
   setIsWish: () => void; // 찜 상태를 단순히 함수 방식으로만 업데이트하고 나머지는 부모가 처리
+  setWishList: React.Dispatch<React.SetStateAction<WishList>>;
 }
 
 function FlightResult({
@@ -206,6 +208,7 @@ function FlightResult({
   setShowTooltip,
   isWish,
   setIsWish,
+  setWishList,
 }: FlightResultProps) {
   const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 확인
 
@@ -386,47 +389,49 @@ function FlightResult({
     if (isLoggedIn) {
       // 로그인 o
       setIsWish();
-      console.log(
-        "가는편 - ",
-        "항공사 : ",
-        validatingCode,
-        "항공편번호 : ",
-        airlineCode,
-        "출발지 : ",
-        originLocationCode,
-        "출발시간 : ",
-        offer.itineraries[0]?.segments[0]?.departure?.at,
-        "도착지 : ",
-        destinationLocationCode,
-        "도착시간 : ",
-        offer.itineraries[0]?.segments[
+      setWishList((prev: WishList) => ({
+        ...prev,
+        airlinesIata: validatingCode || "",
+        departureIata: originLocationCode || "",
+        departureTime: offer.itineraries[0]?.segments[0]?.departure?.at
+          ? new Date(offer.itineraries[0]?.segments[0]?.departure?.at)
+          : null,
+        arrivalIata: destinationLocationCode || "",
+        arrivalTime: offer.itineraries[0]?.segments[
           offer.itineraries[0]?.segments.length - 1
-        ]?.arrival?.at,
-        "소요시간 : ",
-        offer.itineraries[0]?.duration
-      );
+        ]?.arrival?.at
+          ? new Date(
+              offer.itineraries[0]?.segments[
+                offer.itineraries[0]?.segments.length - 1
+              ]?.arrival?.at as string
+            )
+          : null,
+        flightNo: airlineCode,
+        turnaroundTime: offer.itineraries[0]?.duration,
+        stopLine: numberOfStops === 0 ? "직항" : `${numberOfStops}회 경유`,
 
-      console.log(
-        "오는편 - ",
-        "항공사 : ",
-        returnValidatingCode,
-        "항공편번호 : ",
-        returnAirlineCode,
-        "출발지 : ",
-        returnOriginLocationCode,
-        "출발시간 : ",
-        offer.itineraries[1]?.segments[0]?.departure?.at,
-        "도착지 : ",
-        returnDestinationLocationCode,
-        "도착시간 : ",
-        offer.itineraries[1]?.segments[
+        reAirlinesIata: returnValidatingCode,
+        reDepartureIata: returnOriginLocationCode,
+        reDepartureTime: offer.itineraries[1]?.segments[0]?.departure?.at
+          ? new Date(offer.itineraries[1]?.segments[0]?.departure?.at)
+          : null,
+        reArrivalIata: returnDestinationLocationCode,
+        reArrivalTime: offer.itineraries[1]?.segments[
           offer.itineraries[1]?.segments.length - 1
-        ]?.arrival?.at,
-        "소요시간 : ",
-        offer.itineraries[1]?.duration
-      );
+        ]?.arrival?.at
+          ? new Date(
+              offer.itineraries[1]?.segments[
+                offer.itineraries[1]?.segments.length - 1
+              ]?.arrival?.at as string
+            )
+          : null,
+        reFlightNo: returnAirlineCode,
+        reTurnaroundTime: offer.itineraries[1]?.duration,
+        reStopLine:
+          returnNumberOfStops === 0 ? "직항" : `${returnNumberOfStops}회 경유`,
 
-      console.log("가격 : ", totalPrice, "경유지 수 : ", numberOfStops);
+        totalPrice: parseInt(totalPrice),
+      }));
     } else {
       // 로그인 x
       const sessionOutAlert = await Alert(

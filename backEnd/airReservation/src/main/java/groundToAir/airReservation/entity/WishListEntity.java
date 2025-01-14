@@ -1,6 +1,7 @@
-/*
+
 package groundToAir.airReservation.entity;
 
+import groundToAir.airReservation.enumType.SeatClass;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -42,6 +43,10 @@ public class WishListEntity {
     @Column(name="TURNAROUND_TIME")
     private String turnaroundTime;
 
+    // 가는편 경유지 여부
+    @Column(name="STOP_LINE")
+    private String stopLine;
+
     // 오는편 항공사 코드
     @Column(name="RE_AIRLINES_IATA")
     private String reAirlinesIata;
@@ -70,16 +75,30 @@ public class WishListEntity {
     @Column(name="RE_TURNAROUND_TIME")
     private String reTurnaroundTime;
 
-    // 경유지 여부
-    @Column(name="STOP_LINE")
-    private String stopLine;
+    // 오는편 경유지 여부
+    @Column(name="RE_STOP_LINE")
+    private String reStopLine;
 
-    // 인원 수
-    @Column(name="PERSONNEL")
+    // 인원 수(성인)
+    @Column(name="ADULTS")
+    private Integer adults;
+
+    // 인원 수(어린이)
+    @Column(name="CHILDRENS")
+    private Integer childrens;
+
+    // 인원 수(유아)
+    @Column(name="INFANTS")
+    private Integer infants;
+
+    // 좌석등급
+    @Enumerated(EnumType.STRING)
     @Column(name="SEAT_CLASS")
+    private SeatClass seatClass;
+
+    // 가격
     @Column(name="TOTAL_PRICE")
-
-
+    private Integer totalPrice;
 
     // 외래키 설정 (ManyToOne: N:1 관계)
     // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
@@ -87,4 +106,4 @@ public class WishListEntity {
     @JoinColumn(name = "USER_NO")
     private UserEntity user;
 }
-*/
+

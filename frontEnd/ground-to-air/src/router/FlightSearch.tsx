@@ -12,8 +12,6 @@ import AutoComplete from "../components/flight/AutoComplete";
 import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
 import FlightFiltering from "../components/flight/FlightFiltering";
-import { useRecoilValue } from "recoil";
-import { isLoggedInState } from "../utils/atom";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -242,6 +240,28 @@ export interface InputData {
   destinationLocationCodeNo: string;
 }
 
+// 다른 컴포넌트에서 wishList를 props로 이용 시 필요
+export interface WishList {
+  airlinesIata: string;
+  departureIata: string;
+  departureTime: Date | null;
+  arrivalIata: string;
+  arrivalTime: Date | null;
+  flightNo: string;
+  turnaroundTime: string;
+  stopLine: string;
+
+  reAirlinesIata?: string;
+  reDepartureIata?: string;
+  reDepartureTime?: Date | null;
+  reArrivalIata?: string;
+  reArrivalTime?: Date | null;
+  reFlightNo?: string;
+  reTurnaroundTime?: string;
+  reStopLine?: string;
+  totalPrice: number;
+}
+
 // 좌석 클래스 enum
 export enum SeatClass {
   ECONOMY = "ECONOMY", // 일반석
@@ -336,7 +356,26 @@ function FlightSearch() {
     [key: string]: boolean;
   }>({}); // 찜 스위칭
 
-  const [wishList, setWishList] = useState({}); // 찜 데이터 등록 state
+  const [wishList, setWishList] = useState<WishList>({
+    airlinesIata: "", // 가는편_항공사코드
+    departureIata: "", // 가는편_출발지공항
+    departureTime: null, //  가는편_출발시간
+    arrivalIata: "", // 가는편_도착지공항
+    arrivalTime: null, // 가는편_도착시간
+    flightNo: "", // 가는편_항공편번호
+    turnaroundTime: "", // 가는편_소요시간
+    stopLine: "", // 가는편_경유지 여부
+
+    reAirlinesIata: "", // 오는편_항공사코드
+    reDepartureIata: "", // 오는편_출발지공항
+    reDepartureTime: null, // 오는편_출발시간
+    reArrivalIata: "", // 오는편_도착지공항
+    reArrivalTime: null, // 오는편_도착시간
+    reFlightNo: "", // 오는편_항공편번호
+    reTurnaroundTime: "", // 오는편_소요시간
+    reStopLine: "", // 오는편_경유지 여부
+    totalPrice: 0, // 가격
+  }); // 찜 데이터 등록 state
 
   /* 찜(wishList) state 구성 끝 */
 
@@ -746,22 +785,38 @@ function FlightSearch() {
       setIsLoading(false);
     }
   };
-  const isLoggedIn = useRecoilValue(isLoggedInState);
+
+  // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
-    if (isLoggedIn) {
-      console.log(
-        "성인 수 : ",
-        inputData.adults,
-        "어린이 수 : ",
-        inputData.children,
-        "유아 수 : ",
-        inputData.infants,
-        "좌석 등급 : ",
-        inputData.travelClass
+    sendWishList(wishList);
+  }, [wishList]);
+
+  // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
+  const sendWishList = async (data: WishList) => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken"); // 로컬 스토리지에서 토큰 가져오기
+
+      const response = await axios.post(
+        `http://localhost:8080/user/wish`,
+        {
+          ...data, // wishList 데이터
+          adults: inputData.adults,
+          childrens: inputData.children,
+          infants: inputData.infants,
+          seatClass: inputData.travelClass,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`, // 인증 토큰
+          },
+        }
       );
+
+      console.log(response.data);
+    } catch (e) {
+      console.error(e);
     }
-    console.log(isWish);
-  }, [isWish]);
+  };
 
   return (
     <Container>
@@ -1013,6 +1068,7 @@ function FlightSearch() {
                     [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
                   }))
                 } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
+                setWishList={setWishList}
               />
             </>
           ))}
