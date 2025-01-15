@@ -244,18 +244,18 @@ export interface InputData {
 export interface WishList {
   airlinesIata: string;
   departureIata: string;
-  departureTime: Date | null;
+  departureTime: string;
   arrivalIata: string;
-  arrivalTime: Date | null;
+  arrivalTime: string;
   flightNo: string;
   turnaroundTime: string;
   stopLine: string;
 
   reAirlinesIata?: string;
   reDepartureIata?: string;
-  reDepartureTime?: Date | null;
+  reDepartureTime?: string;
   reArrivalIata?: string;
-  reArrivalTime?: Date | null;
+  reArrivalTime?: string;
   reFlightNo?: string;
   reTurnaroundTime?: string;
   reStopLine?: string;
@@ -359,18 +359,18 @@ function FlightSearch() {
   const [wishList, setWishList] = useState<WishList>({
     airlinesIata: "", // 가는편_항공사코드
     departureIata: "", // 가는편_출발지공항
-    departureTime: null, //  가는편_출발시간
+    departureTime: "", //  가는편_출발시간
     arrivalIata: "", // 가는편_도착지공항
-    arrivalTime: null, // 가는편_도착시간
+    arrivalTime: "", // 가는편_도착시간
     flightNo: "", // 가는편_항공편번호
     turnaroundTime: "", // 가는편_소요시간
     stopLine: "", // 가는편_경유지 여부
 
     reAirlinesIata: "", // 오는편_항공사코드
     reDepartureIata: "", // 오는편_출발지공항
-    reDepartureTime: null, // 오는편_출발시간
+    reDepartureTime: "", // 오는편_출발시간
     reArrivalIata: "", // 오는편_도착지공항
-    reArrivalTime: null, // 오는편_도착시간
+    reArrivalTime: "", // 오는편_도착시간
     reFlightNo: "", // 오는편_항공편번호
     reTurnaroundTime: "", // 오는편_소요시간
     reStopLine: "", // 오는편_경유지 여부
@@ -788,7 +788,10 @@ function FlightSearch() {
 
   // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
-    sendWishList(wishList);
+    if (wishList.flightNo !== "") {
+      console.log(wishList);
+      sendWishList(wishList);
+    }
   }, [wishList]);
 
   // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송

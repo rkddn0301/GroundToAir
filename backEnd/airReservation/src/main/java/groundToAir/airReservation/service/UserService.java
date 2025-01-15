@@ -1,14 +1,9 @@
 package groundToAir.airReservation.service;
 
-import groundToAir.airReservation.entity.CountryEntity;
-import groundToAir.airReservation.entity.UserEntity;
-import groundToAir.airReservation.entity.UserPassportEntity;
-import groundToAir.airReservation.entity.UserRoleEntity;
+import groundToAir.airReservation.entity.*;
+import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.enumType.SocialType;
-import groundToAir.airReservation.repository.CountryRepository;
-import groundToAir.airReservation.repository.UserPassportRepository;
-import groundToAir.airReservation.repository.UserRepository;
-import groundToAir.airReservation.repository.UserRoleRepository;
+import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -20,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,18 +35,20 @@ public class UserService {
     private final UserRoleRepository userRoleRepository;
 
     private final CountryRepository countryRepository;
+    private final WishListRepository wishListRepository;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
 
     // 이메일 이용
     private JavaMailSender mailSender;
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRoleRepository = userRoleRepository;
         this.countryRepository = countryRepository;
+        this.wishListRepository = wishListRepository;
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
         this.mailSender = mailSender;
@@ -392,7 +390,6 @@ public class UserService {
         userPassportEntity.setUser(userCheck);
 
 
-
         userPassportRepository.save(userPassportEntity);
     }
 
@@ -451,7 +448,6 @@ public class UserService {
 
 
     }
-
 
 
     // 비밀번호 찾기
@@ -780,6 +776,78 @@ public class UserService {
         } catch (Exception e) {
             log.error("구글 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
             return false;
+        }
+    }
+
+    // 찜 추가 및 제거
+    public boolean wish(int userNo, Map<String, Object> wishListData) {
+
+        // 사용자 번호를 WishListEntity에 추가
+        UserEntity user = new UserEntity();
+        user.setUserNo(userNo);
+
+        // LocalDateTime 형변환
+        String departureTimeStr = (String) wishListData.get("departureTime");
+        String arrivalTimeStr = (String) wishListData.get("arrivalTime");
+
+        LocalDateTime departureTime = !departureTimeStr.isEmpty() ? LocalDateTime.parse(departureTimeStr) : null;
+        LocalDateTime arrivalTime = !arrivalTimeStr.isEmpty() ? LocalDateTime.parse(arrivalTimeStr) : null;
+
+
+        // WishListEntity 생성 및 가는편에 해당하는 항공권 데이터 삽입
+        WishListEntity wishList = new WishListEntity();
+        wishList.setUser(user);
+        wishList.setAirlinesIata((String) wishListData.get("airlinesIata"));
+        wishList.setDepartureIata((String) wishListData.get("departureIata"));
+        wishList.setDepartureTime(departureTime);
+        wishList.setArrivalIata((String) wishListData.get("arrivalIata"));
+        wishList.setArrivalTime(arrivalTime);
+        wishList.setFlightNo((String) wishListData.get("flightNo"));
+        wishList.setTurnaroundTime((String) wishListData.get("turnaroundTime"));
+        wishList.setStopLine((String) wishListData.get("stopLine"));
+
+        // 왕복인지 확인
+        if (wishListData.get("reStopLine") != null) {
+            log.info("왕복입니다");
+
+            String reDepartureTimeStr = (String) wishListData.get("reDepartureTime");
+            String reArrivalTimeStr = (String) wishListData.get("reArrivalTime");
+
+            LocalDateTime reDepartureTime = reDepartureTimeStr != null && !reDepartureTimeStr.isEmpty()
+                    ? LocalDateTime.parse(reDepartureTimeStr)
+                    : null;
+            LocalDateTime reArrivalTime = reArrivalTimeStr != null && !reArrivalTimeStr.isEmpty()
+                    ? LocalDateTime.parse(reArrivalTimeStr)
+                    : null;
+
+            wishList.setReAirlinesIata((String) wishListData.get("reAirlinesIata"));
+            wishList.setReDepartureIata((String) wishListData.get("reDepartureIata"));
+            wishList.setReDepartureTime(reDepartureTime);
+            wishList.setReArrivalIata((String) wishListData.get("reArrivalIata"));
+            wishList.setReArrivalTime(reArrivalTime);
+            wishList.setReFlightNo((String) wishListData.get("reFlightNo"));
+            wishList.setReTurnaroundTime((String) wishListData.get("reTurnaroundTime"));
+            wishList.setReStopLine((String) wishListData.get("reStopLine"));
+        }
+
+        // 인원 수 및 좌석 등급 등 추가 필드 설정
+        wishList.setAdults((Integer) wishListData.get("adults"));
+        wishList.setChildrens((Integer) wishListData.get("childrens"));
+        wishList.setInfants((Integer) wishListData.get("infants"));
+        wishList.setSeatClass(SeatClass.valueOf((String) wishListData.get("seatClass")));
+        wishList.setTotalPrice((Integer) wishListData.get("totalPrice"));
+
+        // 사용자 번호와 항공편 번호로 해당하는 찜 목록이 이미 존재하는지 확인
+        Optional<WishListEntity> existingWishList = wishListRepository.findByUser_UserNoAndFlightNo(wishList.getUser().getUserNo(), wishList.getFlightNo());
+
+        if (existingWishList.isPresent()) {
+            // 찜 항목이 이미 존재하면 삭제
+            wishListRepository.delete(existingWishList.get());
+            return false; // 삭제되었으므로 false 리턴
+        } else {
+            // 찜 항목이 존재하지 않으면 추가
+            wishListRepository.save(wishList);
+            return true; // 추가되었으므로 true 리턴
         }
     }
 

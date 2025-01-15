@@ -218,7 +218,7 @@ public class UserController {
 
     // 찜 추가 및 제거
     @PostMapping("/wish")
-    public boolean wish(@RequestHeader("Authorization") String accessToken, @RequestBody WishListEntity wishList) {
+    public boolean wish(@RequestHeader("Authorization") String accessToken, @RequestBody Map<String, Object> wishListData) {
         // Bearer 토큰에서 "Bearer " 부분 제거
         if (accessToken.startsWith("Bearer ")) {
             accessToken = accessToken.substring(7);
@@ -227,21 +227,11 @@ public class UserController {
         // 토큰에서 사용자 번호 추출
         int userNo = jwtUtil.extractUserNo(accessToken);
 
-        // 위시리스트 데이터 로깅
-        log.info(String.format(
-                "회원번호: %d, 성인: %d, 어린이: %d, 유아: %d, 좌석등급: %s, 가는편 항공사: %s, 가는편 출발지: %s, 오는편 항공사: %s, 오는편 출발지: %s",
-                userNo,
-                wishList.getAdults(),
-                wishList.getChildrens(),
-                wishList.getInfants(),
-                wishList.getSeatClass(),
-                wishList.getAirlinesIata(),
-                wishList.getDepartureIata(),
-                wishList.getReAirlinesIata(),
-                wishList.getReDepartureIata()
-        ));
 
-        return true;
+        // 위시리스트 데이터 로깅
+        log.info("회원번호 : " + userNo + ", 찜 : " + wishListData);
+
+        return userService.wish(userNo, wishListData);
     }
 
 

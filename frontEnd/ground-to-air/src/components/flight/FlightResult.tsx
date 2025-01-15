@@ -393,38 +393,24 @@ function FlightResult({
         ...prev,
         airlinesIata: validatingCode || "",
         departureIata: originLocationCode || "",
-        departureTime: offer.itineraries[0]?.segments[0]?.departure?.at
-          ? new Date(offer.itineraries[0]?.segments[0]?.departure?.at)
-          : null,
+        departureTime: offer.itineraries[0]?.segments[0]?.departure?.at || "", // 기존 값을 그대로 사용
         arrivalIata: destinationLocationCode || "",
-        arrivalTime: offer.itineraries[0]?.segments[
-          offer.itineraries[0]?.segments.length - 1
-        ]?.arrival?.at
-          ? new Date(
-              offer.itineraries[0]?.segments[
-                offer.itineraries[0]?.segments.length - 1
-              ]?.arrival?.at as string
-            )
-          : null,
+        arrivalTime:
+          offer.itineraries[0]?.segments[
+            offer.itineraries[0]?.segments.length - 1
+          ]?.arrival?.at || "",
         flightNo: airlineCode,
         turnaroundTime: offer.itineraries[0]?.duration,
         stopLine: numberOfStops === 0 ? "직항" : `${numberOfStops}회 경유`,
 
         reAirlinesIata: returnValidatingCode,
         reDepartureIata: returnOriginLocationCode,
-        reDepartureTime: offer.itineraries[1]?.segments[0]?.departure?.at
-          ? new Date(offer.itineraries[1]?.segments[0]?.departure?.at)
-          : null,
+        reDepartureTime: offer.itineraries[1]?.segments[0]?.departure?.at || "", // 기존 값을 그대로 사용
         reArrivalIata: returnDestinationLocationCode,
-        reArrivalTime: offer.itineraries[1]?.segments[
-          offer.itineraries[1]?.segments.length - 1
-        ]?.arrival?.at
-          ? new Date(
-              offer.itineraries[1]?.segments[
-                offer.itineraries[1]?.segments.length - 1
-              ]?.arrival?.at as string
-            )
-          : null,
+        reArrivalTime:
+          offer.itineraries[1]?.segments[
+            offer.itineraries[1]?.segments.length - 1
+          ]?.arrival?.at || "",
         reFlightNo: returnAirlineCode,
         reTurnaroundTime: offer.itineraries[1]?.duration,
         reStopLine:
