@@ -48,7 +48,7 @@ public class UserPassportEntity {
     @OneToOne
     @MapsId
     @JoinColumn(name = "USER_NO")
-    private UserEntity user;
+    private UserEntity passportUser;
 
 
 }

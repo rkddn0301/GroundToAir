@@ -5,6 +5,7 @@ import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.enumType.SocialType;
 import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,10 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 
 // 회원 정보 관련 Service
@@ -207,7 +205,7 @@ public class UserService {
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
-                userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+                userPassportEntity.setPassportUser(userEntity); // 외래키를 이용하여 회원번호 추가
                 userPassportRepository.save(userPassportEntity);
 
                 return getJwtToken(socialId, userEntity.getUserNo(), socialId, accessToken);
@@ -304,7 +302,7 @@ public class UserService {
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
-                userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+                userPassportEntity.setPassportUser(userEntity); // 외래키를 이용하여 회원번호 추가
                 userPassportRepository.save(userPassportEntity);
 
                 return getJwtToken(socialId, userEntity.getUserNo(), socialId, accessToken);
@@ -343,7 +341,7 @@ public class UserService {
 
         // 여권 정보를 위한 빈 UserPassportEntity 생성
         UserPassportEntity userPassportEntity = new UserPassportEntity();
-        userPassportEntity.setUser(userEntity); // 외래키를 이용하여 회원번호 추가
+        userPassportEntity.setPassportUser(userEntity); // 외래키를 이용하여 회원번호 추가
         userPassportRepository.save(userPassportEntity);
 
         // 여권정보 입력 사이트 이동에 필요한 userNo를 가져옴
@@ -387,7 +385,7 @@ public class UserService {
 
         // UserPassportEntity에 설정
         // ! 위에서 check하고 넣는 이유는 불일치 했던 형식(int, String)을 올바른 형식(UserEntity, CountryEntity)으로 삽입하기 위함이다.
-        userPassportEntity.setUser(userCheck);
+        userPassportEntity.setPassportUser(userCheck);
 
 
         userPassportRepository.save(userPassportEntity);
@@ -779,7 +777,12 @@ public class UserService {
         }
     }
 
-    // 찜 추가 및 제거
+    // 찜 조회
+    public List<Map<String, Object>> getWish(int userNo) {
+        return wishListRepository.findWishList(userNo);
+    }
+
+    // 찜 추가 및 삭제
     public boolean wish(int userNo, Map<String, Object> wishListData) {
 
         // 사용자 번호를 WishListEntity에 추가
@@ -796,7 +799,7 @@ public class UserService {
 
         // WishListEntity 생성 및 가는편에 해당하는 항공권 데이터 삽입
         WishListEntity wishList = new WishListEntity();
-        wishList.setUser(user);
+        wishList.setWishListUser(user);
         wishList.setAirlinesIata((String) wishListData.get("airlinesIata"));
         wishList.setDepartureIata((String) wishListData.get("departureIata"));
         wishList.setDepartureTime(departureTime);
@@ -807,8 +810,7 @@ public class UserService {
         wishList.setStopLine((String) wishListData.get("stopLine"));
 
         // 왕복인지 확인
-        if (wishListData.get("reStopLine") != null) {
-            log.info("왕복입니다");
+        if (!wishListData.get("reStopLine").toString().isEmpty()) {
 
             String reDepartureTimeStr = (String) wishListData.get("reDepartureTime");
             String reArrivalTimeStr = (String) wishListData.get("reArrivalTime");
@@ -838,7 +840,7 @@ public class UserService {
         wishList.setTotalPrice((Integer) wishListData.get("totalPrice"));
 
         // 사용자 번호와 항공편 번호로 해당하는 찜 목록이 이미 존재하는지 확인
-        Optional<WishListEntity> existingWishList = wishListRepository.findByUser_UserNoAndFlightNo(wishList.getUser().getUserNo(), wishList.getFlightNo());
+        Optional<WishListEntity> existingWishList = wishListRepository.findByWishListUser_UserNoAndFlightNo(wishList.getWishListUser().getUserNo(), wishList.getFlightNo());
 
         if (existingWishList.isPresent()) {
             // 찜 항목이 이미 존재하면 삭제

@@ -251,7 +251,12 @@ function FlightResult({
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
 
-  const airlineCode = `${offer.itineraries[0]?.segments[0]?.carrierCode}${offer.itineraries[0]?.segments[0]?.number}`; // 항공편 번호
+  const airlineCode = `${
+    offer.itineraries?.[0]?.segments?.[0]?.carrierCode || ""
+  }${offer.itineraries?.[0]?.segments?.[0]?.number || ""}`; // 항공편 번호
+  /*  const returnAirlineCode = `${
+    offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
+  }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`; */
   /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
   
   `${
@@ -313,7 +318,9 @@ function FlightResult({
       return matchesIata && isLogoValid;
     }) || "";
 
-  const returnAirlineCode = `${offer.itineraries[1]?.segments[0]?.carrierCode}${offer.itineraries[1]?.segments[0]?.number}`; // 항공편 번호
+  const returnAirlineCode = `${
+    offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
+  }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`; // 항공편 번호
   /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
   
   `${
@@ -393,30 +400,41 @@ function FlightResult({
         ...prev,
         airlinesIata: validatingCode || "",
         departureIata: originLocationCode || "",
-        departureTime: offer.itineraries[0]?.segments[0]?.departure?.at || "", // 기존 값을 그대로 사용
+        departureTime:
+          offer.itineraries?.[0]?.segments?.[0]?.departure?.at || "",
         arrivalIata: destinationLocationCode || "",
         arrivalTime:
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
+          offer.itineraries?.[0]?.segments?.[
+            offer.itineraries?.[0]?.segments?.length - 1
           ]?.arrival?.at || "",
-        flightNo: airlineCode,
-        turnaroundTime: offer.itineraries[0]?.duration,
-        stopLine: numberOfStops === 0 ? "직항" : `${numberOfStops}회 경유`,
+        flightNo: airlineCode || "",
+        turnaroundTime: offer.itineraries?.[0]?.duration || "",
+        stopLine:
+          numberOfStops === 0
+            ? "직항"
+            : numberOfStops
+            ? `${numberOfStops}회 경유`
+            : "",
 
-        reAirlinesIata: returnValidatingCode,
-        reDepartureIata: returnOriginLocationCode,
-        reDepartureTime: offer.itineraries[1]?.segments[0]?.departure?.at || "", // 기존 값을 그대로 사용
-        reArrivalIata: returnDestinationLocationCode,
+        reAirlinesIata: returnValidatingCode || "",
+        reDepartureIata: returnOriginLocationCode || "",
+        reDepartureTime:
+          offer.itineraries?.[1]?.segments?.[0]?.departure?.at || "",
+        reArrivalIata: returnDestinationLocationCode || "",
         reArrivalTime:
-          offer.itineraries[1]?.segments[
-            offer.itineraries[1]?.segments.length - 1
+          offer.itineraries?.[1]?.segments?.[
+            offer.itineraries?.[1]?.segments?.length - 1
           ]?.arrival?.at || "",
-        reFlightNo: returnAirlineCode,
-        reTurnaroundTime: offer.itineraries[1]?.duration,
+        reFlightNo: returnAirlineCode || "",
+        reTurnaroundTime: offer.itineraries?.[1]?.duration || "",
         reStopLine:
-          returnNumberOfStops === 0 ? "직항" : `${returnNumberOfStops}회 경유`,
+          returnNumberOfStops === 0
+            ? "직항"
+            : returnNumberOfStops
+            ? `${returnNumberOfStops}회 경유`
+            : "",
 
-        totalPrice: parseInt(totalPrice),
+        totalPrice: parseInt(totalPrice) || 0,
       }));
     } else {
       // 로그인 x

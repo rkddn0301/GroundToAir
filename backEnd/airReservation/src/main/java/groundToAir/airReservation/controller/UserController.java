@@ -6,9 +6,14 @@ import groundToAir.airReservation.entity.WishListEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 // 회원 정보 관련 Controller
 @RestController
@@ -214,6 +219,22 @@ public class UserController {
         log.info(userInfo.toString());
 
         return userService.googleUnlink(userInfo);
+    }
+
+    // 찜 조회
+    @PostMapping("/getWish")
+    public ResponseEntity<List<Map<String, Object>>> getWish(@RequestHeader("Authorization") String accessToken) {
+        // Bearer 토큰에서 "Bearer " 부분 제거
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+
+        // 토큰에서 사용자 번호 추출
+        int userNo = jwtUtil.extractUserNo(accessToken);
+
+        // 사용자 번호로 찜 데이터 가져오기
+        List<Map<String, Object>> wishListDetails = userService.getWish(userNo);
+        return ResponseEntity.ok(wishListDetails);
     }
 
     // 찜 추가 및 제거

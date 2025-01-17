@@ -587,6 +587,62 @@ function FlightSearch() {
     setTravelerBtnSw((prev) => !prev);
   };
 
+  /* 찜 관련 시작 */
+
+  // 기존 찜 데이터 조회
+  const wishListData = async () => {
+    const accessToken = localStorage.getItem("accessToken"); // 회원 번호 추출을 위해 accessToken 추출
+    if (accessToken !== null) {
+      const ListTest = await axios.post(
+        `http://localhost:8080/user/getWish`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      console.log(ListTest.data);
+    }
+  };
+
+  // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
+  useEffect(() => {
+    if (wishList.flightNo !== "") {
+      console.log(wishList);
+      sendWishList(wishList);
+    }
+  }, [wishList]);
+
+  // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
+  const sendWishList = async (data: WishList) => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken"); // 로컬 스토리지에서 토큰 가져오기
+
+      const response = await axios.post(
+        `http://localhost:8080/user/wish`,
+        {
+          ...data, // wishList 데이터
+          adults: inputData.adults,
+          childrens: inputData.children,
+          infants: inputData.infants,
+          seatClass: inputData.travelClass,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`, // 인증 토큰
+          },
+        }
+      );
+
+      console.log(response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  /* 찜 관련 끝 */
+
   // 항공 검색 동작
   const flightSearch = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -686,6 +742,8 @@ function FlightSearch() {
 
     setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
 
+    wishListData(); // 찜 데이터 가져오기
+
     // 자동완성 제거
     setAutoCompleteOriginLocationSw(false);
     setAutoCompleteDestinationLocationSw(false);
@@ -783,41 +841,6 @@ function FlightSearch() {
       console.error("항공 검색 도중 오류 발생 : ", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
-  useEffect(() => {
-    if (wishList.flightNo !== "") {
-      console.log(wishList);
-      sendWishList(wishList);
-    }
-  }, [wishList]);
-
-  // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
-  const sendWishList = async (data: WishList) => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken"); // 로컬 스토리지에서 토큰 가져오기
-
-      const response = await axios.post(
-        `http://localhost:8080/user/wish`,
-        {
-          ...data, // wishList 데이터
-          adults: inputData.adults,
-          childrens: inputData.children,
-          infants: inputData.infants,
-          seatClass: inputData.travelClass,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`, // 인증 토큰
-          },
-        }
-      );
-
-      console.log(response.data);
-    } catch (e) {
-      console.error(e);
     }
   };
 

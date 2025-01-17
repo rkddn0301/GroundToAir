@@ -104,6 +104,6 @@ public class WishListEntity {
     // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_NO")
-    private UserEntity user;
+    private UserEntity wishListUser;
 }
 
