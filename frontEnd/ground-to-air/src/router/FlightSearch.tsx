@@ -356,7 +356,7 @@ function FlightSearch() {
     [key: string]: boolean;
   }>({}); // 찜 스위칭
 
-  const [wishList, setWishList] = useState<WishList>({
+  const [wishReg, setWishReg] = useState<WishList>({
     airlinesIata: "", // 가는편_항공사코드
     departureIata: "", // 가는편_출발지공항
     departureTime: "", //  가는편_출발시간
@@ -376,6 +376,8 @@ function FlightSearch() {
     reStopLine: "", // 오는편_경유지 여부
     totalPrice: 0, // 가격
   }); // 찜 데이터 등록 state
+
+  const [getWish, setGetWish] = useState<{ [key: string]: any }[]>([]); // 찜 데이터 조회 state
 
   /* 찜(wishList) state 구성 끝 */
 
@@ -434,12 +436,6 @@ function FlightSearch() {
     setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
     setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
   };
-
-  useEffect(() => {
-    if (airlineCodeOffers.length > 0) {
-      console.log(airlineCodeOffers);
-    }
-  }, [airlineCodeOffers]);
 
   // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
   useEffect(() => {
@@ -592,33 +588,37 @@ function FlightSearch() {
   // 기존 찜 데이터 조회
   const wishListData = async () => {
     const accessToken = localStorage.getItem("accessToken"); // 회원 번호 추출을 위해 accessToken 추출
-    if (accessToken !== null) {
-      const ListTest = await axios.post(
-        `http://localhost:8080/user/getWish`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    if (accessToken) {
+      try {
+        const wishResponse = await axios.post(
+          `http://localhost:8080/user/getWish`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
 
-      console.log(ListTest.data);
+        setGetWish(wishResponse.data);
+      } catch (error) {
+        console.error("위시리스트 데이터 가져오기 실패 :", error);
+      }
     }
   };
 
   // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
-    if (wishList.flightNo !== "") {
-      console.log(wishList);
-      sendWishList(wishList);
+    if (wishReg.flightNo !== "") {
+      console.log(wishReg);
+      sendWishList(wishReg);
     }
-  }, [wishList]);
+  }, [wishReg]);
 
   // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
   const sendWishList = async (data: WishList) => {
     try {
-      const refreshToken = localStorage.getItem("refreshToken"); // 로컬 스토리지에서 토큰 가져오기
+      const accessToken = localStorage.getItem("accessToken"); // 로컬 스토리지에서 토큰 가져오기
 
       const response = await axios.post(
         `http://localhost:8080/user/wish`,
@@ -631,7 +631,7 @@ function FlightSearch() {
         },
         {
           headers: {
-            Authorization: `Bearer ${refreshToken}`, // 인증 토큰
+            Authorization: `Bearer ${accessToken}`, // 인증 토큰
           },
         }
       );
@@ -641,6 +641,31 @@ function FlightSearch() {
       console.error(e);
     }
   };
+
+  /* 찜 데이터 조회 */
+  useEffect(() => {
+    if (getWish.length > 0) {
+      console.log(getWish);
+    }
+  }, [getWish]);
+
+  const toggleWishStatus = (offerId: string, flightNo: string) => {
+    const matchedWish = getWish.find((wish) => wish.flightNo === flightNo);
+
+    const updatedIsWish = !matchedWish ? true : false;
+
+    setIsWish((prev) => ({
+      ...prev,
+      [offerId]: updatedIsWish,
+    }));
+
+    if (updatedIsWish) {
+      setGetWish((prev) => [...prev, { flightNo }]);
+    } else {
+      setGetWish((prev) => prev.filter((wish) => wish.flightNo !== flightNo));
+    }
+  };
+
   /* 찜 관련 끝 */
 
   // 항공 검색 동작
@@ -742,8 +767,6 @@ function FlightSearch() {
 
     setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
 
-    wishListData(); // 찜 데이터 가져오기
-
     // 자동완성 제거
     setAutoCompleteOriginLocationSw(false);
     setAutoCompleteDestinationLocationSw(false);
@@ -823,10 +846,6 @@ function FlightSearch() {
               destinationLocationCheck &&
               searchDestinationLocation !== returnOriginLocationCode);
 
-          if (nullChecking) {
-            //  setFilterMismatchCount((prev) => prev + 1);
-          }
-
           return !nullChecking;
         });
         console.log(filteredOffers);
@@ -837,6 +856,8 @@ function FlightSearch() {
       } else {
         setFlightOffers(response.data);
       }
+
+      wishListData(); // 찜 데이터 가져오기
     } catch (error) {
       console.error("항공 검색 도중 오류 발생 : ", error);
     } finally {
@@ -1061,43 +1082,56 @@ function FlightSearch() {
             {flightOffers.meta.count}개
           </ResultFont>
 
-          {flightOffers.data.slice(0, moreCount).map((offer: any) => (
-            <>
-              <FlightResult
-                key={offer.id}
-                offer={offer}
-                dictionaries={flightOffers.dictionaries}
-                airlineCodeOffers={airlineCodeOffers}
-                iataCodeOffers={iataCodeOffers}
-                showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                setShowTooltip={(field, index, value) =>
-                  setShowTooltip((prev) => ({
-                    ...prev,
-                    [offer.id]: {
-                      ...(prev[offer.id] || {}),
-                      [index]: {
-                        ...(prev[offer.id]?.[index] || {}),
-                        [field]: value,
-                      },
-                    },
-                  }))
-                }
-                // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
-                // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
-                // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
-                // field는 내가 변경한 key, value는 내가 변경한 boolean
+          {flightOffers.data.slice(0, moreCount).map((offer: any) => {
+            // flightNo를 비교하려면 먼저 offer에서 필요한 값을 추출
+            const offerFlightNo = `${offer.itineraries?.[0]?.segments?.[0]?.carrierCode}${offer.itineraries?.[0]?.segments?.[0]?.number}`;
 
-                isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                setIsWish={() =>
-                  setIsWish((prev) => ({
-                    ...prev,
-                    [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
-                  }))
-                } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
-                setWishList={setWishList}
-              />
-            </>
-          ))}
+            // getWish에서 offerFlightNo와 일치하는 항공편을 찾음
+            const matchedWish = getWish.find(
+              (wish) => wish.flightNo === offerFlightNo
+            );
+
+            // matchedWish가 있으면 isWish 값을 true로 설정
+            const isWishFlag = matchedWish ? true : isWish[offer.id] || false;
+            return (
+              <>
+                <FlightResult
+                  key={offer.id}
+                  offer={offer}
+                  dictionaries={flightOffers.dictionaries}
+                  airlineCodeOffers={airlineCodeOffers}
+                  iataCodeOffers={iataCodeOffers}
+                  showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                  setShowTooltip={(field, index, value) =>
+                    setShowTooltip((prev) => ({
+                      ...prev,
+                      [offer.id]: {
+                        ...(prev[offer.id] || {}),
+                        [index]: {
+                          ...(prev[offer.id]?.[index] || {}),
+                          [field]: value,
+                        },
+                      },
+                    }))
+                  }
+                  // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
+                  // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
+                  // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
+                  // field는 내가 변경한 key, value는 내가 변경한 boolean
+
+                  isWish={isWishFlag} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                  setIsWish={() =>
+                    setIsWish((prev) => ({
+                      ...prev,
+                      [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
+                    }))
+                  } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
+                  setWishReg={setWishReg} // 찜 데이터 추가 props
+                  toggleWishStatus={toggleWishStatus}
+                />
+              </>
+            );
+          })}
           {moreCount < flightOffers.meta.count && (
             <MoreBtnField>
               <MoreBtn onClick={loadMore}>더 보기</MoreBtn>
