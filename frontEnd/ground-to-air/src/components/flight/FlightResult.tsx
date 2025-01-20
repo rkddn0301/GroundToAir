@@ -197,7 +197,6 @@ interface FlightResultProps {
   isWish: boolean; // 찜 상태 업데이트 후 출력
   setIsWish: () => void; // 찜 상태를 단순히 함수 방식으로만 업데이트하고 나머지는 부모가 처리
   setWishReg: React.Dispatch<React.SetStateAction<WishList>>;
-  toggleWishStatus: (offerId: string, flightNo: string) => void;
 }
 
 function FlightResult({
@@ -210,7 +209,6 @@ function FlightResult({
   isWish,
   setIsWish,
   setWishReg,
-  toggleWishStatus,
 }: FlightResultProps) {
   const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 확인
 
@@ -397,8 +395,7 @@ function FlightResult({
     // 로그인 여부 확인
     if (isLoggedIn) {
       // 로그인 o
-      // setIsWish();
-      toggleWishStatus(offer.id, airlineCode);
+      setIsWish();
       setWishReg((prev: WishList) => ({
         ...prev,
         airlinesIata: validatingCode || "",

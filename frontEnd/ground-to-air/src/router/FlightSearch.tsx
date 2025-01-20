@@ -607,6 +607,38 @@ function FlightSearch() {
     }
   };
 
+  // 기존 찜 데이터(getWish)와 검색 데이터(flightOffers) 간 서로 비교하여 일치 시 찜 표시 유지
+  // ! map이 아닌 reduce를 사용한 이유는 각각 값을 넣어서 출력하는게 아닌 누적하여 총합 결과를 isWish에 삽입해야 하기 때문이다.
+  useEffect(() => {
+    if (getWish.length > 0 && flightOffers) {
+      const updatedIsWish = flightOffers.data.reduce((acc: any, offer) => {
+        const flightNo = `${offer.itineraries?.[0]?.segments?.[0]?.carrierCode}${offer.itineraries?.[0]?.segments?.[0]?.number}`;
+        const departureTime =
+          offer.itineraries?.[0]?.segments?.[0]?.departure?.at || "";
+        const reFlightNo = `${
+          offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
+        }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`;
+        const reDepartureTime =
+          offer.itineraries?.[1]?.segments?.[0]?.departure?.at || "";
+
+        const matchedWish = getWish.some(
+          // 기존 데이터에서 조건에 모두 일치하는지 체크
+          (wish) =>
+            wish.flightNo === flightNo &&
+            wish.departureTime === departureTime &&
+            (wish.reFlightNo || "") === (reFlightNo || "") &&
+            (wish.reDepartureTime || "") === (reDepartureTime || "")
+        );
+
+        acc[offer.id] = matchedWish;
+        return acc;
+      }, {});
+
+      console.log(getWish);
+      setIsWish(updatedIsWish);
+    }
+  }, [getWish, flightOffers]);
+
   // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
     if (wishReg.flightNo !== "") {
@@ -639,30 +671,6 @@ function FlightSearch() {
       console.log(response.data);
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  /* 찜 데이터 조회 */
-  useEffect(() => {
-    if (getWish.length > 0) {
-      console.log(getWish);
-    }
-  }, [getWish]);
-
-  const toggleWishStatus = (offerId: string, flightNo: string) => {
-    const matchedWish = getWish.find((wish) => wish.flightNo === flightNo);
-
-    const updatedIsWish = !matchedWish ? true : false;
-
-    setIsWish((prev) => ({
-      ...prev,
-      [offerId]: updatedIsWish,
-    }));
-
-    if (updatedIsWish) {
-      setGetWish((prev) => [...prev, { flightNo }]);
-    } else {
-      setGetWish((prev) => prev.filter((wish) => wish.flightNo !== flightNo));
     }
   };
 
@@ -1083,16 +1091,6 @@ function FlightSearch() {
           </ResultFont>
 
           {flightOffers.data.slice(0, moreCount).map((offer: any) => {
-            // flightNo를 비교하려면 먼저 offer에서 필요한 값을 추출
-            const offerFlightNo = `${offer.itineraries?.[0]?.segments?.[0]?.carrierCode}${offer.itineraries?.[0]?.segments?.[0]?.number}`;
-
-            // getWish에서 offerFlightNo와 일치하는 항공편을 찾음
-            const matchedWish = getWish.find(
-              (wish) => wish.flightNo === offerFlightNo
-            );
-
-            // matchedWish가 있으면 isWish 값을 true로 설정
-            const isWishFlag = matchedWish ? true : isWish[offer.id] || false;
             return (
               <>
                 <FlightResult
@@ -1119,7 +1117,7 @@ function FlightSearch() {
                   // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
                   // field는 내가 변경한 key, value는 내가 변경한 boolean
 
-                  isWish={isWishFlag} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                  isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
                   setIsWish={() =>
                     setIsWish((prev) => ({
                       ...prev,
@@ -1127,7 +1125,6 @@ function FlightSearch() {
                     }))
                   } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
                   setWishReg={setWishReg} // 찜 데이터 추가 props
-                  toggleWishStatus={toggleWishStatus}
                 />
               </>
             );

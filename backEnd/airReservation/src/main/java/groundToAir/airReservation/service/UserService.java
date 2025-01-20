@@ -840,7 +840,7 @@ public class UserService {
         wishList.setTotalPrice((Integer) wishListData.get("totalPrice"));
 
         // 사용자 번호와 항공편 번호로 해당하는 찜 목록이 이미 존재하는지 확인
-        Optional<WishListEntity> existingWishList = wishListRepository.findByWishListUser_UserNoAndFlightNo(wishList.getWishListUser().getUserNo(), wishList.getFlightNo());
+        Optional<WishListEntity> existingWishList = wishListRepository.findByWishListUser_UserNoAndFlightNoAndDepartureTimeAndReFlightNoAndReDepartureTime(wishList.getWishListUser().getUserNo(), wishList.getFlightNo(), wishList.getDepartureTime(), wishList.getReFlightNo(), wishList.getReDepartureTime());
 
         if (existingWishList.isPresent()) {
             // 찜 항목이 이미 존재하면 삭제

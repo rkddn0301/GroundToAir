@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,6 @@ public interface WishListRepository extends JpaRepository<WishListEntity, Intege
     List<Map<String, Object>> findWishList(@Param("userNo") int userNo);
 
     // 찜 추가/삭제 시 내역에 데이터가 존재하는지 확인
-    Optional<WishListEntity> findByWishListUser_UserNoAndFlightNo(int userNo, String flightNo);
+    Optional<WishListEntity> findByWishListUser_UserNoAndFlightNoAndDepartureTimeAndReFlightNoAndReDepartureTime(int userNo, String flightNo, LocalDateTime departureTime, String reFlightNo, LocalDateTime reDepartureTime);
 
 }
