@@ -302,6 +302,8 @@ function FlightSearch() {
   const [travelerBtnSw, setTravelerBtnSw] = useState(false); // 인원 및 좌석등급 활성화 스위칭 state
   const travelerModalRef = useRef<HTMLDivElement>(null); // 인원 및 좌석등급 선택란 제어
 
+  /* 자동완성 관련 state 시작 */
+
   const [autoCompleteOriginLocations, setAutoCompleteOriginLocations] =
     useState<IataCodes[]>([]); // 출발지 자동완성
   const [
@@ -319,19 +321,21 @@ function FlightSearch() {
   const autoCompleteOriginLocationRef = useRef<HTMLDivElement>(null); // 출발지 자동완성 선택란 제어
   const autoCompleteDestinationLocationRef = useRef<HTMLDivElement>(null); // 도착지 자동완성 선택란 제어
 
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+  /* 자동완성 관련 state 끝 */
 
   /* 항공 조회 결과 적용 시작 */
 
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
     null
-  ); // 항공편 추출
+  ); // 전체 항공편 추출
 
   const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
     []
   ); // 항공사 코드 추출
 
-  const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 항공편 코드 추출
+  const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 공항 코드 추출
 
   const [showTooltip, setShowTooltip] = useState<{
     [key: string]: {
@@ -350,7 +354,11 @@ function FlightSearch() {
     search: false, // 검색 후 필터링
   }); // '직항만' 스위칭
 
+  /* 항공 조회 결과 적용 끝 */
+
   /* 찜(wishList) state 구성 시작 */
+
+  const [getWish, setGetWish] = useState<{ [key: string]: any }[]>([]); // 찜 데이터 조회 state
 
   const [isWish, setIsWish] = useState<{
     [key: string]: boolean;
@@ -377,8 +385,6 @@ function FlightSearch() {
     totalPrice: 0, // 가격
   }); // 찜 데이터 등록 state
 
-  const [getWish, setGetWish] = useState<{ [key: string]: any }[]>([]); // 찜 데이터 조회 state
-
   /* 찜(wishList) state 구성 끝 */
 
   /* 항공 조회 결과 적용 끝 */
@@ -391,6 +397,8 @@ function FlightSearch() {
   };
 
   /* 더 보기 기능 적용 끝 */
+
+  /* 모달 제어 구간 시작 */
 
   // modal 구간에서 벗어날 경우 비활성화
   const modalClickOutside = (e: MouseEvent) => {
@@ -425,6 +433,10 @@ function FlightSearch() {
     }
   };
 
+  /* 모달 제어 구간 끝 */
+
+  /* 항공 입력 구간 시작 */
+
   // 항공사 코드 추출 함수
   const airCodeFetch = async () => {
     const airlineCodeResponse = await axios.get(
@@ -457,7 +469,7 @@ function FlightSearch() {
     };
   }, []);
 
-  // 편도/왕복 선택 radio
+  // 편도/왕복 선택 함수
   const onewayCheckingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
@@ -582,6 +594,7 @@ function FlightSearch() {
 
     setTravelerBtnSw((prev) => !prev);
   };
+  /* 항공 입력 구간 끝 */
 
   /* 찜 관련 시작 */
 
@@ -621,8 +634,13 @@ function FlightSearch() {
         const reDepartureTime =
           offer.itineraries?.[1]?.segments?.[0]?.departure?.at || "";
 
+        // 기존 데이터에서 조건에 모두 일치하는지 체크
+        // ! some, every 사용 주의 사항
+        // > some : 하나라도 일치하면 true, every : 전부 일치해야 true
+        // > 배열로 넘어가게되면 some은 [n] 중 하나의 배열이라도 내부 값이 일치하면 true 지만
+        // > every는 [n] 중 하나라도 불일치하면 false를 반환하기 때문에 신중히 이용해야한다.
+        // EX) A = 1 일 때 array[0].A = 1, array[1].A = 2 면 some은 일치, every는 불일치
         const matchedWish = getWish.some(
-          // 기존 데이터에서 조건에 모두 일치하는지 체크
           (wish) =>
             wish.flightNo === flightNo &&
             wish.departureTime === departureTime &&
@@ -675,6 +693,8 @@ function FlightSearch() {
   };
 
   /* 찜 관련 끝 */
+
+  /*  */
 
   // 항공 검색 동작
   const flightSearch = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -757,6 +777,7 @@ function FlightSearch() {
       return;
     }
 
+    // 달력
     if (!inputData.departureDate) {
       document.getElementById("departureDate")?.focus();
       return;

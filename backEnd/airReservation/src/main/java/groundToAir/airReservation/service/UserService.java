@@ -5,7 +5,6 @@ import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.enumType.SocialType;
 import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;

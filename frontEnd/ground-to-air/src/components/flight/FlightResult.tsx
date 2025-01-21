@@ -196,7 +196,7 @@ interface FlightResultProps {
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
   isWish: boolean; // 찜 상태 업데이트 후 출력
   setIsWish: () => void; // 찜 상태를 단순히 함수 방식으로만 업데이트하고 나머지는 부모가 처리
-  setWishReg: React.Dispatch<React.SetStateAction<WishList>>;
+  setWishReg: React.Dispatch<React.SetStateAction<WishList>>; // 찜 데이터를 형식에 맞게 삽입하여 부모에게 전송
 }
 
 function FlightResult({
@@ -390,14 +390,15 @@ function FlightResult({
     return "알 수 없음";
   };
 
-  // 찜 추가/삭제 여부
+  // 찜 버튼 클릭 시 항공 데이터를 부모 컴포넌트 state(setWish)에게 보냄
   const wishListUpdate = async () => {
     // 로그인 여부 확인
     if (isLoggedIn) {
       // 로그인 o
-      setIsWish();
+      setIsWish(); // 아이콘 상태 스위칭
       setWishReg((prev: WishList) => ({
         ...prev,
+        // 가는편
         airlinesIata: validatingCode || "",
         departureIata: originLocationCode || "",
         departureTime:
@@ -416,6 +417,7 @@ function FlightResult({
             ? `${numberOfStops}회 경유`
             : "",
 
+        // 오는편
         reAirlinesIata: returnValidatingCode || "",
         reDepartureIata: returnOriginLocationCode || "",
         reDepartureTime:
