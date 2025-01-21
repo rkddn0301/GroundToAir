@@ -4,7 +4,7 @@ import { AirlineCodes, FlightOffer, IataCodes } from "../../utils/api";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../utils/atom";
 import { Alert } from "../../utils/sweetAlert";
-import { WishList } from "../../router/FlightSearch";
+import { FlightWish } from "../../router/FlightSearch";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
@@ -196,7 +196,7 @@ interface FlightResultProps {
   ) => void; // field를 value로 업데이트만 해주면 showTooltip으로 확인할 수 있어서 미반환 처리
   isWish: boolean; // 찜 상태 업데이트 후 출력
   setIsWish: () => void; // 찜 상태를 단순히 함수 방식으로만 업데이트하고 나머지는 부모가 처리
-  setWishReg: React.Dispatch<React.SetStateAction<WishList>>; // 찜 데이터를 형식에 맞게 삽입하여 부모에게 전송
+  setWishReg: React.Dispatch<React.SetStateAction<FlightWish>>; // 찜 데이터를 형식에 맞게 삽입하여 부모에게 전송
 }
 
 function FlightResult({
@@ -396,7 +396,7 @@ function FlightResult({
     if (isLoggedIn) {
       // 로그인 o
       setIsWish(); // 아이콘 상태 스위칭
-      setWishReg((prev: WishList) => ({
+      setWishReg((prev: FlightWish) => ({
         ...prev,
         // 가는편
         airlinesIata: validatingCode || "",

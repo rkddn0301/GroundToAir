@@ -241,7 +241,10 @@ export interface InputData {
 }
 
 // 다른 컴포넌트에서 wishList를 props로 이용 시 필요
-export interface WishList {
+export interface FlightWish {
+  wishNo?: number;
+  userNo?: number;
+
   airlinesIata: string;
   departureIata: string;
   departureTime: string;
@@ -260,6 +263,11 @@ export interface WishList {
   reTurnaroundTime?: string;
   reStopLine?: string;
   totalPrice: number;
+
+  adults?: number;
+  childrens?: number;
+  infants?: number;
+  seatClass?: SeatClass;
 }
 
 // 좌석 클래스 enum
@@ -358,13 +366,13 @@ function FlightSearch() {
 
   /* 찜(wishList) state 구성 시작 */
 
-  const [getWish, setGetWish] = useState<{ [key: string]: any }[]>([]); // 찜 데이터 조회 state
+  const [getWish, setGetWish] = useState<FlightWish[]>([]); // 찜 데이터 조회 state
 
   const [isWish, setIsWish] = useState<{
     [key: string]: boolean;
   }>({}); // 찜 스위칭
 
-  const [wishReg, setWishReg] = useState<WishList>({
+  const [wishReg, setWishReg] = useState<FlightWish>({
     airlinesIata: "", // 가는편_항공사코드
     departureIata: "", // 가는편_출발지공항
     departureTime: "", //  가는편_출발시간
@@ -615,7 +623,7 @@ function FlightSearch() {
 
         setGetWish(wishResponse.data);
       } catch (error) {
-        console.error("위시리스트 데이터 가져오기 실패 :", error);
+        console.error("위시리스트 데이터 가져오기 실패 : ", error);
       }
     }
   };
@@ -666,7 +674,7 @@ function FlightSearch() {
   }, [wishReg]);
 
   // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
-  const sendWishList = async (data: WishList) => {
+  const sendWishList = async (data: FlightWish) => {
     try {
       const accessToken = localStorage.getItem("accessToken"); // 로컬 스토리지에서 토큰 가져오기
 
@@ -693,8 +701,6 @@ function FlightSearch() {
   };
 
   /* 찜 관련 끝 */
-
-  /*  */
 
   // 항공 검색 동작
   const flightSearch = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -1111,45 +1117,43 @@ function FlightSearch() {
             {flightOffers.meta.count}개
           </ResultFont>
 
-          {flightOffers.data.slice(0, moreCount).map((offer: any) => {
-            return (
-              <>
-                <FlightResult
-                  key={offer.id}
-                  offer={offer}
-                  dictionaries={flightOffers.dictionaries}
-                  airlineCodeOffers={airlineCodeOffers}
-                  iataCodeOffers={iataCodeOffers}
-                  showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                  setShowTooltip={(field, index, value) =>
-                    setShowTooltip((prev) => ({
-                      ...prev,
-                      [offer.id]: {
-                        ...(prev[offer.id] || {}),
-                        [index]: {
-                          ...(prev[offer.id]?.[index] || {}),
-                          [field]: value,
-                        },
+          {flightOffers.data.slice(0, moreCount).map((offer: any) => (
+            <>
+              <FlightResult
+                key={offer.id}
+                offer={offer}
+                dictionaries={flightOffers.dictionaries}
+                airlineCodeOffers={airlineCodeOffers}
+                iataCodeOffers={iataCodeOffers}
+                showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                setShowTooltip={(field, index, value) =>
+                  setShowTooltip((prev) => ({
+                    ...prev,
+                    [offer.id]: {
+                      ...(prev[offer.id] || {}),
+                      [index]: {
+                        ...(prev[offer.id]?.[index] || {}),
+                        [field]: value,
                       },
-                    }))
-                  }
-                  // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
-                  // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
-                  // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
-                  // field는 내가 변경한 key, value는 내가 변경한 boolean
+                    },
+                  }))
+                }
+                // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
+                // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
+                // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
+                // field는 내가 변경한 key, value는 내가 변경한 boolean
 
-                  isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                  setIsWish={() =>
-                    setIsWish((prev) => ({
-                      ...prev,
-                      [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
-                    }))
-                  } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
-                  setWishReg={setWishReg} // 찜 데이터 추가 props
-                />
-              </>
-            );
-          })}
+                isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                setIsWish={() =>
+                  setIsWish((prev) => ({
+                    ...prev,
+                    [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
+                  }))
+                } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
+                setWishReg={setWishReg} // 찜 데이터 추가 props
+              />
+            </>
+          ))}
           {moreCount < flightOffers.meta.count && (
             <MoreBtnField>
               <MoreBtn onClick={loadMore}>더 보기</MoreBtn>

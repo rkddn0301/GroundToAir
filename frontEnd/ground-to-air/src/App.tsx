@@ -17,6 +17,7 @@ import PwFind from "./router/PwFind";
 import IdFind from "./router/IdFind";
 import MyInfo from "./router/MyInfo";
 import ProtectedRoute from "./components/ProtectedRoute";
+import WishList from "./router/WishList";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -67,7 +68,7 @@ function App() {
   return (
     <Container>
       <Router>
-        <Route path={["/hotels", "/", "/myInfo"]} exact>
+        <Route path={["/hotels", "/", "/myInfo", "/wishList"]} exact>
           <Layout />
         </Route>
         <MainContent>
@@ -80,6 +81,12 @@ function App() {
             <ProtectedRoute
               path="/myInfo"
               component={MyInfo}
+              restricted={false}
+            />
+
+            <ProtectedRoute
+              path="/wishList"
+              component={WishList}
               restricted={false}
             />
 
@@ -111,7 +118,7 @@ function App() {
             <Route exact path="/" component={FlightSearch} />
           </Switch>
         </MainContent>
-        <Route path={["/hotels", "/", "/myInfo"]} exact>
+        <Route path={["/hotels", "/", "/myInfo", "/wishList"]} exact>
           <Footer />
         </Route>
       </Router>
