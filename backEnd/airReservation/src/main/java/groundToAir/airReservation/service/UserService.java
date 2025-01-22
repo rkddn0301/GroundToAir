@@ -781,7 +781,7 @@ public class UserService {
         return wishListRepository.findWishList(userNo);
     }
 
-    // 찜 추가 및 삭제
+    // 찜 아이콘 클릭 스위칭
     public boolean wish(int userNo, Map<String, Object> wishListData) {
 
         // 사용자 번호를 WishListEntity에 추가
@@ -849,6 +849,25 @@ public class UserService {
             // 찜 항목이 존재하지 않으면 추가
             wishListRepository.save(wishList);
             return true; // 추가되었으므로 true 리턴
+        }
+    }
+
+    // 찜 제거
+    public boolean wishDelete(int wishNo) {
+        // 기존 데이터 조회
+        WishListEntity existingWish = wishListRepository.findById(wishNo).orElse(null);
+        if (existingWish == null) {
+            log.warn("찜 데이터가 존재하지 않습니다: 찜번호 {}", wishNo);
+            return false; // 데이터가 없는 경우 업데이트 실패
+        }
+        try {
+            wishListRepository.deleteById(wishNo);
+            log.info("찜 데이터 삭제 성공: 찜번호 {}", wishNo);
+            return true;
+        } catch (Exception e) {
+            log.error("찜 데이터 삭제 실패: 찜번호 {}, 오류: {}", wishNo, e.getMessage());
+            return false;
+
         }
     }
 

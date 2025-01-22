@@ -237,7 +237,7 @@ public class UserController {
         return ResponseEntity.ok(wishListDetails);
     }
 
-    // 찜 추가 및 제거
+    // 찜 아이콘 클릭 스위칭
     @PostMapping("/wish")
     public boolean wish(@RequestHeader("Authorization") String accessToken, @RequestBody Map<String, Object> wishListData) {
         // Bearer 토큰에서 "Bearer " 부분 제거
@@ -253,6 +253,14 @@ public class UserController {
         log.info("회원번호 : " + userNo + ", 찜 : " + wishListData);
 
         return userService.wish(userNo, wishListData);
+    }
+
+    // 찜 제거
+    @PostMapping("wishDelete")
+    public boolean wishDelete(@RequestBody WishListEntity wishListEntity) {
+        log.info("찜 번호 : " + wishListEntity.getWishNo() );
+
+        return userService.wishDelete(wishListEntity.getWishNo());
     }
 
 

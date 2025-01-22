@@ -4,7 +4,8 @@ import { isLoggedInState } from "../utils/atom";
 import { useRecoilValue } from "recoil";
 import axios from "axios";
 import { FlightWish } from "./FlightSearch";
-import { formatDuration, formatTime } from "../utils/formatTime";
+import { AirlineCodes } from "../utils/api";
+import WishResult from "../components/wish/WishResult";
 
 // WishList 전체 컴포넌트 구성
 const Container = styled.div`
@@ -17,10 +18,51 @@ const Container = styled.div`
 
 // 항공편 찜 카드 구성
 const Card = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 5px;
-  width: 80%;
+  min-width: 80%;
+  min-height: 500px;
   margin: 0 auto;
+`;
+
+// 제목 구간 전체 구성
+const Header = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+// 테이블 전체 구성
+const TableContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+`;
+
+// 제목 디자인
+const MainTitle = styled.h3`
+  color: ${(props) => props.theme.white.font};
+  font-size: 25px;
+  font-weight: 600;
+  text-align: center;
+  margin: 10px 0;
+`;
+
+// 테이블 전체
+const MainTable = styled.table`
+  min-width: 80%;
+  border: 2px solid ${(props) => props.theme.white.font};
+  border-collapse: collapse;
+`;
+
+// 테이블 제목열
+const TableHeader = styled.th`
+  border-bottom: 2px solid ${(props) => props.theme.white.font};
+  border-right: 1px solid ${(props) => props.theme.white.font};
+  padding: 5px;
+  font-weight: 600;
 `;
 
 function WishList() {
@@ -28,6 +70,11 @@ function WishList() {
 
   const [getWish, setGetWish] = useState<FlightWish[]>([]); // 찜 데이터 조회 state
 
+  const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
+    []
+  ); // 항공사 코드 추출
+
+  // 찜 데이터 가져오기
   const wishListData = async () => {
     const accessToken = localStorage.getItem("accessToken"); // 회원 번호 추출을 위해 accessToken 추출
     if (accessToken) {
@@ -48,9 +95,18 @@ function WishList() {
     }
   };
 
+  // 항공사 코드 가져오기
+  const airlineCodeData = async () => {
+    const airlineCodeResponse = await axios.get(
+      `http://localhost:8080/air/airlineCode`
+    );
+    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
+  };
+
   useEffect(() => {
     if (isLoggedIn) {
       wishListData();
+      airlineCodeData();
     }
   }, []);
 
@@ -62,56 +118,32 @@ function WishList() {
   return (
     <Container>
       <Card>
-        <h3>찜 내역</h3>
-        <table style={{ border: "1px solid #ccc" }}>
-          <thead>
-            <tr>
-              <th colSpan={6}>항공편</th>
-              <th>인원/좌석등급</th>
-              <th>가격</th>
-            </tr>
-          </thead>
-          <tbody>
-            {getWish.map((wish) => (
-              <>
-                <tr>
-                  <td>{wish.airlinesIata}</td>
-                  <td>{wish.departureIata}</td>
-                  <td>{formatTime(wish.departureTime)}</td>
-                  <td>{formatDuration(wish.turnaroundTime)}</td>
-                  <td>{formatTime(wish.arrivalTime)}</td>
-                  <td>{wish.arrivalIata}</td>
-                  <td rowSpan={wish.reStopLine ? 2 : 1}>
-                    성인 : {wish.adults}명
-                    {(wish.childrens ?? 0) > 0 &&
-                      `, 어린이 : ${wish.childrens}명`}
-                    {(wish.infants ?? 0) > 0 && `, 유아 : ${wish.infants}명`} /{" "}
-                    {wish.seatClass === "FIRST"
-                      ? "일등석"
-                      : wish.seatClass === "BUSINESS"
-                      ? "비즈니스석"
-                      : wish.seatClass === "PREMIUM_ECONOMY"
-                      ? "프리미엄 일반석"
-                      : "일반석"}
-                  </td>
-                  <td
-                    rowSpan={wish.reStopLine ? 2 : 1}
-                  >{`\\${wish.totalPrice.toLocaleString()}`}</td>
-                </tr>
-                {wish.reStopLine && (
-                  <tr>
-                    <td>{wish.reAirlinesIata}</td>
-                    <td>{wish.reDepartureIata}</td>
-                    <td>{formatTime(wish.reDepartureTime)}</td>
-                    <td>{formatDuration(wish.reTurnaroundTime)}</td>
-                    <td>{formatTime(wish.reArrivalTime)}</td>
-                    <td>{wish.reArrivalIata}</td>
-                  </tr>
-                )}
-              </>
-            ))}
-          </tbody>
-        </table>
+        <Header>
+          <MainTitle>찜 내역</MainTitle>
+        </Header>
+
+        <TableContainer>
+          <MainTable>
+            <thead>
+              <tr>
+                <TableHeader>항공편</TableHeader>
+                <TableHeader>인원/좌석등급</TableHeader>
+                <TableHeader>가격</TableHeader>
+                <TableHeader colSpan={2}></TableHeader>
+              </tr>
+            </thead>
+            <tbody>
+              {getWish.map((wish) => (
+                <WishResult
+                  key={wish.wishNo}
+                  wish={wish}
+                  setGetWish={setGetWish}
+                  airlineCodeOffers={airlineCodeOffers}
+                />
+              ))}
+            </tbody>
+          </MainTable>
+        </TableContainer>
       </Card>
     </Container>
   );

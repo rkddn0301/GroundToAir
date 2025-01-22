@@ -16,7 +16,9 @@ public interface WishListRepository extends JpaRepository<WishListEntity, Intege
     @Query("SELECT w.wishNo AS wishNo, w.airlinesIata AS airlinesIata, w.departureIata AS departureIata, w.departureTime AS departureTime, w.arrivalIata AS arrivalIata, w.arrivalTime AS arrivalTime, w.flightNo AS flightNo, w.turnaroundTime AS turnaroundTime, w.stopLine AS stopLine, w.reAirlinesIata AS reAirlinesIata, w.reDepartureIata AS reDepartureIata, w.reDepartureTime AS reDepartureTime, w.reArrivalIata AS reArrivalIata, w.reArrivalTime AS reArrivalTime, w.reFlightNo AS reFlightNo, w.reTurnaroundTime AS reTurnaroundTime, w.reStopLine AS reStopLine, w.adults AS adults, w.childrens AS childrens, w.infants AS infants, w.seatClass AS seatClass, w.totalPrice AS totalPrice, w.wishListUser.userNo AS userNo FROM WishListEntity w WHERE w.wishListUser.userNo = :userNo")
     List<Map<String, Object>> findWishList(@Param("userNo") int userNo);
 
-    // 찜 추가/삭제 시 내역에 데이터가 존재하는지 확인
+    // 찜 아이콘 클릭 시 내역에 데이터가 존재하는지 확인
     Optional<WishListEntity> findByWishListUser_UserNoAndFlightNoAndDepartureTimeAndReFlightNoAndReDepartureTime(int userNo, String flightNo, LocalDateTime departureTime, String reFlightNo, LocalDateTime reDepartureTime);
+
+
 
 }
