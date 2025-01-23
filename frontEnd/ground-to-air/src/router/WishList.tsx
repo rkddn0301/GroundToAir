@@ -23,7 +23,7 @@ const Card = styled.div`
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 5px;
   min-width: 80%;
-  min-height: 500px;
+  min-height: 450px;
   margin: 0 auto;
 `;
 
@@ -36,9 +36,11 @@ const Header = styled.div`
 // 테이블 전체 구성
 const TableContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 5px;
+  gap: 10px;
 `;
 
 // 제목 디자인
@@ -65,6 +67,12 @@ const TableHeader = styled.th`
   font-weight: 600;
 `;
 
+// 페이지네이션 전체 구성
+const PagenationContainer = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+
 function WishList() {
   const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 atom
 
@@ -73,6 +81,29 @@ function WishList() {
   const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
     []
   ); // 항공사 코드 추출
+
+  /* 페이지네이션 구간 시작 */
+
+  const [currentIndex, setCurrentIndex] = useState(1); // 선택한 페이지네이션 state
+  const wishPageCount = 5; // 조회되는 찜 데이터 개수
+
+  const totalWishes = Math.ceil(getWish.length / wishPageCount); // 생성되는 페이지네이션 버튼 개수
+
+  const currentWishData = getWish.slice(
+    (currentIndex - 1) * wishPageCount,
+    currentIndex * wishPageCount
+  ); // 선택한 페이지네이션 번호에 따라 보여주는 찜 데이터 순서
+
+  // 페이지네이션 클릭 시 동작
+  const pagenationClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number
+  ) => {
+    e.preventDefault();
+    setCurrentIndex(index);
+  };
+
+  /* 페이지네이션 구간 끝 */
 
   // 찜 데이터 가져오기
   const wishListData = async () => {
@@ -127,22 +158,55 @@ function WishList() {
             <thead>
               <tr>
                 <TableHeader>항공편</TableHeader>
+                <TableHeader>출국일/귀국일</TableHeader>
                 <TableHeader>인원/좌석등급</TableHeader>
-                <TableHeader>가격</TableHeader>
-                <TableHeader colSpan={2}></TableHeader>
+                <TableHeader>결제금액</TableHeader>
+                {getWish.length >= 1 && <TableHeader colSpan={2}></TableHeader>}
               </tr>
             </thead>
             <tbody>
-              {getWish.map((wish) => (
-                <WishResult
-                  key={wish.wishNo}
-                  wish={wish}
-                  setGetWish={setGetWish}
-                  airlineCodeOffers={airlineCodeOffers}
-                />
-              ))}
+              {getWish.length < 1 ? (
+                <tr>
+                  <td colSpan={4}>
+                    <div
+                      style={{
+                        height: "370px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontSize: "20px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      찜 내역이 존재하지 않습니다.
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <>
+                  {currentWishData.map((wish) => (
+                    <WishResult
+                      key={wish.wishNo}
+                      wish={wish}
+                      setGetWish={setGetWish}
+                      airlineCodeOffers={airlineCodeOffers}
+                    />
+                  ))}
+                </>
+              )}
             </tbody>
           </MainTable>
+
+          <PagenationContainer>
+            {[...Array(totalWishes)].map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => pagenationClick(e, index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </PagenationContainer>
         </TableContainer>
       </Card>
     </Container>

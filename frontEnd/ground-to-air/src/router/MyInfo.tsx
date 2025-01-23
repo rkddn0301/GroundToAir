@@ -35,7 +35,7 @@ const Card = styled.div`
 
 // 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
-  color: red;
+  color: ${(props) => props.theme.white.warning};
   font-size: 11px;
   display: flex;
   justify-content: center;
@@ -1144,7 +1144,18 @@ function MyInfo() {
         <Form>
           <MainTitle>회원탈퇴</MainTitle>
           <SubmitField>
-            <SubmitBtn onClick={memberDelete}>회원탈퇴 진행</SubmitBtn>
+            <SubmitBtn
+              onClick={memberDelete}
+              style={{ backgroundColor: "#ff4d4f", color: "#f7fcfc" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#b03044")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#ff4d4f")
+              }
+            >
+              회원탈퇴 진행
+            </SubmitBtn>
           </SubmitField>
         </Form>
       </Card>

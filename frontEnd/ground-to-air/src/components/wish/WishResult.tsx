@@ -72,12 +72,13 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
   return (
     <>
       <tr>
+        {/* 항공편 */}
         <td
           style={{
-            borderBottom: wish.reStopLine ? "0px" : "1px solid #595959",
+            borderBottom: "1px solid #595959",
             padding: "5px",
             textAlign: "center",
-            verticalAlign: wish.reStopLine ? "" : "middle",
+            verticalAlign: "middle",
           }}
         >
           {carrierCodeLogo !== "" ? (
@@ -85,24 +86,57 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
           ) : (
             wish.airlinesIata
           )}{" "}
-          {wish.departureIata} {formatTime(wish.departureTime)}{" "}
-          {formatDuration(wish.turnaroundTime)} {formatTime(wish.arrivalTime)}{" "}
-          {wish.arrivalIata}
+          {wish.departureIata}-{wish.arrivalIata}{" "}
+          {formatTime(wish.departureTime)}~{formatTime(wish.arrivalTime)} (
+          {formatDuration(wish.turnaroundTime)}){/* 왕복 여부 */}
+          {wish.reStopLine ? (
+            <>
+              <br />
+              {returnCarrierCodeLogo !== "" ? (
+                <img src={returnCarrierCodeLogo.airlinesLogo} />
+              ) : (
+                wish.reAirlinesIata
+              )}{" "}
+              {wish.reDepartureIata}-{wish.reArrivalIata}{" "}
+              {formatTime(wish.reDepartureTime)}~
+              {formatTime(wish.reArrivalTime)} (
+              {formatDuration(wish.reTurnaroundTime)})
+            </>
+          ) : (
+            ""
+          )}
         </td>
 
+        {/* 출국일/귀국일 */}
         <td
-          rowSpan={wish.reStopLine ? 2 : 1}
           style={{
             textAlign: "center",
             verticalAlign: "middle",
             border: "1px solid #595959",
             padding: "5px",
-            fontSize: "12px",
           }}
         >
-          성인 : {wish.adults}명
-          {(wish.childrens ?? 0) > 0 && `, 어린이 : ${wish.childrens}명`}
-          {(wish.infants ?? 0) > 0 && `, 유아 : ${wish.infants}명`} /{" "}
+          {wish.departureTime.split("T")[0]}
+          {wish.reStopLine ? (
+            <>
+              <br />~<br />
+              {wish.reArrivalTime?.split("T")[0]}
+            </>
+          ) : (
+            ""
+          )}
+        </td>
+
+        {/* 인원/좌석등급 */}
+        <td
+          style={{
+            textAlign: "center",
+            verticalAlign: "middle",
+            border: "1px solid #595959",
+            padding: "5px",
+          }}
+        >
+          {(wish.adults ?? 0) + (wish.childrens ?? 0) + (wish.infants ?? 0)}명 /{" "}
           {wish.seatClass === "FIRST"
             ? "일등석"
             : wish.seatClass === "BUSINESS"
@@ -111,8 +145,9 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             ? "프리미엄 일반석"
             : "일반석"}
         </td>
+
+        {/* 결제금액 */}
         <td
-          rowSpan={wish.reStopLine ? 2 : 1}
           style={{
             textAlign: "center",
             verticalAlign: "middle",
@@ -120,8 +155,9 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             padding: "5px",
           }}
         >{`\\${wish.totalPrice.toLocaleString()}`}</td>
+
+        {/* 버튼란 */}
         <td
-          rowSpan={wish.reStopLine ? 2 : 1}
           style={{
             textAlign: "center",
             verticalAlign: "middle",
@@ -129,40 +165,55 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             padding: "5px",
           }}
         >
-          <button>예약하기</button>
-        </td>
-        <td
-          rowSpan={wish.reStopLine ? 2 : 1}
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
-        >
-          <button onClick={wishDelete}>X</button>
-        </td>
-      </tr>
-      {wish.reStopLine && (
-        <tr>
-          <td
+          <button
             style={{
-              borderBottom: "1px solid #595959",
-              textAlign: "center",
-              padding: "5px",
+              backgroundColor: "skyblue",
+              border: "1px solid #595959",
+              color: "#595959",
+              borderRadius: "2px",
+              padding: "7px",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#595959";
+              e.currentTarget.style.color = "#f7fcfc";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "skyblue";
+              e.currentTarget.style.color = "#595959";
             }}
           >
-            {returnCarrierCodeLogo !== "" ? (
-              <img src={returnCarrierCodeLogo.airlinesLogo} />
-            ) : (
-              wish.reAirlinesIata
-            )}{" "}
-            {wish.reDepartureIata} {formatTime(wish.reDepartureTime)}{" "}
-            {formatDuration(wish.reTurnaroundTime)}{" "}
-            {formatTime(wish.reArrivalTime)} {wish.reArrivalIata}
-          </td>
-        </tr>
-      )}
+            예약하기
+          </button>
+        </td>
+        <td
+          style={{
+            textAlign: "center",
+            verticalAlign: "middle",
+            border: "1px solid #595959",
+            padding: "5px",
+          }}
+        >
+          <button
+            onClick={wishDelete}
+            style={{
+              backgroundColor: "#ff4d4f",
+              border: "1px solid #595959",
+              color: "#f7fcfc",
+              borderRadius: "2px",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#b03044")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#ff4d4f")
+            }
+          >
+            X
+          </button>
+        </td>
+      </tr>
     </>
   );
 }

@@ -7,10 +7,12 @@ declare module "styled-components" {
     black: {
       bg: string;
       font: string;
+      warning: string;
     };
     white: {
       bg: string;
       font: string;
+      warning: string;
     };
   }
 }

@@ -7,9 +7,11 @@ export const theme: DefaultTheme = {
   black: {
     bg: "#595959",
     font: "#f7fcfc",
+    warning: "#b71c1c",
   },
   white: {
     bg: "#f7fcfc",
     font: "#595959",
+    warning: "#ff4d4f",
   },
 };

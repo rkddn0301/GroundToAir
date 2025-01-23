@@ -19,7 +19,7 @@ const Container = styled.div`
 
 // 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
-  color: red;
+  color: ${(props) => props.theme.white.warning};
   font-size: 11px;
   display: flex;
   justify-content: center;
