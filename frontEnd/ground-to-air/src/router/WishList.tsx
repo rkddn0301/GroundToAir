@@ -23,7 +23,7 @@ const Card = styled.div`
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 5px;
   min-width: 80%;
-  min-height: 450px;
+  min-height: 470px;
   margin: 0 auto;
 `;
 
@@ -35,12 +35,8 @@ const Header = styled.div`
 
 // 테이블 전체 구성
 const TableContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 5px;
-  gap: 10px;
+  min-height: 370px;
+  margin: 0 auto;
 `;
 
 // 제목 디자인
@@ -54,7 +50,6 @@ const MainTitle = styled.h3`
 
 // 테이블 전체
 const MainTable = styled.table`
-  min-width: 80%;
   border: 2px solid ${(props) => props.theme.white.font};
   border-collapse: collapse;
 `;
@@ -71,6 +66,29 @@ const TableHeader = styled.th`
 const PagenationContainer = styled.div`
   display: flex;
   gap: 5px;
+  margin: 0 auto;
+`;
+
+// 페이지네이션 버튼 디자인 구성
+const PagenationBtn = styled.button`
+  background-color: ${(props) => props.theme.white.bg};
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 3px;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 550;
+  cursor: pointer;
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
+
+  &:disabled {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+    cursor: default;
+  }
 `;
 
 function WishList() {
@@ -84,10 +102,15 @@ function WishList() {
 
   /* 페이지네이션 구간 시작 */
 
-  const [currentIndex, setCurrentIndex] = useState(1); // 선택한 페이지네이션 state
-  const wishPageCount = 5; // 조회되는 찜 데이터 개수
+  // 페이지네이션은 이전, 다음버튼을 제외한 최대 5개 버튼을 보여준다.
+  // 버튼마다 찜 데이터를 5개씩 보여준다.
 
-  const totalWishes = Math.ceil(getWish.length / wishPageCount); // 생성되는 페이지네이션 버튼 개수
+  const [currentIndex, setCurrentIndex] = useState(1); // 선택한 페이지네이션 state
+  const [indexGroup, setIndexGroup] = useState(1); // 페이지네이션 그룹 state
+
+  const wishPageCount = 5; // 조회되는 찜 데이터 & 페이지네이션 버튼 개수
+
+  const totalWishes = Math.ceil(getWish.length / wishPageCount); // 생성되는 페이지네이션 버튼 총 개수
 
   const currentWishData = getWish.slice(
     (currentIndex - 1) * wishPageCount,
@@ -101,6 +124,23 @@ function WishList() {
   ) => {
     e.preventDefault();
     setCurrentIndex(index);
+  };
+
+  // 그룹 이동을 위한 함수
+  const goToNextGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (indexGroup * wishPageCount < totalWishes) {
+      setIndexGroup(indexGroup + 1);
+      setCurrentIndex(indexGroup * wishPageCount + 1); // 현재 그룹의 마지막 페이지 번호를 currentIndex로 설정
+    }
+  };
+
+  const goToPrevGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (indexGroup > 1) {
+      setIndexGroup(indexGroup - 1);
+      setCurrentIndex((indexGroup - 1) * wishPageCount); // 이전 그룹의 첫 번째 페이지 번호를 currentIndex로 설정
+    }
   };
 
   /* 페이지네이션 구간 끝 */
@@ -134,25 +174,20 @@ function WishList() {
     setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
   };
 
+  // 초기 렌더링 시 실행
   useEffect(() => {
     if (isLoggedIn) {
-      wishListData();
-      airlineCodeData();
+      wishListData(); // 찜 데이터 출력 함수
+      airlineCodeData(); // 항공사 로고 데이터 출력 함수
     }
   }, []);
 
-  useEffect(() => {
-    if (getWish.length > 0) {
-      console.log(getWish);
-    }
-  }, [getWish]);
   return (
     <Container>
       <Card>
         <Header>
           <MainTitle>찜 내역</MainTitle>
         </Header>
-
         <TableContainer>
           <MainTable>
             <thead>
@@ -196,18 +231,35 @@ function WishList() {
               )}
             </tbody>
           </MainTable>
-
-          <PagenationContainer>
-            {[...Array(totalWishes)].map((_, index) => (
-              <button
-                key={index}
-                onClick={(e) => pagenationClick(e, index + 1)}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </PagenationContainer>
         </TableContainer>
+        <PagenationContainer>
+          {indexGroup > 1 && (
+            <PagenationBtn onClick={(e) => goToPrevGroup(e)}>
+              &lt;&lt;
+            </PagenationBtn>
+          )}
+
+          {[...Array(wishPageCount)].map((_, index) => {
+            const page = (indexGroup - 1) * wishPageCount + (index + 1);
+            if (page <= totalWishes) {
+              return (
+                <PagenationBtn
+                  key={page}
+                  onClick={(e) => pagenationClick(e, page)}
+                  disabled={currentIndex === page}
+                >
+                  {page}
+                </PagenationBtn>
+              );
+            }
+            return null;
+          })}
+          {indexGroup * wishPageCount < totalWishes && (
+            <PagenationBtn onClick={(e) => goToNextGroup(e)}>
+              &gt;&gt;
+            </PagenationBtn>
+          )}
+        </PagenationContainer>
       </Card>
     </Container>
   );
