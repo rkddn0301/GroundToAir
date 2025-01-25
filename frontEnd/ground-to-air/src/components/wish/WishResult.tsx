@@ -88,9 +88,12 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
           )}{" "}
           {wish.departureIata}-{wish.arrivalIata}{" "}
           {formatTime(wish.departureTime)}~{formatTime(wish.arrivalTime)} (
-          {formatDuration(wish.turnaroundTime)}){/* 왕복 여부 */}
+          {formatDuration(wish.turnaroundTime)}){" "}
+          <span style={{ color: "blue" }}>{wish.stopLine}</span>
+          {/* 왕복 여부 */}
           {wish.reStopLine ? (
             <>
+              <br />
               <br />
               {returnCarrierCodeLogo !== "" ? (
                 <img src={returnCarrierCodeLogo.airlinesLogo} />
@@ -100,7 +103,8 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
               {wish.reDepartureIata}-{wish.reArrivalIata}{" "}
               {formatTime(wish.reDepartureTime)}~
               {formatTime(wish.reArrivalTime)} (
-              {formatDuration(wish.reTurnaroundTime)})
+              {formatDuration(wish.reTurnaroundTime)}){" "}
+              <span style={{ color: "blue" }}>{wish.reStopLine}</span>
             </>
           ) : (
             ""

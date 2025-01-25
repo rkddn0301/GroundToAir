@@ -23,7 +23,7 @@ const Card = styled.div`
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 5px;
   min-width: 80%;
-  min-height: 470px;
+  min-height: 550px;
   margin: 0 auto;
 `;
 
@@ -35,7 +35,7 @@ const Header = styled.div`
 
 // 테이블 전체 구성
 const TableContainer = styled.div`
-  min-height: 370px;
+  min-height: 450px;
   margin: 0 auto;
 `;
 
