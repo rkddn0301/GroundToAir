@@ -232,13 +232,17 @@ function WishList() {
             </tbody>
           </MainTable>
         </TableContainer>
+
+        {/* 페이지네이션 구간 */}
         <PagenationContainer>
+          {/* 이전 버튼 */}
           {indexGroup > 1 && (
             <PagenationBtn onClick={(e) => goToPrevGroup(e)}>
               &lt;&lt;
             </PagenationBtn>
           )}
 
+          {/* 페이지네이션 번호 구성 */}
           {[...Array(wishPageCount)].map((_, index) => {
             const page = (indexGroup - 1) * wishPageCount + (index + 1);
             if (page <= totalWishes) {
@@ -254,6 +258,8 @@ function WishList() {
             }
             return null;
           })}
+
+          {/* 다음 버튼 */}
           {indexGroup * wishPageCount < totalWishes && (
             <PagenationBtn onClick={(e) => goToNextGroup(e)}>
               &gt;&gt;

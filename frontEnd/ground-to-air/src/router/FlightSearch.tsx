@@ -12,6 +12,7 @@ import AutoComplete from "../components/flight/AutoComplete";
 import { AirlineCodes, FlightOffer, IataCodes } from "../utils/api";
 import { motion } from "framer-motion";
 import FlightFiltering from "../components/flight/FlightFiltering";
+import { Alert } from "../utils/sweetAlert";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -636,11 +637,19 @@ function FlightSearch() {
         const flightNo = `${offer.itineraries?.[0]?.segments?.[0]?.carrierCode}${offer.itineraries?.[0]?.segments?.[0]?.number}`;
         const departureTime =
           offer.itineraries?.[0]?.segments?.[0]?.departure?.at || "";
+        const arrivalTime =
+          offer.itineraries?.[0]?.segments?.[
+            offer.itineraries?.[0]?.segments?.length - 1
+          ]?.arrival?.at || "";
         const reFlightNo = `${
           offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
         }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`;
         const reDepartureTime =
           offer.itineraries?.[1]?.segments?.[0]?.departure?.at || "";
+        const reArrivalTime =
+          offer.itineraries?.[1]?.segments?.[
+            offer.itineraries?.[1]?.segments?.length - 1
+          ]?.arrival?.at || "";
 
         // 기존 데이터에서 조건에 모두 일치하는지 체크
         // ! some, every 사용 주의 사항
@@ -652,10 +661,11 @@ function FlightSearch() {
           (wish) =>
             wish.flightNo === flightNo &&
             wish.departureTime === departureTime &&
+            wish.arrivalTime === arrivalTime &&
             (wish.reFlightNo || "") === (reFlightNo || "") &&
-            (wish.reDepartureTime || "") === (reDepartureTime || "")
+            (wish.reDepartureTime || "") === (reDepartureTime || "") &&
+            (wish.reArrivalTime || "") === (reArrivalTime || "")
         );
-
         acc[offer.id] = matchedWish;
         return acc;
       }, {});
@@ -665,7 +675,7 @@ function FlightSearch() {
     }
   }, [getWish, flightOffers]);
 
-  // wishList에 데이터 추가 이력이 있을 시 sendWishList 함수 호출
+  // FlightResult에서 찜 아이콘 클릭 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
     if (wishReg.flightNo !== "") {
       console.log(wishReg);
@@ -673,7 +683,7 @@ function FlightSearch() {
     }
   }, [wishReg]);
 
-  // 찜 관련된 기능 클릭 했을 경우 DB에 반영하기 위해 데이터 전송
+  // 클릭한 찜 데이터를 WISH_LIST 테이블에 반영하기 위해 데이터 전송
   const sendWishList = async (data: FlightWish) => {
     try {
       const accessToken = localStorage.getItem("accessToken"); // 로컬 스토리지에서 토큰 가져오기
@@ -693,6 +703,10 @@ function FlightSearch() {
           },
         }
       );
+
+      if (response.data) {
+        Alert("찜 내역에 저장 완료하였습니다.", "success");
+      }
 
       console.log(response.data);
     } catch (e) {
