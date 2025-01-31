@@ -18,6 +18,7 @@ import IdFind from "./router/IdFind";
 import MyInfo from "./router/MyInfo";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WishList from "./router/WishList";
+import ReservationDetail from "./router/ReservationDetail";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -68,7 +69,17 @@ function App() {
   return (
     <Container>
       <Router>
-        <Route path={["/hotels", "/", "/myInfo", "/wishList"]} exact>
+        <Route
+          path={[
+            "/hotels",
+            "/",
+            "/myInfo",
+            "/wishList",
+            "reservationDetail/:id",
+            "/wishList/reservationDetail/:id",
+          ]}
+          exact
+        >
           <Layout />
         </Route>
         <MainContent>
@@ -81,6 +92,12 @@ function App() {
             <ProtectedRoute
               path="/myInfo"
               component={MyInfo}
+              restricted={false}
+            />
+
+            <ProtectedRoute
+              path="/wishList/reservationDetail/:id"
+              component={ReservationDetail}
               restricted={false}
             />
 
@@ -114,11 +131,25 @@ function App() {
             />
             <ProtectedRoute path="/join" component={Join} restricted={true} />
 
+            <Route
+              path="/reservationDetail/:id"
+              component={ReservationDetail}
+            />
             <Route path="/hotels" component={HotelSearch} />
             <Route exact path="/" component={FlightSearch} />
           </Switch>
         </MainContent>
-        <Route path={["/hotels", "/", "/myInfo", "/wishList"]} exact>
+        <Route
+          path={[
+            "/hotels",
+            "/",
+            "/myInfo",
+            "/wishList",
+            "reservationDetail/:id",
+            "/wishList/reservationDetail/:id",
+          ]}
+          exact
+        >
           <Footer />
         </Route>
       </Router>

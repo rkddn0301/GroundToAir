@@ -5,6 +5,7 @@ import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../utils/atom";
 import { Alert } from "../../utils/sweetAlert";
 import { FlightWish } from "../../router/FlightSearch";
+import { Link } from "react-router-dom";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
@@ -676,7 +677,14 @@ function FlightResult({
         {/* <div style={{ fontSize: "12px" }}>{numberOfBookableSeats}석 남음</div> */}
 
         <ReservationBtnGroups>
-          <ReservationBtn>예약하기</ReservationBtn>
+          <Link
+            to={{
+              pathname: `/reservationDetail/${offer.id}`,
+              state: { offer },
+            }}
+          >
+            <ReservationBtn>예약하기</ReservationBtn>
+          </Link>
           <div style={{ fontWeight: 600 }}>{`\\${new Intl.NumberFormat().format(
             parseFloat(totalPrice)
           )}`}</div>

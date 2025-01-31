@@ -7,8 +7,8 @@ import groundToAir.airReservation.utils.AccessTokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -81,6 +81,18 @@ public class AirController {
     public List<IataCodeEntity> getIataCode() {
         return airService.getIataCodes();
     }
+
+    // 예약 상세 데이터 조회
+    @PostMapping("/flightPrice")
+    public String getFlightPrice(@RequestBody String flightOffers) throws Exception {
+        log.info("flight Offers : {}", flightOffers);
+
+        String accessToken = accessTokenUtil.checkAndRefreshToken();
+
+        return airService.getFlightPrice(accessToken, flightOffers);
+
+    }
+
 
 
 }

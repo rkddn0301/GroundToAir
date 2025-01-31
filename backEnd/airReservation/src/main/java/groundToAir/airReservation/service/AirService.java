@@ -8,6 +8,7 @@ import groundToAir.airReservation.repository.IataCodeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -84,6 +85,37 @@ public class AirService {
     public List<IataCodeEntity> getIataCodes() {
         return iataCodeRepository.findAll();
     }
+
+    // 예약 상세 데이터 조회
+    public String getFlightPrice(String accessToken, String flightOffers) {
+        String url = "https://test.api.amadeus.com/v1/shopping/flight-offers/pricing";
+
+        // 가져온 데이터 중 필요없는 부분 제거
+        String replacedFlightOffers = flightOffers.replace("{\"flightOffers\":", "[")
+                .replace("}}]}]}}", "}}]}]}]}}");
+
+
+        // flight offer price Body 양식에 맞게 JSON 형식으로 변환
+        String requestBody = "{ \"data\": { \"type\": \"flight-offers-pricing\", " +
+                "\"flightOffers\": " + replacedFlightOffers;
+
+        log.info("requestBody: " + requestBody);
+
+        // HttpHeaders 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        // HttpEntity에 헤더와 본문 설정
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+
+        return restTemplate.postForObject(url, entity, String.class);
+
+
+    }
+
+
+
 
 
 

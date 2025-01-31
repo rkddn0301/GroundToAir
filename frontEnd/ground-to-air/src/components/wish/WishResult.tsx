@@ -1,8 +1,10 @@
+// 찜 내역 데이터
 import axios from "axios";
 import { FlightWish } from "../../router/FlightSearch";
 import { AirlineCodes } from "../../utils/api";
 import { formatDuration, formatTime } from "../../utils/formatTime";
 import { Alert, Confirm } from "../../utils/sweetAlert";
+import { Link } from "react-router-dom";
 
 // 조회 결과 컴포넌트에 필요한 props
 interface WishResultProps {
@@ -169,26 +171,33 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             padding: "5px",
           }}
         >
-          <button
-            style={{
-              backgroundColor: "skyblue",
-              border: "1px solid #595959",
-              color: "#595959",
-              borderRadius: "2px",
-              padding: "7px",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#595959";
-              e.currentTarget.style.color = "#f7fcfc";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "skyblue";
-              e.currentTarget.style.color = "#595959";
+          <Link
+            to={{
+              pathname: `/wishList/reservationDetail/${wish.wishNo}`,
+              state: { wish },
             }}
           >
-            예약하기
-          </button>
+            <button
+              style={{
+                backgroundColor: "skyblue",
+                border: "1px solid #595959",
+                color: "#595959",
+                borderRadius: "2px",
+                padding: "7px",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#595959";
+                e.currentTarget.style.color = "#f7fcfc";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "skyblue";
+                e.currentTarget.style.color = "#595959";
+              }}
+            >
+              예약하기
+            </button>
+          </Link>
         </td>
         <td
           style={{

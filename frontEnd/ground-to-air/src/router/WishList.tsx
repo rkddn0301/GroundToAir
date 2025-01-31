@@ -1,3 +1,4 @@
+// 찜 내역
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { isLoggedInState } from "../utils/atom";
