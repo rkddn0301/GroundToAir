@@ -92,7 +92,7 @@ public class AirService {
 
         // 가져온 데이터 중 필요없는 부분 제거
         String replacedFlightOffers = flightOffers.replace("{\"flightOffers\":", "[")
-                .replace("}}]}]}}", "}}]}]}]}}");
+                .replace("}]}]}", "}]}]}]}");
 
 
         // flight offer price Body 양식에 맞게 JSON 형식으로 변환
