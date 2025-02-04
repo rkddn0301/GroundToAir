@@ -58,7 +58,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
         if (response.data) {
           const successAlert = await Alert("삭제가 완료되었습니다.", "success");
 
-          if (successAlert.isConfirmed) {
+          if (successAlert.isConfirmed || successAlert.isDismissed) {
             setGetWish((prevWish) =>
               prevWish.filter((item) => item.wishNo !== wish.wishNo)
             );
@@ -174,7 +174,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
           <Link
             to={{
               pathname: `/wishList/reservationDetail/${wish.wishNo}`,
-              state: { wish },
+              state: { offer: wish.offer },
             }}
           >
             <button

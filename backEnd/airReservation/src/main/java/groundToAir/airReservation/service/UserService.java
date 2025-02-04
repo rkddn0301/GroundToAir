@@ -1,5 +1,8 @@
 package groundToAir.airReservation.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groundToAir.airReservation.entity.*;
 import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.enumType.SocialType;
@@ -38,6 +41,9 @@ public class UserService {
 
     // 이메일 이용
     private JavaMailSender mailSender;
+
+    // JSON 파싱 클래스 선언
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
         this.userRepository = userRepository;
@@ -778,8 +784,48 @@ public class UserService {
 
     // 찜 조회
     public List<Map<String, Object>> getWish(int userNo) {
-        return wishListRepository.findWishList(userNo);
+
+        // ! wishListEntity의 offer 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
+
+        // DB에서 가져온 데이터
+        List<Map<String, Object>> wishList = wishListRepository.findWishList(userNo);
+
+        // offer 변환
+        for (Map<String, Object> wishItem : wishList) {
+            if (wishItem.containsKey("offer")) {
+                try {
+                    // offer는 String으로 되어 있음
+                    String offerString = (String) wishItem.get("offer");
+
+                    // JSON 문자열 --> Java 객체 변환
+                    // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
+                    Map<String, Object> offer = objectMapper.readValue(offerString, new TypeReference<>() {});
+
+                    // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
+                    Map<String, Object> updatedWishItem = new HashMap<>(wishItem);  // 새로운 Map을 생성
+                    updatedWishItem.put("offer", offer);  // 변환된 offer를 새로운 Map에 추가
+
+                    // 기존 wishItem을 새로운 Map으로 교체
+                    // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
+                    int index = wishList.indexOf(wishItem);
+                    wishList.set(index, updatedWishItem); // wishList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
+
+                } catch (JsonProcessingException e) {
+                    // 변환 실패 시 처리 방법
+                    log.error("offer 변환 중 오류 발생: " + e.getMessage(), e);
+                    Map<String, Object> emptyOffer = new HashMap<>();  // 빈 객체를 넣어주기
+                    wishItem.put("offer", emptyOffer);
+                }
+            }
+        }
+
+        // 변환 후의 wishList 로그 출력
+        log.info("변환 완료된 wishList 데이터: " + wishList);
+
+        return wishList;
     }
+
+
 
     // 찜 아이콘 클릭 스위칭
     public boolean wish(int userNo, Map<String, Object> wishListData) {
@@ -794,7 +840,6 @@ public class UserService {
 
         LocalDateTime departureTime = !departureTimeStr.isEmpty() ? LocalDateTime.parse(departureTimeStr) : null;
         LocalDateTime arrivalTime = !arrivalTimeStr.isEmpty() ? LocalDateTime.parse(arrivalTimeStr) : null;
-
 
         // WishListEntity 생성 및 가는편에 해당하는 항공권 데이터 삽입
         WishListEntity wishList = new WishListEntity();
@@ -837,6 +882,21 @@ public class UserService {
         wishList.setInfants((Integer) wishListData.get("infants"));
         wishList.setSeatClass(SeatClass.valueOf((String) wishListData.get("seatClass")));
         wishList.setTotalPrice((Integer) wishListData.get("totalPrice"));
+
+        // 항공편 데이터를 문자열로 삽입하기 위해 변환
+        try {
+            Object offerData = wishListData.get("offer");
+
+            if (offerData instanceof LinkedHashMap) { // offer가 LinkedHashMap으로 가져 올 경우
+                String offerJson = objectMapper.writeValueAsString(offerData); // Java 객체 --> JSON 문자열 변환
+                wishList.setOffer(offerJson);
+            } else {
+                wishList.setOffer(null);
+            }
+        } catch (JsonProcessingException e) {
+            log.error("OFFER JSON --> TEXT 변환 중 오류 발생 : ", e);
+            wishList.setOffer(null);
+        }
 
         // 사용자 번호와 여러 조건에 해당하는 찜 목록이 이미 존재하는지 확인
         Optional<WishListEntity> existingWishList =

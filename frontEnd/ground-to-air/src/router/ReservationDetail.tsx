@@ -17,8 +17,8 @@ const Container = styled.div`
 interface ReservationDetailProps {}
 
 function ReservationDetail() {
-  const location = useLocation<{ offer?: FlightOffer; wish?: FlightWish }>();
-  const { offer, wish } = location.state;
+  const location = useLocation<{ offer?: FlightOffer }>();
+  const { offer } = location.state;
 
   const [flightPrice, setFlightPrice] = useState();
 
@@ -27,11 +27,7 @@ function ReservationDetail() {
       console.log(offer);
       fetchDetail();
     }
-
-    if (wish) {
-      console.log(wish);
-    }
-  }, [offer, wish]);
+  }, [offer]);
 
   const fetchDetail = async () => {
     try {
@@ -52,9 +48,7 @@ function ReservationDetail() {
 
   return (
     <Container>
-      <p>
-        예약 {offer && offer.id} {wish && wish.wishNo} 페이지입니다.
-      </p>
+      <p>예약 {offer && offer.id} 페이지입니다.</p>
     </Container>
   );
 }

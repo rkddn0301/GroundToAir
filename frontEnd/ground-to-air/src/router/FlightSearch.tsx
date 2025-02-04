@@ -264,6 +264,7 @@ export interface FlightWish {
   reTurnaroundTime?: string;
   reStopLine?: string;
   totalPrice: number;
+  offer?: FlightOffer | null;
 
   adults?: number;
   childrens?: number;
@@ -392,6 +393,7 @@ function FlightSearch() {
     reTurnaroundTime: "", // 오는편_소요시간
     reStopLine: "", // 오는편_경유지 여부
     totalPrice: 0, // 가격
+    offer: null, // 항공편
   }); // 찜 데이터 등록 state
 
   /* 찜(wishList) state 구성 끝 */

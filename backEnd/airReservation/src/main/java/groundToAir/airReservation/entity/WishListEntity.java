@@ -100,6 +100,10 @@ public class WishListEntity {
     @Column(name="TOTAL_PRICE")
     private Integer totalPrice;
 
+    // 항공편
+    @Column(name="OFFER")
+    private String offer;
+
     // 외래키 설정 (ManyToOne: N:1 관계)
     // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
     @ManyToOne(fetch = FetchType.LAZY)

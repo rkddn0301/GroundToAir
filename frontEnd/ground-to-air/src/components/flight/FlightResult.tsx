@@ -438,6 +438,7 @@ function FlightResult({
             : "",
 
         totalPrice: parseInt(totalPrice) || 0,
+        offer: offer,
       }));
     } else {
       // 로그인 x

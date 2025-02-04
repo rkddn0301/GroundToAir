@@ -667,7 +667,7 @@ function MyInfo() {
           "success"
         );
 
-        if (successAlert.isConfirmed) {
+        if (successAlert.isConfirmed || successAlert.isDismissed) {
           setIsLoggedIn(false);
           clearTimeout(inactivityTimer);
           clearInterval(refreshInterval);
@@ -737,7 +737,7 @@ function MyInfo() {
           "success"
         );
 
-        if (successAlert.isConfirmed) {
+        if (successAlert.isConfirmed || successAlert.isDismissed) {
           history.push("/");
         }
       } else {
@@ -822,7 +822,7 @@ function MyInfo() {
             "회원탈퇴가 완료되었습니다.<br>그동안 이용해주셔서 감사합니다.",
             "success"
           );
-          if (successAlert.isConfirmed) {
+          if (successAlert.isConfirmed || successAlert.isDismissed) {
             setIsLoggedIn(false);
             clearTimeout(inactivityTimer);
             clearInterval(refreshInterval);
