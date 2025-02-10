@@ -690,25 +690,15 @@ function FlightSearch() {
         return acc;
       }, {});
 
-      console.log(getWish);
+      // console.log(getWish);
       setIsWish(updatedIsWish);
-    }
-
-    // 데이터 검색 후 flightOffers 데이터를 localStorage에 저장하여 유지
-    // localStorage 보안을 위해 encrypt로 암호화
-    if (flightOffers !== null) {
-      const encryptedData = CryptoJS.AES.encrypt(
-        JSON.stringify(flightOffers),
-        encryptionKey
-      ).toString();
-      localStorage.setItem("flightOffers", encryptedData);
     }
   }, [getWish, flightOffers]);
 
   // FlightResult에서 찜 아이콘 클릭 이력이 있을 시 sendWishList 함수 호출
   useEffect(() => {
     if (wishReg.flightNo !== "") {
-      console.log(wishReg);
+      // console.log(wishReg);
       sendWishList(wishReg);
     }
   }, [wishReg]);
@@ -738,7 +728,7 @@ function FlightSearch() {
         Alert("찜 내역에 저장 완료하였습니다.", "success");
       }
 
-      console.log(response.data);
+      // console.log(response.data);
     } catch (e) {
       console.error(e);
     }
@@ -775,7 +765,7 @@ function FlightSearch() {
         originLocationCode: `${autoCompleteOriginLocations[0]?.airportKor} (${autoCompleteOriginLocations[0]?.iata})`,
         originLocationCodeNo: `${autoCompleteOriginLocations[0]?.codeNo}_airport`,
       }));
-      console.log("출발지에 공항명칭으로 검색함");
+      //console.log("출발지에 공항명칭으로 검색함");
 
       originLocationCheck = true; // 공항코드 검색 확인
     } else if (/\(.*\)/.test(inputData.originLocationCode)) {
@@ -785,7 +775,7 @@ function FlightSearch() {
 
       // 검색한게 도시코드/공항코드 인지 확인
       if (inputData.originLocationCodeNo.endsWith("_airport")) {
-        console.log("출발지에 공항명칭으로 검색함");
+        //console.log("출발지에 공항명칭으로 검색함");
 
         originLocationCheck = true; // 공항코드 검색 확인
       }
@@ -808,7 +798,7 @@ function FlightSearch() {
         destinationLocationCodeNo: `${autoCompleteDestinationLocations[0]?.codeNo}_airport`,
       }));
 
-      console.log("도착지에 공항명칭으로 검색함");
+      //console.log("도착지에 공항명칭으로 검색함");
 
       destinationLocationCheck = true; // 공항코드 검색 확인
     } else if (/\(.*\)/.test(inputData.destinationLocationCode)) {
@@ -818,7 +808,7 @@ function FlightSearch() {
 
       // 검색한게 도시코드/공항코드 인지 확인
       if (inputData.destinationLocationCodeNo.endsWith("_airport")) {
-        console.log("도착지에 공항명칭으로 검색함");
+        //console.log("도착지에 공항명칭으로 검색함");
 
         destinationLocationCheck = true; // 공항코드 검색 확인
       }
@@ -833,7 +823,7 @@ function FlightSearch() {
       return;
     }
 
-    console.log(
+    /*  console.log(
       searchOriginLocation,
       searchDestinationLocation,
       inputData.departureDate,
@@ -842,7 +832,7 @@ function FlightSearch() {
       inputData.children,
       inputData.infants,
       inputData.travelClass
-    );
+    ); */
 
     setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
 
@@ -881,7 +871,7 @@ function FlightSearch() {
           },
         }
       );
-      console.log(response.data);
+      // console.log(response.data);
 
       /* 
       - 검색결과는 아래 조건대로 출력됨.
@@ -927,13 +917,27 @@ function FlightSearch() {
 
           return !nullChecking;
         });
-        console.log(filteredOffers);
+        // console.log(filteredOffers);
         setFlightOffers({
           ...response.data, // 원래 데이터의 meta, dictionaries 등을 유지
           data: filteredOffers, // 필터링된 데이터로 교체
         });
+
+        // 데이터 검색 후 localStorage에 저장하여 유지 및 보안을 위해 encrypt로 암호화
+        const encryptedData = CryptoJS.AES.encrypt(
+          JSON.stringify({ ...response.data, data: filteredOffers }),
+          encryptionKey
+        ).toString();
+        localStorage.setItem("flightOffers", encryptedData);
       } else {
         setFlightOffers(response.data);
+
+        // 데이터 검색 후 localStorage에 저장하여 유지 및 보안을 위해 encrypt로 암호화
+        const encryptedData = CryptoJS.AES.encrypt(
+          JSON.stringify(response.data),
+          encryptionKey
+        ).toString();
+        localStorage.setItem("flightOffers", encryptedData);
       }
 
       wishListData(); // 찜 데이터 가져오기

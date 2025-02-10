@@ -216,7 +216,7 @@ function FlightFiltering({
     if (name === "multipleStops") {
       setMultipleStops((prev) => !prev);
     }
-    console.log(name, checked);
+    //console.log(name, checked);
   };
 
   /* 경유지 데이터 끝 */
@@ -544,8 +544,8 @@ function FlightFiltering({
       ); // sum : 누적해서 추가하는 값이며 초기값은 0, value : 배열 안에 값을 순차적으로 추가
       count["전체"] = totalCount; // '전체'에 합계 값 추가
 
-      console.log(count);
-      console.log(Object.keys(count));
+      //console.log(count);
+      //console.log(Object.keys(count));
 
       setAirlineCount(count); // EX) KE: 24, LJ: 10, 기타: 15, 전체 : 49
       setSelectedAirlines(Object.keys(count)); // object.keys : count의 key만 배열로 반환하는 방식 EX) ["KE", "LJ", "기타", "전체"]
@@ -729,7 +729,7 @@ function FlightFiltering({
       }
     });
 
-    console.log(filteredOffers);
+    //console.log(filteredOffers);
 
     // 필터링된 결과로 상태 업데이트
     setFlightOffers({
