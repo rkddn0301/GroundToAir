@@ -14,6 +14,8 @@ import { motion } from "framer-motion";
 import FlightFiltering from "../components/flight/FlightFiltering";
 import { Alert } from "../utils/sweetAlert";
 
+import CryptoJS from "crypto-js";
+
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
   min-width: 100%;
@@ -293,6 +295,8 @@ export interface FlightOffersResponse {
   };
 }
 
+const encryptionKey = process.env.REACT_APP_FLIGHT_DATA_SECRET_KEY || ""; // 이전 항공 데이터 암호화 키
+
 function FlightSearch() {
   const [inputData, setInputData] = useState({
     originLocationCode: "", // 출발지
@@ -338,7 +342,14 @@ function FlightSearch() {
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
   const [flightOffers, setFlightOffers] = useState<FlightOffersResponse | null>(
-    null
+    () => {
+      const storedData = localStorage.getItem("flightOffers");
+      if (storedData) {
+        const bytes = CryptoJS.AES.decrypt(storedData, encryptionKey);
+        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8)) || null;
+      }
+      return null;
+    }
   ); // 전체 항공편 추출
 
   const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
@@ -460,10 +471,16 @@ function FlightSearch() {
     setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
   };
 
-  // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
+  // 초기 렌더링 시 조건에 따라 기능 적용
   useEffect(() => {
     airCodeFetch(); // 항공 코드 데이터 저장
 
+    // 유지 할 검색 데이터가 존재 할 경우
+    if (flightOffers) {
+      wishListData();
+    }
+
+    // 가는날 & 오는날 새로고침 시 초기값 그대로 수정
     const currentDate = new Date();
     currentDate.setDate(currentDate.getDate() + 3);
     const initDepartureDate = currentDate.toISOString().split("T")[0]; // "YYYY-MM-DD" 형식
@@ -631,9 +648,10 @@ function FlightSearch() {
     }
   };
 
-  // 기존 찜 데이터(getWish)와 검색 데이터(flightOffers) 간 서로 비교하여 일치 시 찜 표시 유지
-  // ! map이 아닌 reduce를 사용한 이유는 각각 값을 넣어서 출력하는게 아닌 누적하여 총합 결과를 isWish에 삽입해야 하기 때문이다.
+  // 검색(flightSearch) 후 추가적으로 동작하는 hook
   useEffect(() => {
+    // 기존 찜 데이터(getWish)와 검색 데이터(flightOffers) 간 서로 비교하여 일치 시 찜 표시 유지
+    // ! map이 아닌 reduce를 사용한 이유는 각각 값을 넣어서 출력하는게 아닌 누적하여 총합 결과를 isWish에 삽입해야 하기 때문이다.
     if (getWish.length > 0 && flightOffers) {
       const updatedIsWish = flightOffers.data.reduce((acc: any, offer) => {
         const flightNo = `${offer.itineraries?.[0]?.segments?.[0]?.carrierCode}${offer.itineraries?.[0]?.segments?.[0]?.number}`;
@@ -674,6 +692,16 @@ function FlightSearch() {
 
       console.log(getWish);
       setIsWish(updatedIsWish);
+    }
+
+    // 데이터 검색 후 flightOffers 데이터를 localStorage에 저장하여 유지
+    // localStorage 보안을 위해 encrypt로 암호화
+    if (flightOffers !== null) {
+      const encryptedData = CryptoJS.AES.encrypt(
+        JSON.stringify(flightOffers),
+        encryptionKey
+      ).toString();
+      localStorage.setItem("flightOffers", encryptedData);
     }
   }, [getWish, flightOffers]);
 

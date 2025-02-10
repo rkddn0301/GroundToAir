@@ -57,13 +57,14 @@ const sessionOut = async () => {
   clearInterval(refreshInterval); // 리프레시 토큰 타이머 삭제
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("flightOffers");
   const sessionOutAlert = await Alert(
     "세션이 만료되었습니다. 다시 로그인 해주세요.",
     "info"
   );
   console.log(sessionOutAlert);
 
-  if (sessionOutAlert.isConfirmed) {
+  if (sessionOutAlert.isConfirmed || sessionOutAlert.isDismissed) {
     window.location.href = "/login"; // 로그인 페이지로 이동
   }
 };
@@ -78,6 +79,7 @@ export const logout = async () => {
     clearInterval(refreshInterval); // 리프레시 토큰 타이머 삭제
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("flightOffers");
 
     window.location.href = "/";
   }
