@@ -5,6 +5,7 @@ import { FlightOffer } from "../utils/api";
 import { FlightWish } from "./FlightSearch";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import KakaoPayment from "../components/payment/KakaoPayment";
 
 const Container = styled.div`
   margin-top: 50px;
@@ -49,6 +50,7 @@ function ReservationDetail() {
   return (
     <Container>
       <p>예약 {offer && offer.id} 페이지입니다.</p>
+      <KakaoPayment />
     </Container>
   );
 }

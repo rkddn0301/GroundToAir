@@ -1,6 +1,6 @@
 // 카카오 인증 컴포넌트
 import axios from "axios";
-import KakaoStartImg from "../img/kakaotalk_sharing_btn_small.png";
+import KakaoStartImg from "../../img/kakaotalk_sharing_btn_small.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
@@ -9,8 +9,8 @@ import {
   isLoggedInState,
   socialId,
   tokenExpirationTime,
-} from "../utils/atom";
-import { startSessionTimeout } from "../utils/jwtActivityTimer";
+} from "../../utils/atom";
+import { startSessionTimeout } from "../../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
 // KakaoAuth 전체 컴포넌트 구성

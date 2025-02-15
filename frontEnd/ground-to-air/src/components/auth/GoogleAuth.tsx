@@ -1,6 +1,6 @@
 // 구글 인증 컴포넌트
 import axios from "axios";
-import GoogleStartImg from "../img/g-logo.png";
+import GoogleStartImg from "../../img/g-logo.png";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
@@ -9,8 +9,8 @@ import {
   isLoggedInState,
   socialId,
   tokenExpirationTime,
-} from "../utils/atom";
-import { startSessionTimeout } from "../utils/jwtActivityTimer";
+} from "../../utils/atom";
+import { startSessionTimeout } from "../../utils/jwtActivityTimer";
 import { useHistory } from "react-router-dom";
 
 // GoogleAuth 전체 컴포넌트 구성

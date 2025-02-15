@@ -9,8 +9,8 @@ import { useSetRecoilState } from "recoil";
 import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
-import KakaoAuth from "../components/KakaoAuth";
-import GoogleAuth from "../components/GoogleAuth";
+import KakaoAuth from "../components/auth/KakaoAuth";
+import GoogleAuth from "../components/auth/GoogleAuth";
 
 // Login 전체 컴포넌트 구성
 const Container = styled.div`

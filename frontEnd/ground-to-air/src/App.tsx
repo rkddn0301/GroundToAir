@@ -75,7 +75,7 @@ function App() {
             "/",
             "/myInfo",
             "/wishList",
-            "reservationDetail/:id",
+            "/reservationDetail/:id",
             "/wishList/reservationDetail/:id",
           ]}
           exact
@@ -145,7 +145,7 @@ function App() {
             "/",
             "/myInfo",
             "/wishList",
-            "reservationDetail/:id",
+            "/reservationDetail/:id",
             "/wishList/reservationDetail/:id",
           ]}
           exact
