@@ -6,6 +6,7 @@ import { FlightWish } from "./FlightSearch";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import KakaoPayment from "../components/payment/KakaoPayment";
+import PaymentResult from "../components/payment/PaymentResult";
 
 const Container = styled.div`
   margin-top: 50px;

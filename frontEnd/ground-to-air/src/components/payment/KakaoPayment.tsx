@@ -5,11 +5,12 @@ function KakaoPayment() {
   const payment = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/payment/kakaopay`,
+        `http://localhost:8080/payment/kakaopayReady`,
         {
           amount: 10000, // 결제할 금액
           secretKey: process.env.REACT_APP_KAKAOPAY_SECRET_DEV_KEY,
-        }
+        },
+        { withCredentials: true }
       );
 
       console.log(response.data);

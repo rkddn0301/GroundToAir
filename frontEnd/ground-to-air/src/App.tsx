@@ -19,6 +19,7 @@ import MyInfo from "./router/MyInfo";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WishList from "./router/WishList";
 import ReservationDetail from "./router/ReservationDetail";
+import PaymentResult from "./components/payment/PaymentResult";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -130,6 +131,8 @@ function App() {
               restricted={true}
             />
             <ProtectedRoute path="/join" component={Join} restricted={true} />
+
+            <Route path="/reservationResult" component={PaymentResult} />
 
             <Route
               path="/reservationDetail/:id"

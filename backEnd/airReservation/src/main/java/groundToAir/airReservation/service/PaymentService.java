@@ -2,11 +2,9 @@ package groundToAir.airReservation.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,7 +21,7 @@ public class PaymentService {
     }
 
     // 카카오페이 결제 준비 페이지 이동
-    public String kakaoPaymentReady(Map<String, Object> paymentInfo) {
+    public String kakaoPaymentReady(Map<String, Object> paymentInfo, HttpSession session) {
         String url = "https://open-api.kakaopay.com/online/v1/payment/ready"; // 카카오페이 요청 URL
 
         String secretKey = (String) paymentInfo.get("secretKey");
@@ -43,6 +41,7 @@ public class PaymentService {
         headers.set("Authorization", "SECRET_KEY " + secretKey);  // 카카오페이의 API Key 사용
         headers.set("Content-Type", "application/json");
 
+        // 요청 할 데이터 입력
         String requestPayload = String.format(
                 "{"
                         + "\"cid\": \"TC0ONETIME\"," // [필수] 가맹점 코드 (테스트 : TC0ONETIME)
@@ -53,42 +52,96 @@ public class PaymentService {
                         + "\"total_amount\": \"%d\"," // [필수] 총 결제 금액
                         + "\"vat_amount\": \"%d\"," // [선택] 부가가치세
                         + "\"tax_free_amount\": 0," // [필수] 비과세 금액
-                        + "\"approval_url\": \"http://localhost:3000/payment/success\"," // [필수] 결제 성공 시의 url
-                        + "\"fail_url\": \"http://localhost:3000/payment/fail\"," // [필수] 결제 실패 시의 url
-                        + "\"cancel_url\": \"http://localhost:3000/payment/cancel\"" // [필수] 결제 취소 시의 url
+                        + "\"approval_url\": \"http://localhost:3000/reservationResult/success\"," // [필수] 결제 성공 시의 url
+                        + "\"fail_url\": \"http://localhost:3000/reservationResult/fail\"," // [필수] 결제 실패 시의 url
+                        + "\"cancel_url\": \"http://localhost:3000/reservationResult/cancel\"" // [필수] 결제 취소 시의 url
                         + "}", amount, 200 // 예시로 vat_amount = 200 설정
         );
 
-        // 로그: 요청 보내기 전
-        log.info("Sending request to Kakao Pay API with payload: {}", requestPayload);
-        log.info("Authorization header: KakaoAK {}", secretKey);  // 헤더 정보 로그
+        log.info("전송 할 데이터 : {}", requestPayload);
+        log.info("헤더 : {}", secretKey);  // 헤더 정보 로그
 
-        HttpEntity<String> entity = new HttpEntity<>(requestPayload, headers);
+        HttpEntity<String> requestEntity  = new HttpEntity<>(requestPayload, headers);
 
         try {
             // 카카오페이 결제 준비 API 호출
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
 
-            // 로그: 카카오페이 응답
             String responseBody = response.getBody();
-            log.info("Response from Kakao Pay API: {}", responseBody);
+            log.info("응답받은 데이터 : {}", responseBody);
 
             // 응답에서 필요한 데이터만 추출
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonResponse = objectMapper.readTree(responseBody);
-            String paymentUrl = jsonResponse.path("next_redirect_pc_url").asText();  // PC에서의 결제 URL
+            String paymentUrl = jsonResponse.path("next_redirect_pc_url").asText();  // 결제창 페이지 URL
+            String tid = jsonResponse.path("tid").asText();  // 결제에 필요한 tid
 
-            // 로그: 결제 URL 추출
-            log.info("Payment URL extracted: {}", paymentUrl);
+            // 세션에 tid 저장
+            session.setAttribute("tid", tid);  // 세션에 tid 저장
 
-            // React로 결제 URL을 반환
+            log.info("결제창 페이지 URL : {}", paymentUrl);
+            log.info("세션 tid : {}", session.getAttribute("tid"));
+
+            // React로 결제 URL만 반환 (tid는 세션에 저장되었음)
             return paymentUrl;
 
         } catch (Exception e) {
             // 예외 발생 시 로그
-            log.error("Error occurred during Kakao Pay payment preparation", e);
+            log.error("결제 준비 실패", e);
             throw new RuntimeException("결제 준비 실패", e);
         }
+    }
+
+    // 카카오페이 결제 승인
+    public String kakaoPaymentApprove(Map<String, Object> paymentInfo, HttpSession session) {
+
+        String url = "https://open-api.kakaopay.com/online/v1/payment/approve"; // 카카오페이 승인 URL
+
+        String secretKey = (String) paymentInfo.get("secretKey");
+        if (secretKey == null) {
+            log.error("secretKey가 존재하지 않음");
+            throw new IllegalArgumentException("secretKey가 존재하지 않음");
+        }
+
+        String pgToken = (String) paymentInfo.get("pgToken");
+        if (pgToken == null) {
+            log.error("pgToken 존재하지 않음");
+            throw new IllegalArgumentException("pgToken 존재하지 않음");
+        }
+
+        // 세션에서 tid 값을 가져옴
+        String tid = (String) session.getAttribute("tid");
+        if (tid == null) {
+            log.error("세션에서 tid를 찾을 수 없음");
+            throw new IllegalArgumentException("세션에서 tid를 찾을 수 없음");
+        }
+
+        // 요청 할 데이터 입력
+        String requestPayload = String.format(
+                "{"
+                        + "\"cid\": \"TC0ONETIME\","
+                        + "\"tid\": \"%s\"," // tid 값은 결제 준비 단계에서 저장해둬야 함
+                        + "\"partner_order_id\": \"order_123\","
+                        + "\"partner_user_id\": \"user_123\","
+                        + "\"pg_token\": \"%s\""
+                        + "}", tid, pgToken
+        );
+
+        // 카카오페이 API 호출을 위한 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "SECRET_KEY " + secretKey);
+
+        // 요청 후 응답을 받아옴
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestPayload, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+
+        return response.getBody();
     }
 
 }
