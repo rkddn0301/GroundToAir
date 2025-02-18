@@ -2,11 +2,10 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { FlightOffer } from "../utils/api";
-import { FlightWish } from "./FlightSearch";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import KakaoPayment from "../components/payment/KakaoPayment";
-import PaymentResult from "../components/payment/PaymentResult";
+import TossPayment from "../components/payment/TossPayment";
 
 const Container = styled.div`
   margin-top: 50px;
@@ -52,6 +51,7 @@ function ReservationDetail() {
     <Container>
       <p>예약 {offer && offer.id} 페이지입니다.</p>
       <KakaoPayment />
+      <TossPayment />
     </Container>
   );
 }

@@ -48,7 +48,7 @@ public class PaymentController {
 
 
         try {
-            // 결제 준비를 위한 서비스 메서드 호출
+            // 결제 승인을 위한 서비스 메서드 호출
             String response = paymentService.kakaoPaymentApprove(paymentInfo, session);
             // 리디렉션 URL을 응답으로 반환
             return ResponseEntity.ok(response);
@@ -56,6 +56,23 @@ public class PaymentController {
             log.error("요청 실패 : ", e);
             return ResponseEntity.status(500).body("요청 실패");
         }
+    }
+
+    // 토스페이먼츠 결제 승인
+    @PostMapping("/tosspayApprove")
+    public ResponseEntity<?> tossPaymentApprove(@RequestBody Map<String, Object> paymentInfo) {
+        log.info("paymentInfo : {}", paymentInfo);
+
+        try {
+            // 결제 승인을 위한 서비스 메서드 호출
+            String response = paymentService.tossPaymentApprove(paymentInfo);
+            // 리디렉션 URL을 응답으로 반환
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("요청 실패 : ", e);
+            return ResponseEntity.status(500).body("요청 실패");
+        }
+
     }
 
 
