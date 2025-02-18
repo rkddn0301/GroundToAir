@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 const clientKey = process.env.REACT_APP_TOSSPAY_CLIENT_KEY as string;
 const customerKey = process.env.REACT_APP_TOSSPAY_CUSTOMER_KEY as string; // 본인이 직접 지정해야 함
+const orderId = crypto.randomUUID(); // 주문번호는 매번 바뀌어야함
 
 function TossPayment() {
   const [tossPayments, setTossPayments] = useState<any>(null); // TossPayments 인스턴스 저장
@@ -47,12 +48,12 @@ function TossPayment() {
         card: {
           // [선택] 카드 결제 정보
           useEscrow: false, // 에스크로 사용 여부. 에스크로(Escrow) : 결제 금액을 판매자가 아닌 제3자가 받아 구매자가 상품이나 서비스를 받은 후에만 판매자에게 금액이 지급되는 서비스.
-          flowMode: "DIRECT", // 결제창 여는 방식 (DEFAULT : 카드/간편결제 통합결제창 열람, DIRECT : 카드 또는 간편결제의 자체창 열람)
+          flowMode: "DEFAULT", // 결제창 여는 방식 (DEFAULT : 카드/간편결제 통합결제창 열람, DIRECT : 카드 또는 간편결제의 자체창 열람)
           useCardPoint: false, // 카드사 포인트 사용 여부
           useAppCardOnly: false, // 카드사의 앱카드 단독 사용 여부
         },
         amount: amount.value, // [필수] 결제 금액 정보 (value : 결제 금액, currency : 결제 통화)
-        orderId: "dPrPWReo1t3JeuedKkOTK", // [필수] 고유 주문번호
+        orderId: orderId, // [필수] 고유 주문번호
         orderName: "토스 티셔츠 외 2건", // [필수] 구매 상품명
         successUrl: `${window.location.origin}/reservationResult/success`, // [선택] 결제 성공 시 리다이렉트 되는 URL
         failUrl: `${window.location.origin}/reservationResult/fail`, // [선택] 결제 실패 시 리다이렉트 되는 URL
