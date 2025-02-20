@@ -680,7 +680,7 @@ function FlightResult({
         <ReservationBtnGroups>
           <Link
             to={{
-              pathname: `/reservationDetail/${offer.id}`,
+              pathname: `/flightReservation/${offer.id}`,
               state: { offer },
             }}
           >

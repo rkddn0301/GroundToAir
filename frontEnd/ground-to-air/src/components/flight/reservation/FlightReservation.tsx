@@ -1,11 +1,11 @@
 // 예약 상세 페이지
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { FlightOffer } from "../utils/api";
+import { FlightOffer } from "../../../utils/api";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import KakaoPayment from "../components/payment/KakaoPayment";
-import TossPayment from "../components/payment/TossPayment";
+import KakaoPayment from "../../payment/KakaoPayment";
+import TossPayment from "../../payment/TossPayment";
 
 const Container = styled.div`
   margin-top: 50px;
@@ -15,9 +15,9 @@ const Container = styled.div`
   gap: 50px;
 `;
 
-interface ReservationDetailProps {}
+interface FlightReservationProps {}
 
-function ReservationDetail() {
+function FlightReservation() {
   const location = useLocation<{ offer?: FlightOffer }>();
   const { offer } = location.state;
 
@@ -56,4 +56,4 @@ function ReservationDetail() {
   );
 }
 
-export default ReservationDetail;
+export default FlightReservation;
