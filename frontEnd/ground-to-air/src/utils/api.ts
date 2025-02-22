@@ -1,5 +1,7 @@
 // 공통적으로 쓰는 api 데이터 모음
 
+import { SeatClass } from "../router/FlightSearch";
+
 // 항공
 
 // 공항코드 데이터 수집(WORLD_AIRPORT_CODE)
@@ -26,20 +28,20 @@ export interface AirlineCodes {
 export interface FlightOffer {
   type: string; // 응답 데이터의 유형
   id: string; // 항공편 제안 고유 ID
-  source: string;
+  source: string; // 항공편 정보 제공처
   numberOfBookableSeats?: number; // 예약 가능한 좌석 수
   itineraries: {
     duration: string; // 소요 시간
     segments: {
-      departure?: {
+      departure: {
         // 출발지
-        iataCode?: string; // 공항코드
-        at?: string; // 출발시간(현지기준)
+        iataCode: string; // 공항코드
+        at: string; // 출발시간(현지기준)
       };
-      arrival?: {
+      arrival: {
         // 도착지
-        iataCode?: string; // 공항코드
-        at?: string; // 도착시간(현지기준)
+        iataCode: string; // 공항코드
+        at: string; // 도착시간(현지기준)
       };
       carrierCode?: string; // 항공사 코드
       number?: string; // 항공편 번호
@@ -57,6 +59,77 @@ export interface FlightOffer {
     total: string;
   };
   validatingAirlineCodes: string[]; // 판매 항공사
+}
+
+// AmadeusAPI(FlightOfferPrice) 호출된 데이터 지정
+export interface FlightPricing {
+  type: string;
+  id: string;
+  source: string; // 항공편 정보 제공처
+  itineraries: {
+    segments: {
+      departure: {
+        // 출발지
+        iataCode: string; // 공항코드
+        at: string; // 출발시간(현지기준)
+        terminal: string; // 승객 처리 구역
+      };
+      arrival: {
+        // 도착지
+        iataCode: string; // 공항코드
+        at: string; // 도착시간(현지기준)
+        terminal: string; // 승객 처리 구역
+      };
+      carrierCode?: string; // 항공사 코드
+      number?: string; // 항공편 번호
+      aircraft?: {
+        code?: string; // 항공기 코드
+      };
+      operating?: {
+        carrierCode?: string;
+      }; // 실질적으로 운항하는 항공사
+    }[];
+  }[];
+
+  price: {
+    base: string; // 항공요금
+    billingCurrency: string; // 결제 시 사용되는 통화
+    currency: string; // 표시되는 통화
+    grandTotal: string; // 세금포함 요금
+    total: string; // 총 요금
+  };
+
+  pricingOptions: {
+    fareType: string[]; // 요금 종류 EX) PUBLISHED
+    includedCheckedBagsOnly: boolean; // 무료 위탁 수하물 포함 여부
+  };
+
+  travelerPricings: {
+    travelerId: string; // 여행자 ID
+    fareOption: string; // 요금 옵션 EX) STANDARD
+    travelerType: string; // 여행자 유형 EX) ADULT
+    price: {
+      currency: string; // 표시되는 통화
+      total: string; // 총 요금
+      base: string; // 항공요금
+      taxes: {
+        amount: string; // 세금 금액
+        code: string; // 세금 코드 EX) SW, TK
+      }[]; // 세금 내역
+      refundableTaxes: string; // 환불 가능한 세금
+    };
+    fareDetailsBySegment: {
+      segmentId: string; // 구간 ID
+      cabin: SeatClass; // 좌석등급
+      fareBasis: string; // 요금 기준 코드
+      brandedFare: string; // 브랜드 요금명
+      class: string; // 예약 등급 EX) Q, V
+      includedCheckedBags: {
+        quantity: number; // 무료 위탁 수하물 개수
+      };
+    }[];
+    validatingAirlineCodes: string[]; // 판매 항공사
+  }[];
 }
 
 // 호텔
