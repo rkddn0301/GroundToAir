@@ -1,5 +1,23 @@
 // 시간 유틸 포맷 함수
 
+// 매개변수로 오는 데이터에 따라 '2025년 2월 25일 오전 8시 20분'과 같은 DateTime 포맷으로 변환해주는 함수
+export function formatDateTime(input?: string) {
+  if (input === undefined) return "";
+
+  const data = new Date(input); // Date 데이터
+
+  const date = `${data.getFullYear()}년 ${
+    data.getMonth() + 1
+  }월 ${data.getDate()}일`; // EX) 20XX년 X월 x일
+
+  const period = data.getHours() >= 12 ? "오후" : "오전";
+  const time = `${data.getHours() % 12 || 12}시 ${data
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}분`; // EX) 8시 20분
+  return `${date} ${period} ${time}`;
+}
+
 // 매개변수로 오는 데이터에 따라 시간 변환 해주는 함수
 // string 일 경우 'YYYYMMDD TT:MM:SS' 데이터로 date에서 직접 변환을 시도
 // number 일 경우 시간 데이터로 1시간(60분) 기준으로 나누기 시도

@@ -252,6 +252,10 @@ function FlightResult({
       return matchesIata && isLogoValid;
     }) || ""; // 기본값을 객체로 설정
 
+  const carrierCode =
+    airlineCodeOffers.find((airline) => airline.iata === validatingCode)
+      ?.airlinesKor || ""; // 항공사명
+
   const airlineCode = `${
     offer.itineraries?.[0]?.segments?.[0]?.carrierCode || ""
   }${offer.itineraries?.[0]?.segments?.[0]?.number || ""}`; // 항공편 번호
@@ -318,6 +322,10 @@ function FlightResult({
 
       return matchesIata && isLogoValid;
     }) || "";
+
+  const returnCarrierCode =
+    airlineCodeOffers.find((airline) => airline.iata === returnValidatingCode)
+      ?.airlinesKor || ""; // 항공사명
 
   const returnAirlineCode = `${
     offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
@@ -461,11 +469,7 @@ function FlightResult({
               <img src={carrierCodeLogo.airlinesLogo} />
             ) : (
               <>
-                {
-                  dictionaries.carriers[
-                    offer.itineraries[0]?.segments[0]?.carrierCode || ""
-                  ]
-                }
+                {carrierCode}
                 {/* 운항항공사
                 {
                   dictionaries.carriers[
@@ -573,11 +577,7 @@ function FlightResult({
                 <img src={returnCarrierCodeLogo.airlinesLogo} />
               ) : (
                 <>
-                  {
-                    dictionaries.carriers[
-                      offer.itineraries[1]?.segments[0]?.carrierCode || ""
-                    ]
-                  }
+                  {returnCarrierCode}
                   {/* 운항항공사 
                    {
                     dictionaries.carriers[

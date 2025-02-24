@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import WishList from "./router/WishList";
 import PaymentResult from "./components/payment/PaymentResult";
 import FlightReservation from "./components/flight/reservation/FlightReservation";
+import TravelerInfo from "./components/flight/reservation/TravelerInfo";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -78,6 +79,7 @@ function App() {
             "/wishList",
             "/flightReservation/:id",
             "/wishList/flightReservation/:id",
+            "/flightReservation/:id/traveler",
           ]}
           exact
         >
@@ -135,9 +137,14 @@ function App() {
             <Route path="/reservationResult" component={PaymentResult} />
 
             <Route
+              path="/flightReservation/:id/traveler"
+              component={TravelerInfo}
+            />
+            <Route
               path="/flightReservation/:id"
               component={FlightReservation}
             />
+
             <Route path="/hotels" component={HotelSearch} />
             <Route exact path="/" component={FlightSearch} />
           </Switch>
@@ -150,6 +157,7 @@ function App() {
             "/wishList",
             "/flightReservation/:id",
             "/wishList/flightReservation/:id",
+            "/flightReservation/:id/traveler",
           ]}
           exact
         >

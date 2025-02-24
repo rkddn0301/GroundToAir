@@ -1,12 +1,18 @@
 // 예약 상세 페이지
-import { useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { FlightOffer, FlightPricing } from "../../../utils/api";
+import {
+  AirlineCodes,
+  FlightOffer,
+  FlightPricing,
+  IataCodes,
+} from "../../../utils/api";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import KakaoPayment from "../../payment/KakaoPayment";
 import TossPayment from "../../payment/TossPayment";
 import { motion } from "framer-motion";
+import FlightReservationResult from "./FlightReservationResult";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -49,9 +55,6 @@ const DetailList = styled.div`
   border-radius: 5px;
 `;
 
-// 헤더 디자인 구성
-const Header = styled.div``;
-
 interface FlightReservationProps {
   data: {
     flightOffers: FlightPricing[]; // Flight Offer Price 데이터
@@ -62,14 +65,26 @@ function FlightReservation() {
   const location = useLocation<{ offer?: FlightOffer }>();
   const { offer } = location.state;
 
+  const history = useHistory();
+
+  /* 항공편 관련 state 시작 */
   const [flightPrice, setFlightPrice] = useState<FlightReservationProps | null>(
     null
   ); // 항공편 상세 추출
+
+  const [airlineCodeOffers, setAirlineCodeOffers] = useState<AirlineCodes[]>(
+    []
+  ); // 항공사 코드 추출
+  const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 공항 코드 추출
+
+  /* 항공편 관련 state 끝 */
+
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
   useEffect(() => {
     if (offer) {
       console.log(offer);
+      airCodeFetch();
       checkflightPrice();
     }
   }, [offer]);
@@ -79,6 +94,18 @@ function FlightReservation() {
       console.log(flightPrice);
     }
   }, [flightPrice]);
+
+  // 항공사 코드 추출 함수
+  const airCodeFetch = async () => {
+    const airlineCodeResponse = await axios.get(
+      `http://localhost:8080/air/airlineCode`
+    );
+    const iataCodeResponse = await axios.get(
+      `http://localhost:8080/air/iataCode`
+    );
+    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
+    setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
+  };
 
   // 항공편 상세 조회 함수
   const checkflightPrice = async () => {
@@ -113,39 +140,32 @@ function FlightReservation() {
             }}
           />
         </Loading>
-      ) : flightPrice ? (
+      ) : flightPrice && iataCodeOffers && airlineCodeOffers ? (
         <DetailList>
           {flightPrice.data.flightOffers.map((pricing: FlightPricing) => (
             <>
-              <Header>
-                <div>
-                  {
-                    pricing.itineraries[0]?.segments[
-                      pricing.itineraries[0]?.segments.length - 1
-                    ]?.arrival?.iataCode
-                  }
-                </div>
-                <div>
-                  인원 {pricing.travelerPricings.length}명 |{" "}
-                  {pricing.itineraries.length > 1 ? "왕복" : "편도"} |{" "}
-                  {pricing.travelerPricings[0]?.fareDetailsBySegment[0]
-                    ?.cabin === "FIRST"
-                    ? "일등석"
-                    : pricing.travelerPricings[0]?.fareDetailsBySegment[0]
-                        ?.cabin === "BUSINESS"
-                    ? "비즈니스석"
-                    : pricing.travelerPricings[0]?.fareDetailsBySegment[0]
-                        ?.cabin === "PREMIUM_ECONOMY"
-                    ? "프리미엄 일반석"
-                    : "일반석"}
-                </div>
-                <hr />
-              </Header>
+              <FlightReservationResult
+                key={pricing.id}
+                pricing={pricing}
+                airlineCodeOffers={airlineCodeOffers}
+                iataCodeOffers={iataCodeOffers}
+              />
             </>
           ))}
 
-          <KakaoPayment />
-          <TossPayment />
+          {/*       <KakaoPayment />
+          <TossPayment /> */}
+          <div>
+            <button onClick={() => history.goBack()}>이전으로</button>
+            <Link
+              to={{
+                pathname: `/flightReservation/${offer?.id}/traveler`,
+                state: { offer },
+              }}
+            >
+              <button>다음으로</button>
+            </Link>
+          </div>
         </DetailList>
       ) : (
         ""
