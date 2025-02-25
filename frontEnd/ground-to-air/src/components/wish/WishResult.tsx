@@ -173,7 +173,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
         >
           <Link
             to={{
-              pathname: `/wishList/flightReservation/${wish.wishNo}`,
+              pathname: `/flightReservation/${wish.offer?.id}`,
               state: { offer: wish.offer },
             }}
           >

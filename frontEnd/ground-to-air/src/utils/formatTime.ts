@@ -1,7 +1,7 @@
 // 시간 유틸 포맷 함수
 
-// 매개변수로 오는 데이터에 따라 '2025년 2월 25일 오전 8시 20분'과 같은 DateTime 포맷으로 변환해주는 함수
-export function formatDateTime(input?: string) {
+// 매개변수로 오는 데이터에 따라 '2025년 2월 25일'과 같은 Date 포맷으로 변환해주는 함수
+export function formatDate(input?: string) {
   if (input === undefined) return "";
 
   const data = new Date(input); // Date 데이터
@@ -9,13 +9,7 @@ export function formatDateTime(input?: string) {
   const date = `${data.getFullYear()}년 ${
     data.getMonth() + 1
   }월 ${data.getDate()}일`; // EX) 20XX년 X월 x일
-
-  const period = data.getHours() >= 12 ? "오후" : "오전";
-  const time = `${data.getHours() % 12 || 12}시 ${data
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}분`; // EX) 8시 20분
-  return `${date} ${period} ${time}`;
+  return `${date}`;
 }
 
 // 매개변수로 오는 데이터에 따라 시간 변환 해주는 함수
@@ -58,4 +52,19 @@ export function formatDuration(duration?: string) {
   const minutes = matches[2] ? parseInt(matches[2].replace("M", "")) : 0;
 
   return `${hours}시간 ${minutes}분`;
+}
+
+// 대기시간 텍스트 변환
+export function formatDelayTime(arrivalTime?: string, departureTime?: string) {
+  if (departureTime === undefined || arrivalTime === undefined) return "";
+
+  const arrive = new Date(arrivalTime);
+  const depart = new Date(departureTime);
+  const diffMs = depart.getTime() - arrive.getTime();
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60)); // 시만 출력
+
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)); // 시를 제외하고 분만 출력
+
+  return `${diffHours}시간 ${diffMinutes}분`;
 }

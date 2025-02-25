@@ -78,7 +78,6 @@ function App() {
             "/myInfo",
             "/wishList",
             "/flightReservation/:id",
-            "/wishList/flightReservation/:id",
             "/flightReservation/:id/traveler",
           ]}
           exact
@@ -95,12 +94,6 @@ function App() {
             <ProtectedRoute
               path="/myInfo"
               component={MyInfo}
-              restricted={false}
-            />
-
-            <ProtectedRoute
-              path="/wishList/flightReservation/:id"
-              component={FlightReservation}
               restricted={false}
             />
 

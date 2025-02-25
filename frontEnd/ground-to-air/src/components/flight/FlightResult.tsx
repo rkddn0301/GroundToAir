@@ -275,7 +275,7 @@ function FlightResult({
   const departureTime = formatTime(
     offer.itineraries[0]?.segments[0]?.departure?.at
   ); // 출발시간
-  const arrieveTime = formatTime(
+  const arrivalTime = formatTime(
     offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
       ?.arrival?.at
   ); // 도착시간
@@ -344,7 +344,7 @@ function FlightResult({
     offer.itineraries[1]?.segments[0]?.departure?.at
   ); // 출발시간
 
-  const returnArrieveTime = formatTime(
+  const returnArrivalTime = formatTime(
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
       ?.arrival?.at
   ); // 도착시간
@@ -564,7 +564,7 @@ function FlightResult({
             </div>
           </MiddleInfoLine>
           <DestinationLine>
-            {arrieveTime}
+            {arrivalTime}
             <IataCode>{destinationLocationCode}</IataCode>
           </DestinationLine>
         </FlightInfo>
@@ -667,7 +667,7 @@ function FlightResult({
               </div>
             </MiddleInfoLine>
             <DestinationLine>
-              {returnArrieveTime}
+              {returnArrivalTime}
               <IataCode>{returnDestinationLocationCode}</IataCode>
             </DestinationLine>
           </FlightInfo>

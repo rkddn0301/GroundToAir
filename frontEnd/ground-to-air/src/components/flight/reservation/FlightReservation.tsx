@@ -147,6 +147,7 @@ function FlightReservation() {
               <FlightReservationResult
                 key={pricing.id}
                 pricing={pricing}
+                offer={offer}
                 airlineCodeOffers={airlineCodeOffers}
                 iataCodeOffers={iataCodeOffers}
               />

@@ -82,6 +82,7 @@ export interface FlightPricing {
       };
       carrierCode?: string; // 항공사 코드
       number?: string; // 항공편 번호
+      duration?: string; // 소요시간
       aircraft?: {
         code?: string; // 항공기 코드
       };
