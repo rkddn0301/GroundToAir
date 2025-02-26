@@ -32,27 +32,7 @@ export interface FlightOffer {
   numberOfBookableSeats?: number; // 예약 가능한 좌석 수
   itineraries: {
     duration: string; // 소요 시간
-    segments: {
-      departure: {
-        // 출발지
-        iataCode: string; // 공항코드
-        at: string; // 출발시간(현지기준)
-      };
-      arrival: {
-        // 도착지
-        iataCode: string; // 공항코드
-        at: string; // 도착시간(현지기준)
-      };
-      carrierCode?: string; // 항공사 코드
-      number?: string; // 항공편 번호
-      aircraft?: {
-        code?: string; // 항공기 코드
-      };
-      operating?: {
-        carrierCode?: string;
-      }; // 실질적으로 운항하는 항공사
-      numberOfStops: number; // 경유 횟수
-    }[];
+    segments: Segments[];
   }[];
   price: {
     // 가격 정보
@@ -67,29 +47,7 @@ export interface FlightPricing {
   id: string;
   source: string; // 항공편 정보 제공처
   itineraries: {
-    segments: {
-      departure: {
-        // 출발지
-        iataCode: string; // 공항코드
-        at: string; // 출발시간(현지기준)
-        terminal: string; // 승객 처리 구역
-      };
-      arrival: {
-        // 도착지
-        iataCode: string; // 공항코드
-        at: string; // 도착시간(현지기준)
-        terminal: string; // 승객 처리 구역
-      };
-      carrierCode?: string; // 항공사 코드
-      number?: string; // 항공편 번호
-      duration?: string; // 소요시간
-      aircraft?: {
-        code?: string; // 항공기 코드
-      };
-      operating?: {
-        carrierCode?: string;
-      }; // 실질적으로 운항하는 항공사
-    }[];
+    segments: Segments[];
   }[];
 
   price: {
@@ -131,6 +89,31 @@ export interface FlightPricing {
     }[];
     validatingAirlineCodes: string[]; // 판매 항공사
   }[];
+}
+
+export interface Segments {
+  departure: {
+    // 출발지
+    iataCode: string; // 공항코드
+    at: string; // 출발시간(현지기준)
+    terminal: string; // 승객 처리 구역
+  };
+  arrival: {
+    // 도착지
+    iataCode: string; // 공항코드
+    at: string; // 도착시간(현지기준)
+    terminal: string; // 승객 처리 구역
+  };
+  carrierCode?: string; // 항공사 코드
+  number?: string; // 항공편 번호
+  duration?: string; // 소요시간
+  aircraft?: {
+    code?: string; // 항공기 코드
+  };
+  operating?: {
+    carrierCode?: string;
+  }; // 실질적으로 운항하는 항공사
+  numberOfStops: number; // 경유 횟수
 }
 
 // 호텔
