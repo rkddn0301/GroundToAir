@@ -142,17 +142,19 @@ function FlightReservation() {
         </Loading>
       ) : flightPrice && iataCodeOffers && airlineCodeOffers ? (
         <DetailList>
-          {flightPrice.data.flightOffers.map((pricing: FlightPricing) => (
-            <>
-              <FlightReservationResult
-                key={pricing.id}
-                pricing={pricing}
-                offer={offer}
-                airlineCodeOffers={airlineCodeOffers}
-                iataCodeOffers={iataCodeOffers}
-              />
-            </>
-          ))}
+          {flightPrice.data.flightOffers.map(
+            (pricing: FlightPricing, index) => (
+              <>
+                <FlightReservationResult
+                  key={index}
+                  pricing={pricing}
+                  offer={offer}
+                  airlineCodeOffers={airlineCodeOffers}
+                  iataCodeOffers={iataCodeOffers}
+                />
+              </>
+            )
+          )}
 
           {/*       <KakaoPayment />
           <TossPayment /> */}

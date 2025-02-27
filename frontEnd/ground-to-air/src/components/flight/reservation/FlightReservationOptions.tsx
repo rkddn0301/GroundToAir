@@ -76,6 +76,7 @@ function FlightReservationOptions({
     : ""; // 도착지 터미널
 
   // 공동운항
+  // ! 표시하는데에는 문제없어 보류함. (올바른 공항을 표시하지 않을 시 dictionaries를 가져와야함. 2/27)
   const getCodeShare = (carrierCode: string | undefined): string => {
     // carrierCode가 undefined일 경우 처리
     if (!carrierCode) {
