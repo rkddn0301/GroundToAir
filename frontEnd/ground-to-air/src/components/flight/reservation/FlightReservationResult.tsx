@@ -10,10 +10,20 @@ import { formatDate, formatDuration } from "../../../utils/formatTime";
 import FlightReservationOptions from "./FlightReservationOptions";
 
 // 헤더 디자인 구성
-const Header = styled.div``;
+const Header = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid ${(props) => props.theme.white.font};
+`;
 
 // 바디 디자인 구성
 const Body = styled.div`
+  width: 90%;
   margin-bottom: 10px;
 `;
 
@@ -21,9 +31,8 @@ const Footer = styled.div``;
 
 // 항공편 박스
 const FlightBox = styled.div`
-  border: 1px solid skyblue;
-  border-radius: 5px;
-  padding: 5px;
+  border: 2px dashed skyblue;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -143,19 +152,32 @@ function FlightReservationResult({
   return (
     <>
       <Header>
-        <div>
+        <div style={{ fontWeight: "600", fontSize: "24px" }}>
           {/* 목적지 추출 : 도시명이 없다면 공항명으로 대체. */}
           {destination ? destination.cityKor ?? destination?.airportKor : ""}
         </div>
-        <div>
-          인원 {peoples}명 | {isRoundTrip} | {seatClass}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-evenly",
+            fontSize: "19px",
+          }}
+        >
+          <div>인원 {peoples}명</div>
+          <div>|</div>
+          <div>{isRoundTrip}</div>
+          <div>|</div>
+          <div>{seatClass}</div>
         </div>
-        <hr />
       </Header>
       <Body>
         {/* 가는편 */}
+        <p style={{ margin: "10px 0 10px" }}>
+          <span style={{ fontWeight: "600" }}>가는편 출발시간</span>{" "}
+          {departureDate}
+        </p>
         <FlightBox>
-          <p>가는편 출발시간 {departureDate}</p>
           {pricing.itineraries[0]?.segments.map((segment, index) => (
             <FlightReservationOptions
               segment={segment}
@@ -172,22 +194,27 @@ function FlightReservationResult({
         </FlightBox>
         {/* 오는편 */}
         {isRoundTrip === "왕복" && (
-          <FlightBox>
-            <p>오는편 출발시간 {returnDepartureDate}</p>
-            {pricing.itineraries[1]?.segments.map((segment, index) => (
-              <FlightReservationOptions
-                segment={segment}
-                key={index}
-                airlineCodeOffers={airlineCodeOffers}
-                iataCodeOffers={iataCodeOffers}
-                nextSegment={pricing.itineraries[1]?.segments[index + 1]}
-              />
-            ))}
-            <p>
-              <span>도착 : {returnArrivalDate}</span>{" "}
-              <span>총 소요시간 : {returnTotalDuration}</span>
-            </p>{" "}
-          </FlightBox>
+          <>
+            <p style={{ margin: "10px 0 10px" }}>
+              <span style={{ fontWeight: "600" }}>오는편 출발시간</span>{" "}
+              {returnDepartureDate}
+            </p>
+            <FlightBox>
+              {pricing.itineraries[1]?.segments.map((segment, index) => (
+                <FlightReservationOptions
+                  segment={segment}
+                  key={index}
+                  airlineCodeOffers={airlineCodeOffers}
+                  iataCodeOffers={iataCodeOffers}
+                  nextSegment={pricing.itineraries[1]?.segments[index + 1]}
+                />
+              ))}
+              <p>
+                <span>도착 : {returnArrivalDate}</span>{" "}
+                <span>총 소요시간 : {returnTotalDuration}</span>
+              </p>{" "}
+            </FlightBox>
+          </>
         )}
       </Body>
       <Footer>

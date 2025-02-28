@@ -9,12 +9,22 @@ import {
 import styled from "styled-components";
 
 // FlightReservationOptions 컴포넌트 전체 구성
-const Banner = styled.div``;
+const Banner = styled.div`
+  width: 100%;
+`;
 
 // 항공편 정보 디자인
 const FlightInfo = styled.div`
   display: flex;
-  gap: 5px;
+  gap: 10px;
+`;
+
+const DividingLine = styled.div`
+  position: relative;
+  height: 100%;
+  border: 1px solid ${(props) => props.theme.white.font};
+  display: flex;
+  opacity: 50%;
 `;
 
 // 대기시간 정보 디자인
@@ -117,23 +127,40 @@ function FlightReservationOptions({
   return (
     <Banner>
       <FlightInfo>
-        <div>
-          <div>
+        <div
+          style={{
+            width: "30%",
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              gap: "5px",
+            }}
+          >
             {carrierCodeLogo !== "" ? (
               <>
                 <img src={carrierCodeLogo.airlinesLogo} />{" "}
-                <span>{carrierCodeLogo.airlinesKor}</span>
+                <span style={{ fontSize: "17px" }}>
+                  {carrierCodeLogo.airlinesKor}
+                </span>
               </>
             ) : (
-              carrierCode
+              <span style={{ fontSize: "17px" }}>{carrierCode}</span>
             )}
           </div>
-          <div>{airlineCode}</div>
+          <div style={{ fontSize: "14px" }}>{airlineCode}</div>
           {operatingCode !== validatingCode && (
             <div>실제운항 : {getCodeShare(operatingCode)}</div>
           )}
         </div>
-        <div>줄</div>
+        <div>
+          <DividingLine />
+        </div>
         <div>
           <div>
             {departureTime} {originLocationCode} {originLocationAirport}{" "}

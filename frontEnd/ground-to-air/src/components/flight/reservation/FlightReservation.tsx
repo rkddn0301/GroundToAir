@@ -52,7 +52,7 @@ const DetailList = styled.div`
   padding: 30px 10px 30px 10px;
   margin: 0 auto;
   border: 1px solid ${(props) => props.theme.white.font};
-  border-radius: 5px;
+  border-radius: 8px;
 `;
 
 interface FlightReservationProps {
