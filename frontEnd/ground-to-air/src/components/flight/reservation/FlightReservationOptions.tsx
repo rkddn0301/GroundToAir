@@ -10,15 +10,27 @@ import styled from "styled-components";
 
 // FlightReservationOptions 컴포넌트 전체 구성
 const Banner = styled.div`
-  width: 100%;
+  width: 90%;
 `;
 
-// 항공편 정보 디자인
+// 항공편 전체 디자인
 const FlightInfo = styled.div`
   display: flex;
   gap: 10px;
+  margin-bottom: 10px;
+  justify-content: center;
 `;
 
+// 항공편 라인
+const AirlineInfoLine = styled.div`
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+`;
+
+// 나눔선 라인
 const DividingLine = styled.div`
   position: relative;
   height: 100%;
@@ -27,8 +39,29 @@ const DividingLine = styled.div`
   opacity: 50%;
 `;
 
+// 타임 라인
+const TimeLine = styled.div`
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
 // 대기시간 정보 디자인
-const DelayInfo = styled.div``;
+const DelayInfo = styled.div`
+  display: flex;
+  margin: 20px 0px 20px 0px;
+  justify-content: center;
+  gap: 10px;
+`;
+
+// 일정 라인
+const ScheduleLine = styled.div`
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+`;
 
 interface FlightReservationOptionsProps {
   segment: Segments;
@@ -127,14 +160,8 @@ function FlightReservationOptions({
   return (
     <Banner>
       <FlightInfo>
-        <div
-          style={{
-            width: "30%",
-            display: "flex",
-            flexDirection: "column",
-            gap: "5px",
-          }}
-        >
+        {/* 항공사 정보 구간 */}
+        <AirlineInfoLine>
           <div
             style={{
               display: "flex",
@@ -157,27 +184,54 @@ function FlightReservationOptions({
           {operatingCode !== validatingCode && (
             <div>실제운항 : {getCodeShare(operatingCode)}</div>
           )}
-        </div>
-        <div>
+        </AirlineInfoLine>
+        {/* 나눔선 구간 */}
+        <div style={{ marginRight: "10%" }}>
           <DividingLine />
         </div>
-        <div>
+
+        {/* 타임라인 구간 */}
+        <TimeLine>
+          <div>{departureTime}</div>
+          <div
+            style={{ fontSize: "15px", color: "skyblue", fontWeight: "600" }}
+          >
+            {duration} 소요
+          </div>
+          <div>{arrivalTime}</div>
+        </TimeLine>
+        {/* 일정 구간 */}
+        <ScheduleLine>
           <div>
-            {departureTime} {originLocationCode} {originLocationAirport}{" "}
+            {originLocationCode} {originLocationAirport}{" "}
             {originLocationTerminal}
           </div>
-          <div>{duration}</div>
+
           <div>
-            {arrivalTime} {destinationLocationCode} {destinationLocationAirport}{" "}
+            {destinationLocationCode} {destinationLocationAirport}{" "}
             {destinationLocationTerminal}
           </div>
-        </div>
+        </ScheduleLine>
       </FlightInfo>
       {/* 경유지가 존재할 시 대기시간을 기재한다. */}
       {nextSegment && (
         <DelayInfo>
-          {formatDelayTime(segment.arrival?.at, nextSegment?.departure?.at)}{" "}
-          대기
+          <div style={{ width: "25%" }}></div>
+          <div style={{ marginRight: "10%" }}>
+            <DividingLine />
+          </div>
+          <div
+            style={{
+              width: "20%",
+              fontSize: "15px",
+              color: "skyblue",
+              fontWeight: "900",
+            }}
+          >
+            {formatDelayTime(segment.arrival?.at, nextSegment?.departure?.at)}{" "}
+            대기
+          </div>
+          <div style={{ width: "35%" }}></div>
         </DelayInfo>
       )}
     </Banner>

@@ -9,8 +9,6 @@ import {
 } from "../../../utils/api";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import KakaoPayment from "../../payment/KakaoPayment";
-import TossPayment from "../../payment/TossPayment";
 import { motion } from "framer-motion";
 import FlightReservationResult from "./FlightReservationResult";
 
@@ -53,6 +51,31 @@ const DetailList = styled.div`
   margin: 0 auto;
   border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 8px;
+`;
+
+// 버튼 전체 구성
+const ButtonGroup = styled.div`
+  margin-top: 10px;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+`;
+
+// 버튼 디자인 구성
+const ChoiceButton = styled.button`
+  background-color: skyblue;
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  width: 25%;
+  padding: 15px 5px 15px 5px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
 `;
 
 interface FlightReservationProps {
@@ -144,31 +167,30 @@ function FlightReservation() {
         <DetailList>
           {flightPrice.data.flightOffers.map(
             (pricing: FlightPricing, index) => (
-              <>
-                <FlightReservationResult
-                  key={index}
-                  pricing={pricing}
-                  offer={offer}
-                  airlineCodeOffers={airlineCodeOffers}
-                  iataCodeOffers={iataCodeOffers}
-                />
-              </>
+              <FlightReservationResult
+                key={index}
+                pricing={pricing}
+                offer={offer}
+                airlineCodeOffers={airlineCodeOffers}
+                iataCodeOffers={iataCodeOffers}
+              />
             )
           )}
 
-          {/*       <KakaoPayment />
-          <TossPayment /> */}
-          <div>
-            <button onClick={() => history.goBack()}>이전으로</button>
+          <ButtonGroup>
+            <ChoiceButton onClick={() => history.goBack()}>
+              이전으로
+            </ChoiceButton>
             <Link
               to={{
                 pathname: `/flightReservation/${offer?.id}/traveler`,
                 state: { offer },
               }}
+              style={{ display: "flex", width: "25%" }}
             >
-              <button>다음으로</button>
+              <ChoiceButton style={{ width: "100%" }}>다음으로</ChoiceButton>
             </Link>
-          </div>
+          </ButtonGroup>
         </DetailList>
       ) : (
         ""

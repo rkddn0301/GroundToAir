@@ -27,20 +27,105 @@ const Body = styled.div`
   margin-bottom: 10px;
 `;
 
-const Footer = styled.div``;
+// 푸터 디자인 구성
+const Footer = styled.div`
+  width: 80%;
+`;
+
+// 목적지
+const Destination = styled.div`
+  font-weight: 600;
+  font-size: 24px;
+`;
+
+// 탑승자 개요
+const TravelerOverview = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  font-size: 19px;
+`;
+
+// 출발시간
+const DepartureTimes = styled.div`
+  margin: 10px 0 10px;
+`;
 
 // 항공편 박스
 const FlightBox = styled.div`
   border: 2px dashed skyblue;
-  padding: 10px;
+  padding: 15px 10px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+`;
+
+// 종합결과
+const FlightSummary = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0px 5px 0px;
+  font-size: 14px;
+
+  span:nth-child(2) {
+    color: ${(props) => props.theme.white.font};
+  }
+`;
+
+// 팁 정보
+const TipInfo = styled.div`
+  margin-bottom: 10px;
+  opacity: 70%;
+  font-size: 14px;
+`;
+
+// 팁 제공 아이콘
+const Icon = styled.svg`
+  width: 16px;
+`;
+
+// 요금 정보
+const PriceInfo = styled.div`
+  border: 1px solid ${(props) => props.theme.black.font};
+  background-color: ${(props) => props.theme.black.bg};
+  padding: 5px;
+  color: ${(props) => props.theme.black.font};
+  opacity: 80%;
   display: flex;
   flex-direction: column;
   gap: 5px;
   margin-bottom: 10px;
 `;
 
-const Icon = styled.svg`
-  width: 18px;
+// 상세요금
+const DetailedPrice = styled.div`
+  width: 100%;
+  display: flex;
+  //justify-content: space-around;
+
+  span:first-child {
+    flex: 1;
+  }
+
+  span:nth-child(2) {
+    flex: 1;
+    text-align: left;
+    //transform: translateX(15%);
+  }
+
+  span:nth-child(3) {
+    flex: 1;
+    text-align: right;
+    //transform: translateX(50%);
+  }
+
+  span:last-child {
+    flex: 1;
+  }
 `;
 
 interface FlightReservationResultProps {
@@ -152,31 +237,24 @@ function FlightReservationResult({
   return (
     <>
       <Header>
-        <div style={{ fontWeight: "600", fontSize: "24px" }}>
+        <Destination>
           {/* 목적지 추출 : 도시명이 없다면 공항명으로 대체. */}
           {destination ? destination.cityKor ?? destination?.airportKor : ""}
-        </div>
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-evenly",
-            fontSize: "19px",
-          }}
-        >
+        </Destination>
+        <TravelerOverview>
           <div>인원 {peoples}명</div>
           <div>|</div>
           <div>{isRoundTrip}</div>
           <div>|</div>
           <div>{seatClass}</div>
-        </div>
+        </TravelerOverview>
       </Header>
       <Body>
         {/* 가는편 */}
-        <p style={{ margin: "10px 0 10px" }}>
+        <DepartureTimes>
           <span style={{ fontWeight: "600" }}>가는편 출발시간</span>{" "}
           {departureDate}
-        </p>
+        </DepartureTimes>
         <FlightBox>
           {pricing.itineraries[0]?.segments.map((segment, index) => (
             <FlightReservationOptions
@@ -187,18 +265,19 @@ function FlightReservationResult({
               nextSegment={pricing.itineraries[0]?.segments[index + 1]}
             />
           ))}
-          <p>
-            <span>도착 : {arrivalDate}</span>{" "}
+          <FlightSummary>
+            <span>도착시간 : {arrivalDate}</span>
+            <span> | </span>
             <span>총 소요시간 : {totalDuration}</span>
-          </p>
+          </FlightSummary>
         </FlightBox>
         {/* 오는편 */}
         {isRoundTrip === "왕복" && (
           <>
-            <p style={{ margin: "10px 0 10px" }}>
+            <DepartureTimes>
               <span style={{ fontWeight: "600" }}>오는편 출발시간</span>{" "}
               {returnDepartureDate}
-            </p>
+            </DepartureTimes>
             <FlightBox>
               {pricing.itineraries[1]?.segments.map((segment, index) => (
                 <FlightReservationOptions
@@ -209,18 +288,25 @@ function FlightReservationResult({
                   nextSegment={pricing.itineraries[1]?.segments[index + 1]}
                 />
               ))}
-              <p>
-                <span>도착 : {returnArrivalDate}</span>{" "}
+              <FlightSummary>
+                <span>도착시간 : {returnArrivalDate}</span>
+                <span> | </span>
                 <span>총 소요시간 : {returnTotalDuration}</span>
-              </p>{" "}
+              </FlightSummary>{" "}
             </FlightBox>
           </>
         )}
       </Body>
       <Footer>
         {/* 팁 정보 제공 */}
-        <div>
-          <p>
+        <TipInfo>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "flex-start",
+            }}
+          >
             <Icon
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -237,28 +323,36 @@ function FlightReservationResult({
             </Icon>
             유류할증료와 제세공과금은 환율 변동 및 항공사 사정에 따라 변경될 수
             있습니다.
-          </p>
-        </div>
+          </div>
+        </TipInfo>
 
         {/* 항공 요금 */}
-        <div>
-          <div>
-            <span>항공요금 X{peoples}</span>
+        <PriceInfo>
+          <DetailedPrice>
+            <span />
+            <span>항공요금 {peoples > 1 && `X ${peoples}`}</span>
             <span>{base}</span>
-          </div>
-          <div>
-            <span>유류할증료 X{peoples}</span>
+            <span />
+          </DetailedPrice>
+          <DetailedPrice>
+            <span />
+            <span>유류할증료 {peoples > 1 && `X ${peoples}`}</span>
             <span>{fuelSurcharge}</span>
-          </div>
-          <div>
-            <span>제세공과금 X{peoples}</span>
+            <span />
+          </DetailedPrice>
+          <DetailedPrice>
+            <span />
+            <span>제세공과금 {peoples > 1 && `X ${peoples}`}</span>
             <span>{taxFees}</span>
-          </div>
-          <div>
-            <span>총 금액 X{peoples}</span>
+            <span />
+          </DetailedPrice>
+          <DetailedPrice>
+            <span />
+            <span>총 금액 {peoples > 1 && `X ${peoples}`}</span>
             <span>{total}</span>
-          </div>
-        </div>
+            <span />
+          </DetailedPrice>
+        </PriceInfo>
       </Footer>
     </>
   );
