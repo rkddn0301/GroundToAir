@@ -4,8 +4,8 @@ import InfoBox from "../components/InfoBox";
 import Title from "../components/Title";
 import { useState } from "react";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
-import { useSetRecoilState } from "recoil";
+import { useHistory, useLocation } from "react-router-dom";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
@@ -112,10 +112,15 @@ function Login() {
     password: "",
   }); // 오류 메시지 표시 state
 
-  const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
+  const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
 
   const history = useHistory();
+  const location = useLocation();
+  const { data, from } =
+    (location.state as { data?: any; from?: string }) || {};
+
+  console.log(from);
 
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +188,15 @@ function Login() {
         setTokenExpiration(expirationTime);
         startSessionTimeout(expirationTime);
 
-        history.push("/");
+        const redirectTo = from || "/";
+
+        // push : 새로운 항목이 history에 추가되는 것이므로, 뒤로가기 했을 때 이전 location에 해당하는 'from' 기록이 남아있음.
+        // !!중요 replace : 기존 history에 새로운 history가 대체되는 것이므로, location에 해당하는 'from' 기록이 남아 있지 않음.
+        // 따라서 replace를 사용하면 history가 기존 기록을 대체하므로, from에 해당하는 값이 location.state에 남지 않아 ProtectedRoute 조건이 동작하지 않음
+        history.replace({
+          pathname: redirectTo,
+          state: { flightPrice: data },
+        });
       } else {
         Alert(
           "아이디 혹은 비밀번호가 잘못 입력되었습니다.<br>다시 확인해주십시오.",

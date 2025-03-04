@@ -63,34 +63,10 @@ export interface FlightPricing {
     includedCheckedBagsOnly: boolean; // 무료 위탁 수하물 포함 여부
   };
 
-  travelerPricings: {
-    travelerId: string; // 여행자 ID
-    fareOption: string; // 요금 옵션 EX) STANDARD
-    travelerType: string; // 여행자 유형 EX) ADULT
-    price: {
-      currency: string; // 표시되는 통화
-      total: string; // 총 요금
-      base: string; // 항공요금
-      taxes: {
-        amount: string; // 세금 금액
-        code: string; // 세금 코드 EX) SW, TK
-      }[]; // 세금 내역
-      refundableTaxes: string; // 환불 가능한 세금
-    };
-    fareDetailsBySegment: {
-      segmentId: string; // 구간 ID
-      cabin: SeatClass; // 좌석등급
-      fareBasis: string; // 요금 기준 코드
-      brandedFare: string; // 브랜드 요금명
-      class: string; // 예약 등급 EX) Q, V
-      includedCheckedBags: {
-        quantity: number; // 무료 위탁 수하물 개수
-      };
-    }[];
-    validatingAirlineCodes: string[]; // 판매 항공사
-  }[];
+  travelerPricings: travelerPricings[];
 }
 
+// 항공편 행선지 정보
 export interface Segments {
   departure: {
     // 출발지
@@ -114,6 +90,34 @@ export interface Segments {
     carrierCode?: string;
   }; // 실질적으로 운항하는 항공사
   numberOfStops: number; // 경유 횟수
+}
+
+// 탑승자 정보
+export interface travelerPricings {
+  travelerId: string; // 여행자 ID
+  fareOption: string; // 요금 옵션 EX) STANDARD
+  travelerType: string; // 여행자 유형 EX) ADULT
+  price: {
+    currency: string; // 표시되는 통화
+    total: string; // 총 요금
+    base: string; // 항공요금
+    taxes: {
+      amount: string; // 세금 금액
+      code: string; // 세금 코드 EX) SW, TK
+    }[]; // 세금 내역
+    refundableTaxes: string; // 환불 가능한 세금
+  };
+  fareDetailsBySegment: {
+    segmentId: string; // 구간 ID
+    cabin: SeatClass; // 좌석등급
+    fareBasis: string; // 요금 기준 코드
+    brandedFare: string; // 브랜드 요금명
+    class: string; // 예약 등급 EX) Q, V
+    includedCheckedBags: {
+      quantity: number; // 무료 위탁 수하물 개수
+    };
+  }[];
+  validatingAirlineCodes: string[]; // 판매 항공사
 }
 
 // 호텔

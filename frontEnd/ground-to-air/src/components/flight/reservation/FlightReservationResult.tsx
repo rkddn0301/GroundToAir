@@ -201,7 +201,7 @@ function FlightReservationResult({
     "\\" +
     new Intl.NumberFormat("ko-KR").format(
       pricing.travelerPricings.reduce((sum, traveler) => {
-        traveler.price.taxes.forEach((tax) => {
+        traveler.price.taxes?.forEach((tax) => {
           // code가 "YQ" 혹은 "YR" 일 경우 sum에 amount 값을 누적 계산함.
           if (tax.code === "YQ" || tax.code === "YR") {
             sum += parseFloat(tax.amount);
@@ -215,7 +215,7 @@ function FlightReservationResult({
     "\\" +
     new Intl.NumberFormat("ko-KR").format(
       pricing.travelerPricings.reduce((sum, traveler) => {
-        traveler.price.taxes.forEach((tax) => {
+        traveler.price.taxes?.forEach((tax) => {
           // code 중 "YQ","YR"를 제외한 모든 amount 값을 sum에 누적 계산함.
           if (tax.code !== "YQ" && tax.code !== "YR") {
             sum += parseFloat(tax.amount);

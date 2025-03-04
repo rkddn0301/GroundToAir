@@ -11,6 +11,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import FlightReservationResult from "./FlightReservationResult";
+import { useRecoilValue } from "recoil";
+import { isLoggedInState } from "../../../utils/atom";
+import { Confirm } from "../../../utils/sweetAlert";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -85,6 +88,8 @@ interface FlightReservationProps {
 }
 
 function FlightReservation() {
+  const isLoggedIn = useRecoilValue(isLoggedInState);
+
   const location = useLocation<{ offer?: FlightOffer }>();
   const { offer } = location.state;
 
@@ -141,12 +146,40 @@ function FlightReservation() {
         }
       );
       if (response.data) {
+        console.log(response.data);
         setFlightPrice(response.data);
       }
     } catch (error) {
       console.error("예약 상세 데이터 가져오기 실패 : ", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // '다음으로' 클릭 시 동작하는 함수
+  const nextClick = async () => {
+    if (!isLoggedIn) {
+      const nextConfirm = await Confirm(
+        "비회원으로 예약하시겠습니까?",
+        "question"
+      );
+
+      if (nextConfirm.isConfirmed) {
+        history.push({
+          pathname: `/flightReservation/${offer?.id}/traveler`,
+          state: { flightPrice },
+        });
+      } else {
+        history.push({
+          pathname: "/login",
+          state: { data: flightPrice, from: `${location.pathname}/traveler` },
+        });
+      }
+    } else {
+      history.push({
+        pathname: `/flightReservation/${offer?.id}/traveler`,
+        state: { flightPrice },
+      });
     }
   };
 
@@ -181,15 +214,7 @@ function FlightReservation() {
             <ChoiceButton onClick={() => history.goBack()}>
               이전으로
             </ChoiceButton>
-            <Link
-              to={{
-                pathname: `/flightReservation/${offer?.id}/traveler`,
-                state: { offer },
-              }}
-              style={{ display: "flex", width: "25%" }}
-            >
-              <ChoiceButton style={{ width: "100%" }}>다음으로</ChoiceButton>
-            </Link>
+            <ChoiceButton onClick={nextClick}>다음으로</ChoiceButton>
           </ButtonGroup>
         </DetailList>
       ) : (
