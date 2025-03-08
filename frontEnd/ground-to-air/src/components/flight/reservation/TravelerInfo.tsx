@@ -65,21 +65,21 @@ interface TravelerInfoProps {
 function TravelerInfo() {
   const isLoggedIn = useRecoilValue(isLoggedInState);
 
-  const location = useLocation<{ flightPrice?: TravelerInfoProps }>();
-  const { flightPrice } = location.state || {};
+  const location = useLocation<{ data?: TravelerInfoProps }>();
+  const { data } = location.state || {};
 
   const history = useHistory();
 
   useEffect(() => {
-    if (flightPrice) {
-      console.log(flightPrice);
+    if (data) {
+      console.log(data);
     }
-  }, [flightPrice]);
+  }, [data]);
 
   return (
     <Container>
       <DetailList>
-        {flightPrice?.data.flightOffers.map(
+        {data?.data.flightOffers.map(
           (priceOffers: FlightPricing, index: number) => (
             <div key={index} style={{ display: "flex" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>

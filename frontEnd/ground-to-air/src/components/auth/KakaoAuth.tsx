@@ -47,8 +47,6 @@ function KakaoAuth(props: {
 }) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
-  const history = useHistory();
-
   // 타사인증을 통해 필요한 데이터를 가져옴
   const setSocialId = useSetRecoilState(socialId);
   const setFederationAccessToken = useSetRecoilState(federationAccessToken);
@@ -96,8 +94,6 @@ function KakaoAuth(props: {
 
         setTokenExpiration(expirationTime);
         startSessionTimeout(expirationTime);
-
-        history.push("/");
       }
     } catch (error) {
       console.error("인증 도중 오류:", error);

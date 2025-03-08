@@ -11,7 +11,6 @@ import {
   tokenExpirationTime,
 } from "../../utils/atom";
 import { startSessionTimeout } from "../../utils/jwtActivityTimer";
-import { useHistory } from "react-router-dom";
 
 // GoogleAuth 전체 컴포넌트 구성
 const Btn = styled.button<{
@@ -47,7 +46,6 @@ function GoogleAuth(props: {
 }) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
-  const history = useHistory();
 
   // 타사인증을 통해 필요한 데이터를 가져옴
   const setSocialId = useSetRecoilState(socialId);
@@ -97,8 +95,6 @@ function GoogleAuth(props: {
 
         setTokenExpiration(expirationTime);
         startSessionTimeout(expirationTime);
-
-        history.push("/");
       }
     } catch (error) {
       console.error("인증 도중 오류: ", error);

@@ -2,15 +2,18 @@
 import styled from "styled-components";
 import InfoBox from "../components/InfoBox";
 import Title from "../components/Title";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory, useLocation } from "react-router-dom";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
+
+import CryptoJS from "crypto-js";
 import KakaoAuth from "../components/auth/KakaoAuth";
 import GoogleAuth from "../components/auth/GoogleAuth";
+import { encryptionKey } from "./FlightSearch";
 
 // Login 전체 컴포넌트 구성
 const Container = styled.div`
@@ -116,11 +119,52 @@ function Login() {
   const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
 
   const history = useHistory();
-  const location = useLocation();
-  const { data, from } =
-    (location.state as { data?: any; from?: string }) || {};
 
-  console.log(from);
+  const location = useLocation();
+  const { data = {}, redirection } = (location.state as {
+    data: any;
+    redirection: string;
+  }) || {
+    data: {},
+    redirection: "",
+  };
+
+  // A 페이지에서 인증 후 B 페이지로 이동을 시도할 때 동작.
+  useEffect(() => {
+    if (redirection) {
+      localStorage.setItem("redirection", redirection);
+      localStorage.setItem("data", JSON.stringify(data));
+    }
+  }, []);
+
+  // 로그인 후 다른 페이지로 리다이렉트 될 때 올바른 경로로 전달하기 위한 hook
+  useEffect(() => {
+    if (isLoggedIn) {
+      const redirectTo =
+        CryptoJS.AES.decrypt(
+          localStorage.getItem("redirection") || "",
+          encryptionKey
+        ).toString(CryptoJS.enc.Utf8) || "/";
+      const storedData = CryptoJS.AES.decrypt(
+        localStorage.getItem("data") || "",
+        encryptionKey
+      ).toString(CryptoJS.enc.Utf8);
+      const parsedData = storedData ? JSON.parse(storedData) : {};
+
+      setTimeout(() => {
+        localStorage.removeItem("redirection");
+        localStorage.removeItem("data");
+      }, 100);
+
+      history.push({
+        pathname: redirectTo,
+        state:
+          parsedData && Object.keys(parsedData).length
+            ? { data: parsedData }
+            : {},
+      });
+    }
+  }, [isLoggedIn]);
 
   // 아이디 입력란 변경 시 동작
   const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,16 +231,6 @@ function Login() {
 
         setTokenExpiration(expirationTime);
         startSessionTimeout(expirationTime);
-
-        const redirectTo = from || "/";
-
-        // push : 새로운 항목이 history에 추가되는 것이므로, 뒤로가기 했을 때 이전 location에 해당하는 'from' 기록이 남아있음.
-        // !!중요 replace : 기존 history에 새로운 history가 대체되는 것이므로, location에 해당하는 'from' 기록이 남아 있지 않음.
-        // 따라서 replace를 사용하면 history가 기존 기록을 대체하므로, from에 해당하는 값이 location.state에 남지 않아 ProtectedRoute 조건이 동작하지 않음
-        history.replace({
-          pathname: redirectTo,
-          state: { flightPrice: data },
-        });
       } else {
         Alert(
           "아이디 혹은 비밀번호가 잘못 입력되었습니다.<br>다시 확인해주십시오.",

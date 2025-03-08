@@ -7,6 +7,7 @@ import {
   FlightPricing,
   IataCodes,
 } from "../../../utils/api";
+import CryptoJS from "crypto-js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -14,6 +15,7 @@ import FlightReservationResult from "./FlightReservationResult";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
 import { Confirm } from "../../../utils/sweetAlert";
+import { encryptionKey } from "../../../router/FlightSearch";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -90,8 +92,8 @@ interface FlightReservationProps {
 function FlightReservation() {
   const isLoggedIn = useRecoilValue(isLoggedInState);
 
-  const location = useLocation<{ offer?: FlightOffer }>();
-  const { offer } = location.state;
+  const location = useLocation<{ data?: FlightOffer }>();
+  const { data } = location.state;
 
   const history = useHistory();
 
@@ -110,18 +112,24 @@ function FlightReservation() {
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
 
   useEffect(() => {
-    if (offer) {
-      console.log(offer);
+    if (data) {
+      console.log(data);
+
       airCodeFetch();
       checkflightPrice();
+      // 기존 데이터 유지
+      if (!isLoggedIn) {
+        localStorage.setItem(
+          "redirection",
+          CryptoJS.AES.encrypt(location.pathname, encryptionKey).toString()
+        );
+        localStorage.setItem(
+          "data",
+          CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString()
+        );
+      }
     }
-  }, [offer]);
-
-  useEffect(() => {
-    if (flightPrice) {
-      console.log(flightPrice);
-    }
-  }, [flightPrice]);
+  }, [data]);
 
   // 항공사 코드 추출 함수
   const airCodeFetch = async () => {
@@ -142,11 +150,10 @@ function FlightReservation() {
       const response = await axios.post(
         `http://localhost:8080/air/flightPrice`,
         {
-          flightOffers: offer,
+          flightOffers: data,
         }
       );
       if (response.data) {
-        console.log(response.data);
         setFlightPrice(response.data);
       }
     } catch (error) {
@@ -166,19 +173,22 @@ function FlightReservation() {
 
       if (nextConfirm.isConfirmed) {
         history.push({
-          pathname: `/flightReservation/${offer?.id}/traveler`,
-          state: { flightPrice },
+          pathname: `/flightReservation/${data?.id}/traveler`,
+          state: { data: flightPrice },
         });
       } else {
         history.push({
           pathname: "/login",
-          state: { data: flightPrice, from: `${location.pathname}/traveler` },
+          state: {
+            data: flightPrice,
+            redirection: `${location.pathname}/traveler`,
+          },
         });
       }
     } else {
       history.push({
-        pathname: `/flightReservation/${offer?.id}/traveler`,
-        state: { flightPrice },
+        pathname: `/flightReservation/${data?.id}/traveler`,
+        state: { data: flightPrice },
       });
     }
   };
@@ -203,7 +213,7 @@ function FlightReservation() {
               <FlightReservationResult
                 key={index}
                 pricing={pricing}
-                offer={offer}
+                offer={data}
                 airlineCodeOffers={airlineCodeOffers}
                 iataCodeOffers={iataCodeOffers}
               />

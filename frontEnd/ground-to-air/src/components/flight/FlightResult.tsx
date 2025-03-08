@@ -681,7 +681,7 @@ function FlightResult({
           <Link
             to={{
               pathname: `/flightReservation/${offer.id}`,
-              state: { offer },
+              state: { data: offer },
             }}
           >
             <ReservationBtn>예약하기</ReservationBtn>

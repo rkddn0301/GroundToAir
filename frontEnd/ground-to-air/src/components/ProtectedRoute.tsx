@@ -1,7 +1,7 @@
 // 로그인 여부에 따라 접근 경로를 지정해주는 컴포넌트
 
 import React from "react";
-import { Redirect, Route, RouteProps, useLocation } from "react-router-dom";
+import { Redirect, Route, RouteProps } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../utils/atom";
 
@@ -17,15 +17,10 @@ function ProtectedRoute({
   ...rest // 추가정의한 속성들을 제외한 RouteProps의 기본 탑재된 속성들을 전부 불러옴.
 }: ProtectedRouteProps) {
   const isLoggedIn = useRecoilValue(isLoggedInState); // isLoggedIn 상태 가져오기
-  const location = useLocation(); // 현재 위치 정보 가져오기
 
   // restricted가 true로 제어된 것은 로그인이 안된 사용자만 접근 가능한 페이지
-  // from : 로그인 후 리다이렉트될 원래 경로를 나타내며, 자세한 내용은 Login.tsx에서 확인 가능.
-  if (
-    restricted &&
-    isLoggedIn &&
-    !(location.state as { from?: string })?.from
-  ) {
+  // redirectection : 로그인 후 리다이렉트될 원래 경로를 나타내며, 자세한 내용은 Login.tsx에서 확인 가능.
+  if (restricted && isLoggedIn && !localStorage.getItem("redirection")) {
     // 로그인이 된 상태에서 로그인/회원가입 관련 페이지에 접근하면 메인 페이지로 이동
     return <Redirect to="/" />;
   }

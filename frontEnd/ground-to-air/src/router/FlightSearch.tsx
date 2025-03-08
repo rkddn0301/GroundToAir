@@ -15,6 +15,9 @@ import FlightFiltering from "../components/flight/FlightFiltering";
 import { Alert } from "../utils/sweetAlert";
 
 import CryptoJS from "crypto-js";
+import { isLoggedInState } from "../utils/atom";
+import { useRecoilValue } from "recoil";
+import { useLocation } from "react-router-dom";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -295,9 +298,12 @@ export interface FlightOffersResponse {
   };
 }
 
-const encryptionKey = process.env.REACT_APP_FLIGHT_DATA_SECRET_KEY || ""; // 이전 항공 데이터 암호화 키
+export const encryptionKey = process.env.REACT_APP_FLIGHT_DATA_SECRET_KEY || ""; // 이전 항공 데이터 암호화 키
 
 function FlightSearch() {
+  const isLoggedIn = useRecoilValue(isLoggedInState);
+  const location = useLocation();
+
   const [inputData, setInputData] = useState({
     originLocationCode: "", // 출발지
     destinationLocationCode: "", // 도착지
@@ -473,6 +479,18 @@ function FlightSearch() {
 
   // 초기 렌더링 시 조건에 따라 기능 적용
   useEffect(() => {
+    // 기존 데이터 유지
+    if (!isLoggedIn) {
+      localStorage.setItem(
+        "redirection",
+        CryptoJS.AES.encrypt(location.pathname, encryptionKey).toString()
+      );
+      localStorage.setItem(
+        "data",
+        CryptoJS.AES.encrypt(JSON.stringify({}), encryptionKey).toString()
+      );
+    }
+
     airCodeFetch(); // 항공 코드 데이터 저장
 
     // 유지 할 검색 데이터가 존재 할 경우
