@@ -132,8 +132,14 @@ function Login() {
   // A 페이지에서 인증 후 B 페이지로 이동을 시도할 때 동작.
   useEffect(() => {
     if (redirection) {
-      localStorage.setItem("redirection", redirection);
-      localStorage.setItem("data", JSON.stringify(data));
+      localStorage.setItem(
+        "redirection",
+        CryptoJS.AES.encrypt(redirection, encryptionKey).toString()
+      );
+      localStorage.setItem(
+        "data",
+        CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString()
+      );
     }
   }, []);
 

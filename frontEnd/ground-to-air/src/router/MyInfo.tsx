@@ -979,7 +979,7 @@ function MyInfo() {
               </HalfField>
             </HalfFields>
             <Field>
-              <Label>생년월일</Label>
+              <Label htmlFor="birth">생년월일</Label>
               <CalendarInput>
                 <DatePicker
                   selected={inputData.birth ? new Date(inputData.birth) : null}

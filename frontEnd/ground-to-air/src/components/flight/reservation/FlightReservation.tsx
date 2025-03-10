@@ -15,7 +15,6 @@ import FlightReservationResult from "./FlightReservationResult";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
 import { Confirm } from "../../../utils/sweetAlert";
-import { encryptionKey } from "../../../router/FlightSearch";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -117,17 +116,6 @@ function FlightReservation() {
 
       airCodeFetch();
       checkflightPrice();
-      // 기존 데이터 유지
-      if (!isLoggedIn) {
-        localStorage.setItem(
-          "redirection",
-          CryptoJS.AES.encrypt(location.pathname, encryptionKey).toString()
-        );
-        localStorage.setItem(
-          "data",
-          CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString()
-        );
-      }
     }
   }, [data]);
 

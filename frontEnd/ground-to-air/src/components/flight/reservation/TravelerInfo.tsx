@@ -2,11 +2,12 @@
 
 import { useHistory, useLocation } from "react-router-dom";
 import { FlightPricing } from "../../../utils/api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import TravelerInfoWrite from "./TravelerInfoWrite";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
+import axios from "axios";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -62,6 +63,26 @@ interface TravelerInfoProps {
   };
 }
 
+// 탑승자 정보 입력란 타입
+export interface InputData {
+  userEngFN: string; // 성(영문)
+  userEngLN: string; // 명(영문)
+  birth: string; // 생년월일
+  gender: string; // 성별
+  passportNo: string; // 여권번호
+  nationality: string; // 국적
+  passportExDate: string; // 여권만료일
+  passportCOI: string; // 여권발행국
+  email: string; // 이메일
+}
+
+// 국적, 여권발행국 Select 값
+export interface CountryCodeProps {
+  codeNo: number;
+  country: string;
+  countryKor: string;
+}
+
 function TravelerInfo() {
   const isLoggedIn = useRecoilValue(isLoggedInState);
 
@@ -70,11 +91,25 @@ function TravelerInfo() {
 
   const history = useHistory();
 
+  const [inputData, setInputData] = useState<{ [key: number]: InputData }>({}); // input 입력 state
+  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 state
+
   useEffect(() => {
-    if (data) {
-      console.log(data);
+    countryCode();
+  }, []);
+
+  useEffect(() => {
+    if (inputData) {
+      console.log(inputData);
     }
-  }, [data]);
+  }, [inputData]);
+
+  // 국적 데이터 가져오기
+  const countryCode = async () => {
+    const response = await axios.get(`http://localhost:8080/country/code`);
+
+    setCountryCodes(response.data);
+  };
 
   return (
     <Container>
@@ -83,12 +118,30 @@ function TravelerInfo() {
           (priceOffers: FlightPricing, index: number) => (
             <div key={index} style={{ display: "flex" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                {priceOffers.travelerPricings.map((travelerPricings, index) => (
-                  <TravelerInfoWrite
-                    key={index}
-                    travelerPricings={travelerPricings}
-                  />
-                ))}
+                {priceOffers.travelerPricings.map(
+                  (travelerPricings, index: number) => (
+                    <TravelerInfoWrite
+                      key={index}
+                      index={index}
+                      travelerPricings={travelerPricings}
+                      inputData={
+                        inputData[index] || {
+                          userEngFN: "",
+                          userEngLN: "",
+                          birth: "",
+                          gender: "",
+                          passportNo: "",
+                          nationality: "",
+                          passportExDate: "",
+                          passportCOI: "",
+                          email: "",
+                        }
+                      }
+                      setInputData={setInputData}
+                      countryCodes={countryCodes}
+                    />
+                  )
+                )}
               </div>
 
               {isLoggedIn && (
