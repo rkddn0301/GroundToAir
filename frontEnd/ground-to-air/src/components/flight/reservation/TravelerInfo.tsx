@@ -92,11 +92,37 @@ function TravelerInfo() {
   const history = useHistory();
 
   const [inputData, setInputData] = useState<{ [key: number]: InputData }>({}); // input 입력 state
+  const [booker, setBooker] = useState(false); // 예약자 정보 자동 입력 state
+
   const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 state
 
+  // 초기 렌더링 동작
   useEffect(() => {
     countryCode();
   }, []);
+
+  // 예약자와 동일 체크 여부
+  useEffect(() => {
+    if (booker) {
+      bookerInfoCopy();
+    } else {
+      setInputData((prevState) => ({
+        ...prevState,
+        [0]: {
+          ...prevState[0],
+          userEngFN: "", // 성
+          userEngLN: "", // 명
+          birth: "",
+          gender: "",
+          passportNo: "",
+          nationality: "",
+          passportExDate: "",
+          passportCOI: "",
+          email: "",
+        },
+      }));
+    }
+  }, [booker]);
 
   useEffect(() => {
     if (inputData) {
@@ -109,6 +135,60 @@ function TravelerInfo() {
     const response = await axios.get(`http://localhost:8080/country/code`);
 
     setCountryCodes(response.data);
+  };
+
+  // 예약자 정보 자동 입력 함수
+  const bookerInfoCopy = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) return; // 기존 리프레시 토큰이 없으면 로그아웃
+
+    try {
+      const response = await axios.post<{
+        userNo: string;
+        userId: string;
+        userName: string;
+        birth: string;
+        gender: string;
+        email: string;
+
+        passportNo: string;
+        passportUserEngName: string;
+        nationality: string;
+        passportExpirationDate: string;
+        passportCountryOfIssue: string;
+
+        socialType: string;
+      }>(
+        "http://localhost:8080/user/myInfo",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`,
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      // 입력용 데이터 삽입
+      setInputData((prevState) => ({
+        ...prevState, // 기존 상태 유지
+        [0]: {
+          ...prevState[0],
+          userEngFN: response.data.passportUserEngName.split(" ")[0] || "", // 성
+          userEngLN: response.data.passportUserEngName.split(" ")[1] || "", // 명
+          birth: response.data.birth || "",
+          gender: response.data.gender || "",
+          passportNo: response.data.passportNo || "",
+          nationality: response.data.nationality || "",
+          passportExDate: response.data.passportExpirationDate || "",
+          passportCOI: response.data.passportCountryOfIssue || "",
+          email: response.data.email || "",
+        },
+      }));
+    } catch (error) {
+      console.error("개인정보 추출 실패 : ", error);
+    }
   };
 
   return (
@@ -139,6 +219,7 @@ function TravelerInfo() {
                       }
                       setInputData={setInputData}
                       countryCodes={countryCodes}
+                      booker={booker}
                     />
                   )
                 )}
@@ -146,7 +227,10 @@ function TravelerInfo() {
 
               {isLoggedIn && (
                 <div>
-                  <input type="checkBox" />
+                  <input
+                    type="checkBox"
+                    onClick={() => setBooker((prev) => !prev)}
+                  />
                   예약자와 동일
                 </div>
               )}

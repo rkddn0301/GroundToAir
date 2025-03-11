@@ -147,7 +147,8 @@ interface TravelerInfoWriteProps {
   setInputData: React.Dispatch<
     React.SetStateAction<{ [key: number]: InputData }>
   >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
-  countryCodes: CountryCodeProps[];
+  countryCodes: CountryCodeProps[]; // 국적 데이터
+  booker: boolean; // 예약자와 동일 체크 여부
 }
 
 function TravelerInfoWrite({
@@ -156,6 +157,7 @@ function TravelerInfoWrite({
   inputData,
   setInputData,
   countryCodes,
+  booker,
 }: TravelerInfoWriteProps) {
   // 정보 입력 함수
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -261,6 +263,7 @@ function TravelerInfoWrite({
                   name="gender"
                   value="M"
                   onChange={handleChange}
+                  checked={inputData.gender === "M"}
                 />{" "}
                 남
               </label>
@@ -270,6 +273,7 @@ function TravelerInfoWrite({
                   name="gender"
                   value="F"
                   onChange={handleChange}
+                  checked={inputData.gender === "F"}
                 />{" "}
                 여
               </label>
@@ -279,6 +283,7 @@ function TravelerInfoWrite({
                   name="gender"
                   value="N"
                   onChange={handleChange}
+                  checked={inputData.gender === "N"}
                 />{" "}
                 비공개
               </label>
@@ -378,7 +383,7 @@ function TravelerInfoWrite({
               id="email"
               name="email"
               placeholder="gildong1231@email.com"
-              value={inputData.email}
+              value={inputData.email || ""}
               onChange={handleChange}
               minLength={1}
               maxLength={30}
