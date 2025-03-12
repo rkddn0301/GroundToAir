@@ -34,7 +34,7 @@ const Form = styled.form`
   gap: 15px;
 `;
 
-// 카드 구분별 제목 디자인 구성
+// 제목 디자인 구성
 const MainTitle = styled.h3`
   color: ${(props) => props.theme.white.font};
   font-size: 25px;
@@ -148,7 +148,10 @@ interface TravelerInfoWriteProps {
     React.SetStateAction<{ [key: number]: InputData }>
   >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
   countryCodes: CountryCodeProps[]; // 국적 데이터
-  booker: boolean; // 예약자와 동일 체크 여부
+  errorMsg: InputData;
+  setErrorMsg: React.Dispatch<
+    React.SetStateAction<{ [key: number]: InputData }>
+  >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
 }
 
 function TravelerInfoWrite({
@@ -157,7 +160,8 @@ function TravelerInfoWrite({
   inputData,
   setInputData,
   countryCodes,
-  booker,
+  errorMsg,
+  setErrorMsg,
 }: TravelerInfoWriteProps) {
   // 정보 입력 함수
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +170,41 @@ function TravelerInfoWrite({
       ...prevState,
       [index]: { ...prevState[index], [name]: value },
     }));
+    // 성(영문) 입력
+    if (name === "userEngFN") {
+      setInputData((prevState) => ({
+        ...prevState,
+        [index]: {
+          ...prevState[index],
+          userEngFN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+        },
+      }));
+    }
+
+    // 명(영문) 입력
+    else if (name === "userEngLN") {
+      setInputData((prevState) => ({
+        ...prevState,
+        [index]: {
+          ...prevState[index],
+          userEngLN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+        },
+      }));
+    }
+
+    // 여권번호 입력
+    else if (name === "passportNo") {
+      setInputData((prevState) => ({
+        ...prevState,
+        [index]: {
+          ...prevState[index],
+          passportNo: value,
+          nationality: value === "" ? "" : prevState[index].nationality,
+          passportExDate: value === "" ? "" : prevState[index].passportExDate,
+          passportCOI: value === "" ? "" : prevState[index].passportCOI,
+        },
+      }));
+    }
   };
 
   // 달력 입력 함수
@@ -230,6 +269,7 @@ function TravelerInfoWrite({
             />
           </HalfField>
         </HalfFields>
+        {errorMsg.userEngFN && <GuideLine>{errorMsg.userEngFN}</GuideLine>}
         <HalfFields>
           <HalfField>
             <Label htmlFor="birth">생년월일</Label>
