@@ -32,6 +32,14 @@ const DetailList = styled.div`
   border-radius: 8px;
 `;
 
+// 강조 혹은 작성 오류 안내 메시지 디자인 구성
+const GuideLine = styled.div`
+  color: ${(props) => props.theme.white.warning};
+  font-size: 11px;
+  display: flex;
+  justify-content: center;
+`;
+
 // 제목 디자인 구성
 const MainTitle = styled.h3`
   color: ${(props) => props.theme.white.font};
@@ -44,6 +52,10 @@ const HalfFields = styled.div`
   width: 80%;
   display: flex;
   justify-content: space-between;
+`;
+
+const HalfLine = styled.div`
+  width: 45%;
 `;
 
 // 작은 크기 작성란 구분 디자인 구성
@@ -102,11 +114,13 @@ const ChoiceButton = styled.button`
   width: 25%;
   padding: 15px 5px 15px 5px;
   border-radius: 10px;
-  cursor: pointer;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
   &:hover {
-    background-color: ${(props) => props.theme.black.bg};
-    color: ${(props) => props.theme.black.font};
+    background-color: ${(props) =>
+      props.disabled ? "skyblue" : props.theme.black.bg};
+    color: ${(props) =>
+      props.disabled ? props.theme.white.font : props.theme.black.font};
   }
 `;
 
@@ -153,6 +167,11 @@ function TravelerInfo() {
     phoneNumber: "", // 연락처
     emergencyNumber: "", // 비상연락처
   }); // 연락처 상세정보 입력 state
+  const [contactErrorMsg, setContactErrorMsg] = useState({
+    userName: "", // 성명
+    phoneNumber: "", // 연락처
+    emergencyNumber: "", // 비상연락처
+  }); // 연락처 상세정보 오류 state
 
   const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 state
 
@@ -181,6 +200,10 @@ function TravelerInfo() {
   // data가 존재할 시 초기 인원 수에 맞게 데이터 초기화
   useEffect(() => {
     if (data) {
+      console.log(data);
+      console.log(
+        data.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure.at
+      );
       const travelerPricings = data?.data.flightOffers[0].travelerPricings; // 인원 수
 
       // inputData를 배열로 초기화
@@ -222,6 +245,30 @@ function TravelerInfo() {
       }));
     }
   }, [booker]);
+
+  // 오류 메시지 적용 필드
+  // !!!!(typeof inputData)[number]는 inputData 배열 요소의 타입을 가져오고,
+  // keyof는 그 요소 안의 가능한 키(userEngFN 등)를 가져온다.
+  // 이렇게 쓰는 이유는 배열 요소 안의 키를 확실히 추론할 수 없기 때문에 타입을 명확히 제한하려는 목적임.
+  const validateField = (
+    index: number,
+    field: keyof (typeof inputData)[number],
+    message: string
+  ) => {
+    let isError = false;
+    if (inputData[index][field] === "") {
+      // 오류 메시지가 입력되기 전에 isError를 true로 설정
+      isError = true;
+    }
+    setErrorMsg((prevErrorMsg) => ({
+      ...prevErrorMsg,
+      [index]: {
+        ...prevErrorMsg[index],
+        [field]: inputData[index][field] === "" ? message : "",
+      },
+    }));
+    return isError;
+  };
 
   // 국적 데이터 가져오기
   const countryCode = async () => {
@@ -362,34 +409,144 @@ function TravelerInfo() {
   // 결제 진행 함수
   const proceedToPayment = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("결제 진행 함수 클릭됨");
 
     let isError = false;
+    const departureDate =
+      data?.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure.at ||
+      "";
 
-    // inputData의 모든 key에 대해 확인
+    /* 탑승자 정보 */
+    // ! for-in은 객체의 key를 순회하기에 적합함
     for (const key in inputData) {
       const index = parseInt(key);
 
-      // userEngFN이 비어있으면 오류 메시지 추가
-      if (inputData[index].userEngFN === "") {
-        setErrorMsg((prevErrorMsg) => ({
-          ...prevErrorMsg,
+      isError =
+        validateField(index, "userEngFN", "성(영문)을 입력해주세요.") ||
+        isError;
+      isError =
+        validateField(index, "userEngLN", "명(영문)을 입력해주세요.") ||
+        isError;
+      isError =
+        validateField(index, "birth", "생년월일을 선택해주세요.") || isError;
+      isError =
+        validateField(index, "gender", "성별을 선택해주세요.") || isError;
+      isError =
+        validateField(index, "passportNo", "여권번호를 입력해주세요.") ||
+        isError;
+      isError =
+        validateField(index, "nationality", "국적을 선택해주세요.") || isError;
+      isError =
+        validateField(index, "passportExDate", "여권만료일을 선택해주세요.") ||
+        isError;
+      isError =
+        validateField(index, "passportCOI", "여권발행국을 선택해주세요.") ||
+        isError;
+      isError =
+        validateField(index, "email", "이메일을 입력해주세요.") || isError;
+
+      // 추가적인 예외 검증
+
+      const traveler = inputData[index];
+
+      // 영문명 검증
+      if (traveler.userEngFN && traveler.userEngFN?.length < 2) {
+        isError = true;
+        setErrorMsg((prev) => ({
+          ...prev,
           [index]: {
-            ...prevErrorMsg[index], // 기존 오류 메시지를 유지
-            userEngFN: "성(영문)을 입력해주세요.", // 오류 메시지 추가
-          },
-        }));
-        isError = true; // 오류가 있으면 isError를 true로 설정
-      } else {
-        setErrorMsg((prevErrorMsg) => ({
-          ...prevErrorMsg,
-          [index]: {
-            ...prevErrorMsg[index], // 기존 오류 메시지를 유지
-            userEngFN: "", // 오류 메시지 제거
+            ...prev[index],
+            userEngFN: "영문 성은 최소 2글자 이상이어야 합니다.",
           },
         }));
       }
+
+      if (traveler.userEngLN && traveler.userEngLN?.length < 2) {
+        isError = true;
+        setErrorMsg((prev) => ({
+          ...prev,
+          [index]: {
+            ...prev[index],
+            userEngLN: "영문 이름은 최소 2글자 이상이어야 합니다.",
+          },
+        }));
+      }
+
+      // 여권번호 검증 (6글자 이상)
+      if (traveler.passportNo && traveler.passportNo?.length < 6) {
+        isError = true;
+        setErrorMsg((prev) => ({
+          ...prev,
+          [index]: {
+            ...prev[index],
+            passportNo: "여권번호는 최소 6글자여야 합니다.",
+          },
+        }));
+      }
+
+      // 이메일 검증 (형식 맞는지)
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,4}$/;
+      if (traveler.email && !emailRegex.test(traveler.email)) {
+        isError = true;
+        setErrorMsg((prev) => ({
+          ...prev,
+          [index]: {
+            ...prev[index],
+            email: "이메일 형식이 잘못되었습니다.",
+          },
+        }));
+      }
+
+      // 여권 만료일 검증
+      if (traveler.passportExDate) {
+        const passportExDate = new Date(traveler.passportExDate); // 여권 만료일
+        const departure = new Date(departureDate); // 출발일
+
+        const sixMonthsLater = new Date(
+          departure.setMonth(departure.getMonth() + 6)
+        ); // 출발일 기준 6개월 후
+
+        if (passportExDate < sixMonthsLater) {
+          isError = true;
+          setErrorMsg((prev) => ({
+            ...prev,
+            [index]: {
+              ...prev[index],
+              passportExDate: "여권 만료일이 출발일 기준으로 6개월 미만입니다.",
+            },
+          }));
+        }
+      }
     }
+
+    /* 연락처 상세정보 */
+
+    setContactErrorMsg((prevErrorMsg) => ({
+      ...prevErrorMsg,
+      userName: !contactData.userName ? "성명을 입력해주세요." : "",
+      phoneNumber: !contactData.phoneNumber ? "연락처를 입력해주세요." : "",
+      emergencyNumber: !contactData.emergencyNumber
+        ? "비상연락처를 입력해주세요."
+        : "",
+    }));
+    // contactData가 비어있는 경우 isError를 true로 설정
+    if (
+      !contactData?.userName ||
+      !contactData?.phoneNumber ||
+      !contactData?.emergencyNumber
+    ) {
+      isError = true;
+    }
+
+    // 성명 검증
+    if (contactData.userName && contactData.userName?.length < 2) {
+      isError = true;
+      setContactErrorMsg((prevErrorMsg) => ({
+        ...prevErrorMsg,
+        userName: "성명은 최소 2글자 이상이어야 합니다.",
+      }));
+    }
+
+    /* 동의항목 */
 
     // 오류가 있으면 결제 진행을 중단
     if (isError) {
@@ -508,6 +665,27 @@ function TravelerInfo() {
             />
           </HalfField>
         </HalfFields>
+        {(contactErrorMsg.userName ||
+          contactErrorMsg.phoneNumber ||
+          contactErrorMsg.emergencyNumber) && (
+          <HalfFields>
+            <HalfLine>
+              {contactErrorMsg.userName && (
+                <GuideLine>{contactErrorMsg.userName}</GuideLine>
+              )}
+            </HalfLine>
+            <HalfLine>
+              {contactErrorMsg.phoneNumber && (
+                <GuideLine>{contactErrorMsg.phoneNumber}</GuideLine>
+              )}
+            </HalfLine>
+            <HalfLine>
+              {contactErrorMsg.emergencyNumber && (
+                <GuideLine>{contactErrorMsg.emergencyNumber}</GuideLine>
+              )}
+            </HalfLine>
+          </HalfFields>
+        )}
 
         {/* 동의항목 */}
         <div>
@@ -691,11 +869,18 @@ function TravelerInfo() {
             </label>
           </div>
         </div>
-
         <ButtonGroup>
           <ChoiceButton onClick={() => history.goBack()}>이전으로</ChoiceButton>
 
-          <ChoiceButton onClick={proceedToPayment}>결제진행</ChoiceButton>
+          <ChoiceButton
+            onClick={proceedToPayment}
+            disabled={
+              Object.values(isAgreed).some((value) => value === false) &&
+              Object.values(isPaymentMethod).some((value) => value === false)
+            }
+          >
+            결제진행
+          </ChoiceButton>
         </ButtonGroup>
       </DetailList>
     </Container>

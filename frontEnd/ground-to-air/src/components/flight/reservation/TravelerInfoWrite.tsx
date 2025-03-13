@@ -66,6 +66,10 @@ const HalfField = styled.div`
   padding: 15px;
 `;
 
+const HalfLine = styled.div`
+  width: 45%;
+`;
+
 // 성별 선택란 디자인 구성
 const GenderMenu = styled.div`
   display: flex;
@@ -269,7 +273,21 @@ function TravelerInfoWrite({
             />
           </HalfField>
         </HalfFields>
-        {errorMsg.userEngFN && <GuideLine>{errorMsg.userEngFN}</GuideLine>}
+        {(errorMsg.userEngFN || errorMsg.userEngLN) && (
+          <HalfFields>
+            <HalfLine>
+              {errorMsg.userEngFN && (
+                <GuideLine>{errorMsg.userEngFN}</GuideLine>
+              )}
+            </HalfLine>
+            <HalfLine>
+              {errorMsg.userEngLN && (
+                <GuideLine>{errorMsg.userEngLN}</GuideLine>
+              )}
+            </HalfLine>
+          </HalfFields>
+        )}
+
         <HalfFields>
           <HalfField>
             <Label htmlFor="birth">생년월일</Label>
@@ -330,6 +348,18 @@ function TravelerInfoWrite({
             </GenderMenu>
           </HalfField>
         </HalfFields>
+
+        {(errorMsg.birth || errorMsg.gender) && (
+          <HalfFields>
+            <HalfLine>
+              {errorMsg.birth && <GuideLine>{errorMsg.birth}</GuideLine>}
+            </HalfLine>
+            <HalfLine>
+              {errorMsg.gender && <GuideLine>{errorMsg.gender}</GuideLine>}
+            </HalfLine>
+          </HalfFields>
+        )}
+
         <HalfFields>
           <HalfField>
             <Label htmlFor="passportNo">여권번호</Label>
@@ -363,6 +393,21 @@ function TravelerInfoWrite({
             </SelectMenu>
           </HalfField>
         </HalfFields>
+        {(errorMsg.passportNo || errorMsg.nationality) && (
+          <HalfFields>
+            <HalfLine>
+              {errorMsg.passportNo && (
+                <GuideLine>{errorMsg.passportNo}</GuideLine>
+              )}
+            </HalfLine>
+            <HalfLine>
+              {errorMsg.nationality && (
+                <GuideLine>{errorMsg.nationality}</GuideLine>
+              )}
+            </HalfLine>
+          </HalfFields>
+        )}
+
         <HalfFields>
           <HalfField>
             <Label htmlFor="passportExDate">여권만료일</Label>
@@ -415,6 +460,20 @@ function TravelerInfoWrite({
             </SelectMenu>
           </HalfField>
         </HalfFields>
+        {(errorMsg.passportExDate || errorMsg.passportCOI) && (
+          <HalfFields>
+            <HalfLine>
+              {errorMsg.passportExDate && (
+                <GuideLine>{errorMsg.passportExDate}</GuideLine>
+              )}
+            </HalfLine>
+            <HalfLine>
+              {errorMsg.passportCOI && (
+                <GuideLine>{errorMsg.passportCOI}</GuideLine>
+              )}
+            </HalfLine>
+          </HalfFields>
+        )}
         <HalfFields>
           <HalfField>
             <Label>이메일</Label>
@@ -430,6 +489,14 @@ function TravelerInfoWrite({
             />
           </HalfField>
         </HalfFields>
+        {errorMsg.email && (
+          <HalfFields>
+            <HalfLine>
+              {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
+            </HalfLine>
+            <HalfLine></HalfLine>
+          </HalfFields>
+        )}
       </Form>
     </div>
   );
