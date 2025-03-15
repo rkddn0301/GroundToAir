@@ -8,6 +8,7 @@ import TravelerInfoWrite from "./TravelerInfoWrite";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
 import axios from "axios";
+import { KakaoPayments, TossPayments } from "../../payment/Payments";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -95,6 +96,46 @@ const MoreIcon = styled.svg`
 const AgreeMenu = styled.div`
   display: flex;
   justify-content: space-around;
+`;
+
+// 요금 정보
+const PriceInfo = styled.div`
+  border: 1px solid ${(props) => props.theme.black.font};
+  background-color: ${(props) => props.theme.black.bg};
+  padding: 5px;
+  color: ${(props) => props.theme.black.font};
+  opacity: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+`;
+
+// 상세요금
+const DetailedPrice = styled.div`
+  width: 100%;
+  display: flex;
+  //justify-content: space-around;
+
+  span:first-child {
+    flex: 1;
+  }
+
+  span:nth-child(2) {
+    flex: 1;
+    text-align: left;
+    //transform: translateX(15%);
+  }
+
+  span:nth-child(3) {
+    flex: 1;
+    text-align: right;
+    //transform: translateX(50%);
+  }
+
+  span:last-child {
+    flex: 1;
+  }
 `;
 
 // 버튼 전체 구성
@@ -201,9 +242,6 @@ function TravelerInfo() {
   useEffect(() => {
     if (data) {
       console.log(data);
-      console.log(
-        data.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure.at
-      );
       const travelerPricings = data?.data.flightOffers[0].travelerPricings; // 인원 수
 
       // inputData를 배열로 초기화
@@ -554,7 +592,22 @@ function TravelerInfo() {
     }
 
     // 오류가 없다면 결제 진행
-    console.log("결제 진행 중...");
+    try {
+      if (isPaymentMethod.kakaoPay) {
+        console.log("카카오페이");
+        KakaoPayments(total);
+      } else if (isPaymentMethod.tossPayments) {
+        console.log("토스페이먼츠");
+        TossPayments(
+          total,
+          inputData[0].email,
+          contactData.userName,
+          contactData.phoneNumber
+        );
+      }
+    } catch (error) {
+      console.error("결제 진행 실패 : ", error);
+    }
   };
 
   useEffect(() => {
@@ -562,6 +615,15 @@ function TravelerInfo() {
       console.log(errorMsg);
     }
   }, [errorMsg]);
+
+  /* 결제금액 */
+
+  const total = (data?.data?.flightOffers?.[0]?.travelerPricings ?? []).reduce(
+    (sum, traveler) => sum + parseFloat(traveler.price.total),
+    0
+  );
+
+  // 총 요금
 
   return (
     <Container>
@@ -869,6 +931,15 @@ function TravelerInfo() {
             </label>
           </div>
         </div>
+
+        {/* 결제금액 */}
+        <PriceInfo>
+          <DetailedPrice>
+            <span>결제금액</span>
+            <span>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</span>
+          </DetailedPrice>
+        </PriceInfo>
+
         <ButtonGroup>
           <ChoiceButton onClick={() => history.goBack()}>이전으로</ChoiceButton>
 

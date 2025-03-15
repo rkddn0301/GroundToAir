@@ -213,12 +213,13 @@ function TravelerInfoWrite({
 
   // 달력 입력 함수
   const calendarDateChange = (date: Date | null, name: string) => {
-    if (date) {
-      setInputData((prevState) => ({
-        ...prevState,
-        [index]: { ...prevState[index], [name]: format(date, "yyyy-MM-dd") },
-      }));
-    }
+    setInputData((prevState) => ({
+      ...prevState,
+      [index]: {
+        ...prevState[index],
+        [name]: date ? format(date, "yyyy-MM-dd") : "",
+      },
+    }));
   };
 
   // 국적 선택란 함수

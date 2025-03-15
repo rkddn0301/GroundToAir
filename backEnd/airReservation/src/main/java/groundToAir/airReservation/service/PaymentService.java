@@ -32,11 +32,19 @@ public class PaymentService {
             throw new IllegalArgumentException("secretKey가 존재하지 않음");
         }
 
+        String itemName = (String) paymentInfo.get("itemName");
+        if (itemName == null) {
+            log.error("itemName가 존재하지 않음");
+            throw new IllegalArgumentException("itemName가 존재하지 않음");
+        }
+
         Integer amount = (Integer) paymentInfo.get("amount");
         if (amount == null) {
             log.error("amount가 존재하지 않음");
             throw new IllegalArgumentException("amount가 존재하지 않음");
         }
+
+
 
         // 카카오페이 API 호출을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
@@ -49,15 +57,14 @@ public class PaymentService {
                         + "\"cid\": \"TC0ONETIME\"," // [필수] 가맹점 코드 (테스트 : TC0ONETIME)
                         + "\"partner_order_id\": \"order_123\"," // [필수] 가맹점 관리용 주문번호
                         + "\"partner_user_id\": \"user_123\"," // [필수] 가맹점 관리자 ID
-                        + "\"item_name\": \"상품명\"," // [필수] 구매할 상품명
+                        + "\"item_name\": \"%s\"," // [필수] 구매할 상품명
                         + "\"quantity\": 1," // [필수] 구매 수량
                         + "\"total_amount\": \"%d\"," // [필수] 총 결제 금액
-                        + "\"vat_amount\": \"%d\"," // [선택] 부가가치세
                         + "\"tax_free_amount\": 0," // [필수] 비과세 금액
                         + "\"approval_url\": \"http://localhost:3000/reservationResult/success\"," // [필수] 결제 성공 시의 url
                         + "\"fail_url\": \"http://localhost:3000/reservationResult/fail\"," // [필수] 결제 실패 시의 url
                         + "\"cancel_url\": \"http://localhost:3000/reservationResult/cancel\"" // [필수] 결제 취소 시의 url
-                        + "}", amount, 200 // 예시로 vat_amount = 200 설정
+                        + "}", itemName, amount
         );
 
         log.info("전송 할 데이터 : {}", requestPayload);
