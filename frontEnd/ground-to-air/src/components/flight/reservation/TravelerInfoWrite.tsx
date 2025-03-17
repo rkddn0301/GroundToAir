@@ -16,22 +16,20 @@ const GuideLine = styled.div`
   justify-content: center;
 `;
 
-// 작성 성공 안내 메시지 디자인 구성
-const SuccessLine = styled.div`
-  color: skyblue;
-  font-size: 11px;
-  display: flex;
-  justify-content: center;
-`;
-
 // 작성란 폼 전체 디자인 구성
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   margin: 15px;
   gap: 15px;
+  width: 100%;
+`;
+
+// 제목 구분
+const TitleClassfication = styled.div`
+  width: 80%;
+  margin-bottom: 20px;
 `;
 
 // 제목 디자인 구성
@@ -39,15 +37,6 @@ const MainTitle = styled.h3`
   color: ${(props) => props.theme.white.font};
   font-size: 25px;
   font-weight: 600;
-`;
-
-// 작성란 구분 디자인 구성
-const Field = styled.div`
-  position: relative;
-  width: 80%;
-  border: 1px solid ${(props) => props.theme.white.font};
-  border-radius: 10px;
-  padding: 15px;
 `;
 
 // 작은 크기 작성란 전체 디자인 구성
@@ -101,12 +90,12 @@ const CalendarInput = styled.div`
   display: flex;
   justify-content: center;
 
-  /* input {
-    width: 600px;
+  input {
+    width: 370px;
   }
   @media (max-width: 480px) {
     input {
-      width: 100px;
+      width: 80px;
     }
   }
 
@@ -118,15 +107,15 @@ const CalendarInput = styled.div`
 
   @media (min-width: 769px) and (max-width: 1280px) {
     input {
-      width: 300px;
+      width: 200px;
     }
   }
 
   @media (min-width: 1281px) and (max-width: 1579px) {
     input {
-      width: 500px;
+      width: 300px;
     }
-  } */
+  }
 `;
 
 // 선택란 전체 디자인 구성
@@ -232,274 +221,266 @@ function TravelerInfoWrite({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <Form>
-        <div>
-          <MainTitle>
-            탑승자 정보 {travelerPricings.travelerId}{" "}
-            {travelerPricings.travelerType === "ADULT"
-              ? "성인"
-              : travelerPricings.travelerType === "CHILD"
-              ? "어린이"
-              : travelerPricings.travelerType === "HELD_INFANT"
-              ? "유아"
-              : "알 수 없음"}
-          </MainTitle>
-        </div>
+    <Form>
+      <TitleClassfication>
+        <MainTitle>
+          탑승자 정보 {travelerPricings.travelerId}{" "}
+          {travelerPricings.travelerType === "ADULT"
+            ? "성인"
+            : travelerPricings.travelerType === "CHILD"
+            ? "어린이"
+            : travelerPricings.travelerType === "HELD_INFANT"
+            ? "유아"
+            : "알 수 없음"}
+        </MainTitle>
+      </TitleClassfication>
+      <HalfFields>
+        <HalfField>
+          <Label htmlFor="userEngFN">성(영문)</Label>
+          <WriteInput
+            type="text"
+            id="userEngFN"
+            name="userEngFN"
+            placeholder="HONG"
+            value={inputData.userEngFN || ""}
+            onChange={handleChange}
+            minLength={1}
+            maxLength={10}
+          />
+        </HalfField>
+        <HalfField>
+          <Label htmlFor="userEngLN">명(영문)</Label>
+          <WriteInput
+            type="text"
+            id="userEngLN"
+            name="userEngLN"
+            placeholder="GILDONG"
+            value={inputData.userEngLN || ""}
+            onChange={handleChange}
+            minLength={1}
+            maxLength={15}
+          />
+        </HalfField>
+      </HalfFields>
+      {(errorMsg.userEngFN || errorMsg.userEngLN) && (
         <HalfFields>
-          <HalfField>
-            <Label htmlFor="userEngFN">성(영문)</Label>
-            <WriteInput
-              type="text"
-              id="userEngFN"
-              name="userEngFN"
-              placeholder="HONG"
-              value={inputData.userEngFN || ""}
-              onChange={handleChange}
-              minLength={1}
-              maxLength={10}
-            />
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="userEngLN">명(영문)</Label>
-            <WriteInput
-              type="text"
-              id="userEngLN"
-              name="userEngLN"
-              placeholder="GILDONG"
-              value={inputData.userEngLN || ""}
-              onChange={handleChange}
-              minLength={1}
-              maxLength={15}
-            />
-          </HalfField>
+          <HalfLine>
+            {errorMsg.userEngFN && <GuideLine>{errorMsg.userEngFN}</GuideLine>}
+          </HalfLine>
+          <HalfLine>
+            {errorMsg.userEngLN && <GuideLine>{errorMsg.userEngLN}</GuideLine>}
+          </HalfLine>
         </HalfFields>
-        {(errorMsg.userEngFN || errorMsg.userEngLN) && (
-          <HalfFields>
-            <HalfLine>
-              {errorMsg.userEngFN && (
-                <GuideLine>{errorMsg.userEngFN}</GuideLine>
-              )}
-            </HalfLine>
-            <HalfLine>
-              {errorMsg.userEngLN && (
-                <GuideLine>{errorMsg.userEngLN}</GuideLine>
-              )}
-            </HalfLine>
-          </HalfFields>
-        )}
+      )}
 
-        <HalfFields>
-          <HalfField>
-            <Label htmlFor="birth">생년월일</Label>
-            <CalendarInput>
-              <DatePicker
-                selected={inputData.birth ? new Date(inputData.birth) : null}
-                showIcon // 달력 아이콘 활성화
-                isClearable // 초기화
-                locale={ko} // 한국어로 변경
-                dateFormat="yyyy-MM-dd"
-                placeholderText="YYYY-MM-DD"
-                onChange={(date) => calendarDateChange(date, "birth")}
-                showYearDropdown // 연도 선택 기능
-                scrollableYearDropdown // 연도 선택 스크롤 기능
-                minDate={new Date(1900, 0, 1)} // 1900년 1월 1일
-                maxDate={new Date()} // 현재 날짜
-                yearDropdownItemNumber={new Date().getFullYear() - 1900 + 1} // 1900년 ~ 현재년도 까지 표시
-                showMonthDropdown // 월 선택 기능
-                autoComplete="off"
-                id="birth"
-                name="birth"
-              />
-            </CalendarInput>
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="gender">성별</Label>
-            <GenderMenu>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="M"
-                  onChange={handleChange}
-                  checked={inputData.gender === "M"}
-                />{" "}
-                남
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="F"
-                  onChange={handleChange}
-                  checked={inputData.gender === "F"}
-                />{" "}
-                여
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="N"
-                  onChange={handleChange}
-                  checked={inputData.gender === "N"}
-                />{" "}
-                비공개
-              </label>
-            </GenderMenu>
-          </HalfField>
-        </HalfFields>
-
-        {(errorMsg.birth || errorMsg.gender) && (
-          <HalfFields>
-            <HalfLine>
-              {errorMsg.birth && <GuideLine>{errorMsg.birth}</GuideLine>}
-            </HalfLine>
-            <HalfLine>
-              {errorMsg.gender && <GuideLine>{errorMsg.gender}</GuideLine>}
-            </HalfLine>
-          </HalfFields>
-        )}
-
-        <HalfFields>
-          <HalfField>
-            <Label htmlFor="passportNo">여권번호</Label>
-            <WriteInput
-              type="text"
-              id="passportNo"
-              name="passportNo"
-              placeholder="A12345678"
-              value={inputData.passportNo || ""}
-              onChange={handleChange}
-              minLength={6}
-              maxLength={10}
+      <HalfFields>
+        <HalfField>
+          <Label htmlFor="birth">생년월일</Label>
+          <CalendarInput>
+            <DatePicker
+              selected={inputData.birth ? new Date(inputData.birth) : null}
+              showIcon // 달력 아이콘 활성화
+              isClearable // 초기화
+              locale={ko} // 한국어로 변경
+              dateFormat="yyyy-MM-dd"
+              placeholderText="YYYY-MM-DD"
+              onChange={(date) => calendarDateChange(date, "birth")}
+              showYearDropdown // 연도 선택 기능
+              scrollableYearDropdown // 연도 선택 스크롤 기능
+              minDate={new Date(1900, 0, 1)} // 1900년 1월 1일
+              maxDate={new Date()} // 현재 날짜
+              yearDropdownItemNumber={new Date().getFullYear() - 1900 + 1} // 1900년 ~ 현재년도 까지 표시
+              showMonthDropdown // 월 선택 기능
+              autoComplete="off"
+              id="birth"
+              name="birth"
             />
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="nationality">국적</Label>
-            <SelectMenu>
-              <SelectInput
-                name="nationality"
-                value={inputData.nationality}
-                onChange={nationalityChange}
-                disabled={!inputData.passportNo}
-              >
-                <option value="">-- 국적을 선택해주세요. --</option>
-                {countryCodes.map((code) => (
-                  <option key={code.codeNo} value={code.country}>
-                    {code.countryKor}
-                  </option>
-                ))}
-              </SelectInput>
-            </SelectMenu>
-          </HalfField>
-        </HalfFields>
-        {(errorMsg.passportNo || errorMsg.nationality) && (
-          <HalfFields>
-            <HalfLine>
-              {errorMsg.passportNo && (
-                <GuideLine>{errorMsg.passportNo}</GuideLine>
-              )}
-            </HalfLine>
-            <HalfLine>
-              {errorMsg.nationality && (
-                <GuideLine>{errorMsg.nationality}</GuideLine>
-              )}
-            </HalfLine>
-          </HalfFields>
-        )}
+          </CalendarInput>
+        </HalfField>
+        <HalfField>
+          <Label htmlFor="gender">성별</Label>
+          <GenderMenu>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="M"
+                onChange={handleChange}
+                checked={inputData.gender === "M"}
+              />{" "}
+              남
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="F"
+                onChange={handleChange}
+                checked={inputData.gender === "F"}
+              />{" "}
+              여
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="N"
+                onChange={handleChange}
+                checked={inputData.gender === "N"}
+              />{" "}
+              비공개
+            </label>
+          </GenderMenu>
+        </HalfField>
+      </HalfFields>
 
+      {(errorMsg.birth || errorMsg.gender) && (
         <HalfFields>
-          <HalfField>
-            <Label htmlFor="passportExDate">여권만료일</Label>
-            <CalendarInput>
-              <DatePicker
-                selected={
-                  inputData.passportExDate
-                    ? new Date(inputData.passportExDate)
-                    : null
-                }
-                showIcon // 달력 아이콘 활성화
-                isClearable // 초기화
-                locale={ko} // 한국어로 변경
-                onChange={(date) => calendarDateChange(date, "passportExDate")}
-                dateFormat="yyyy-MM-dd"
-                placeholderText="YYYY-MM-DD"
-                showYearDropdown // 연도 선택 기능
-                scrollableYearDropdown // 연도 선택 스크롤 기능
-                minDate={new Date()} // 현재 날짜
-                maxDate={
-                  new Date(
-                    new Date().setFullYear(new Date().getFullYear() + 10)
-                  )
-                } // 10년 뒤
-                yearDropdownItemNumber={
-                  new Date().getFullYear() + 10 - new Date().getFullYear()
-                } // 현재년도 ~ 10년 뒤 현재일 까지 표시
-                showMonthDropdown // 월 선택 기능
-                autoComplete="off"
-                disabled={!inputData.passportNo}
-              />
-            </CalendarInput>
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="passportCOI">여권발행국</Label>
-            <SelectMenu>
-              <SelectInput
-                name="passportCOI"
-                value={inputData.passportCOI}
-                onChange={nationalityChange}
-                disabled={!inputData.passportNo}
-              >
-                <option value="">-- 국적을 선택해주세요. --</option>
-                {countryCodes.map((code) => (
-                  <option key={code.codeNo} value={code.country}>
-                    {code.countryKor}
-                  </option>
-                ))}
-              </SelectInput>
-            </SelectMenu>
-          </HalfField>
+          <HalfLine>
+            {errorMsg.birth && <GuideLine>{errorMsg.birth}</GuideLine>}
+          </HalfLine>
+          <HalfLine>
+            {errorMsg.gender && <GuideLine>{errorMsg.gender}</GuideLine>}
+          </HalfLine>
         </HalfFields>
-        {(errorMsg.passportExDate || errorMsg.passportCOI) && (
-          <HalfFields>
-            <HalfLine>
-              {errorMsg.passportExDate && (
-                <GuideLine>{errorMsg.passportExDate}</GuideLine>
-              )}
-            </HalfLine>
-            <HalfLine>
-              {errorMsg.passportCOI && (
-                <GuideLine>{errorMsg.passportCOI}</GuideLine>
-              )}
-            </HalfLine>
-          </HalfFields>
-        )}
+      )}
+
+      <HalfFields>
+        <HalfField>
+          <Label htmlFor="passportNo">여권번호</Label>
+          <WriteInput
+            type="text"
+            id="passportNo"
+            name="passportNo"
+            placeholder="A12345678"
+            value={inputData.passportNo || ""}
+            onChange={handleChange}
+            minLength={6}
+            maxLength={10}
+          />
+        </HalfField>
+        <HalfField>
+          <Label htmlFor="nationality">국적</Label>
+          <SelectMenu>
+            <SelectInput
+              name="nationality"
+              value={inputData.nationality}
+              onChange={nationalityChange}
+              disabled={!inputData.passportNo}
+            >
+              <option value="">-- 국적을 선택해주세요. --</option>
+              {countryCodes.map((code) => (
+                <option key={code.codeNo} value={code.country}>
+                  {code.countryKor}
+                </option>
+              ))}
+            </SelectInput>
+          </SelectMenu>
+        </HalfField>
+      </HalfFields>
+      {(errorMsg.passportNo || errorMsg.nationality) && (
         <HalfFields>
-          <HalfField>
-            <Label>이메일</Label>
-            <WriteInput
-              type="email"
-              id="email"
-              name="email"
-              placeholder="gildong1231@email.com"
-              value={inputData.email || ""}
-              onChange={handleChange}
-              minLength={1}
-              maxLength={30}
+          <HalfLine>
+            {errorMsg.passportNo && (
+              <GuideLine>{errorMsg.passportNo}</GuideLine>
+            )}
+          </HalfLine>
+          <HalfLine>
+            {errorMsg.nationality && (
+              <GuideLine>{errorMsg.nationality}</GuideLine>
+            )}
+          </HalfLine>
+        </HalfFields>
+      )}
+
+      <HalfFields>
+        <HalfField>
+          <Label htmlFor="passportExDate">여권만료일</Label>
+          <CalendarInput>
+            <DatePicker
+              selected={
+                inputData.passportExDate
+                  ? new Date(inputData.passportExDate)
+                  : null
+              }
+              showIcon // 달력 아이콘 활성화
+              isClearable // 초기화
+              locale={ko} // 한국어로 변경
+              onChange={(date) => calendarDateChange(date, "passportExDate")}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="YYYY-MM-DD"
+              showYearDropdown // 연도 선택 기능
+              scrollableYearDropdown // 연도 선택 스크롤 기능
+              minDate={new Date()} // 현재 날짜
+              maxDate={
+                new Date(new Date().setFullYear(new Date().getFullYear() + 10))
+              } // 10년 뒤
+              yearDropdownItemNumber={
+                new Date().getFullYear() + 10 - new Date().getFullYear()
+              } // 현재년도 ~ 10년 뒤 현재일 까지 표시
+              showMonthDropdown // 월 선택 기능
+              autoComplete="off"
+              disabled={!inputData.passportNo}
             />
-          </HalfField>
+          </CalendarInput>
+        </HalfField>
+        <HalfField>
+          <Label htmlFor="passportCOI">여권발행국</Label>
+          <SelectMenu>
+            <SelectInput
+              name="passportCOI"
+              value={inputData.passportCOI}
+              onChange={nationalityChange}
+              disabled={!inputData.passportNo}
+            >
+              <option value="">-- 국적을 선택해주세요. --</option>
+              {countryCodes.map((code) => (
+                <option key={code.codeNo} value={code.country}>
+                  {code.countryKor}
+                </option>
+              ))}
+            </SelectInput>
+          </SelectMenu>
+        </HalfField>
+      </HalfFields>
+      {(errorMsg.passportExDate || errorMsg.passportCOI) && (
+        <HalfFields>
+          <HalfLine>
+            {errorMsg.passportExDate && (
+              <GuideLine>{errorMsg.passportExDate}</GuideLine>
+            )}
+          </HalfLine>
+          <HalfLine>
+            {errorMsg.passportCOI && (
+              <GuideLine>{errorMsg.passportCOI}</GuideLine>
+            )}
+          </HalfLine>
         </HalfFields>
-        {errorMsg.email && (
-          <HalfFields>
-            <HalfLine>
-              {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
-            </HalfLine>
-            <HalfLine></HalfLine>
-          </HalfFields>
-        )}
-      </Form>
-    </div>
+      )}
+      <HalfFields>
+        <HalfField>
+          <Label>이메일</Label>
+          <WriteInput
+            type="email"
+            id="email"
+            name="email"
+            placeholder="gildong1231@email.com"
+            value={inputData.email || ""}
+            onChange={handleChange}
+            minLength={1}
+            maxLength={30}
+          />
+        </HalfField>
+      </HalfFields>
+      {errorMsg.email && (
+        <HalfFields>
+          <HalfLine>
+            {errorMsg.email && <GuideLine>{errorMsg.email}</GuideLine>}
+          </HalfLine>
+          <HalfLine></HalfLine>
+        </HalfFields>
+      )}
+    </Form>
   );
 }
 

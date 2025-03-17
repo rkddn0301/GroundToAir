@@ -33,12 +33,59 @@ const DetailList = styled.div`
   border-radius: 8px;
 `;
 
+// 탑승자 정보 전체 구성
+const TravelerInfoGroup = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
+// 탑승자 정보 리스트
+const TravelerInfoList = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+`;
+
+// '예약자와 동일' box
+const MyInfoCopyBox = styled.div`
+  width: 20%;
+  color: ${(props) => props.theme.white.font};
+  font-weight: 550;
+  font-size: 17px;
+  margin: 15px;
+
+  input {
+    width: 10%;
+    transform: scale(1.5);
+  }
+`;
+
+// 연락처 상세정보
+const BookerPhoneNumberInfo = styled.div`
+  margin: 0 2% 30px 8%;
+  width: 90%;
+`;
+
+// 작성란 폼 전체 디자인 구성
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+`;
+
 // 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
   color: ${(props) => props.theme.white.warning};
   font-size: 11px;
   display: flex;
   justify-content: center;
+`;
+
+// 제목 구분
+const TitleClassfication = styled.div`
+  width: 80%;
+  margin: 20px 0 20px 15px;
 `;
 
 // 제목 디자인 구성
@@ -53,6 +100,8 @@ const HalfFields = styled.div`
   width: 80%;
   display: flex;
   justify-content: space-between;
+  margin-left: 15px;
+  gap: 15px;
 `;
 
 const HalfLine = styled.div`
@@ -88,6 +137,7 @@ const WriteInput = styled.input`
   outline: none;
 `;
 
+// 더보기 icon
 const MoreIcon = styled.svg`
   width: 12px;
 `;
@@ -584,8 +634,6 @@ function TravelerInfo() {
       }));
     }
 
-    /* 동의항목 */
-
     // 오류가 있으면 결제 진행을 중단
     if (isError) {
       return;
@@ -621,9 +669,11 @@ function TravelerInfo() {
   const total = (data?.data?.flightOffers?.[0]?.travelerPricings ?? []).reduce(
     (sum, traveler) => sum + parseFloat(traveler.price.total),
     0
-  );
+  ); // 총 요금
 
-  // 총 요금
+  useEffect(() => {
+    console.log(isAgreed, isPaymentMethod);
+  }, [isAgreed, isPaymentMethod]);
 
   return (
     <Container>
@@ -631,8 +681,8 @@ function TravelerInfo() {
         {/* 탑승자 정보 */}
         {data?.data.flightOffers.map(
           (priceOffers: FlightPricing, index: number) => (
-            <div key={index} style={{ display: "flex" }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
+            <TravelerInfoGroup key={index}>
+              <TravelerInfoList>
                 {priceOffers.travelerPricings.map(
                   (travelerPricings, index: number) => (
                     <TravelerInfoWrite
@@ -671,274 +721,320 @@ function TravelerInfo() {
                     />
                   )
                 )}
-              </div>
+              </TravelerInfoList>
 
               {isLoggedIn && (
-                <div>
+                <MyInfoCopyBox>
                   <input
                     type="checkBox"
                     onClick={() => setBooker((prev) => !prev)}
                   />
                   예약자와 동일
-                </div>
+                </MyInfoCopyBox>
               )}
-            </div>
+            </TravelerInfoGroup>
           )
         )}
 
         {/* 연락처 상세정보 */}
-        <MainTitle>연락처 상세정보</MainTitle>
-        <HalfFields>
-          <HalfField>
-            <Label htmlFor="userName">성명</Label>
-            <WriteInput
-              type="text"
-              id="userName"
-              name="userName"
-              placeholder="홍길동"
-              value={contactData.userName || ""}
-              onChange={contactInfoWrite}
-              minLength={1}
-              maxLength={15}
-            />
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="phoneNumber">연락처</Label>
-            <WriteInput
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              placeholder="01011112222"
-              value={contactData.phoneNumber || ""}
-              onChange={contactInfoWrite}
-              maxLength={11}
-            />
-          </HalfField>
-          <HalfField>
-            <Label htmlFor="emergencyNumber">비상연락처</Label>
-            <WriteInput
-              type="tel"
-              id="emergencyNumber"
-              name="emergencyNumber"
-              placeholder="01011112222"
-              value={contactData.emergencyNumber || ""}
-              onChange={contactInfoWrite}
-              maxLength={11}
-            />
-          </HalfField>
-        </HalfFields>
-        {(contactErrorMsg.userName ||
-          contactErrorMsg.phoneNumber ||
-          contactErrorMsg.emergencyNumber) && (
-          <HalfFields>
-            <HalfLine>
-              {contactErrorMsg.userName && (
-                <GuideLine>{contactErrorMsg.userName}</GuideLine>
-              )}
-            </HalfLine>
-            <HalfLine>
-              {contactErrorMsg.phoneNumber && (
-                <GuideLine>{contactErrorMsg.phoneNumber}</GuideLine>
-              )}
-            </HalfLine>
-            <HalfLine>
-              {contactErrorMsg.emergencyNumber && (
-                <GuideLine>{contactErrorMsg.emergencyNumber}</GuideLine>
-              )}
-            </HalfLine>
-          </HalfFields>
-        )}
+        <BookerPhoneNumberInfo>
+          <Form>
+            <TitleClassfication>
+              <MainTitle>연락처 상세정보</MainTitle>
+            </TitleClassfication>
+
+            <HalfFields>
+              <HalfField>
+                <Label htmlFor="userName">성명</Label>
+                <WriteInput
+                  type="text"
+                  id="userName"
+                  name="userName"
+                  placeholder="홍길동"
+                  value={contactData.userName || ""}
+                  onChange={contactInfoWrite}
+                  minLength={1}
+                  maxLength={15}
+                />
+              </HalfField>
+              <HalfField>
+                <Label htmlFor="phoneNumber">연락처</Label>
+                <WriteInput
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  placeholder="01011112222"
+                  value={contactData.phoneNumber || ""}
+                  onChange={contactInfoWrite}
+                  maxLength={11}
+                />
+              </HalfField>
+              <HalfField>
+                <Label htmlFor="emergencyNumber">비상연락처</Label>
+                <WriteInput
+                  type="tel"
+                  id="emergencyNumber"
+                  name="emergencyNumber"
+                  placeholder="01011112222"
+                  value={contactData.emergencyNumber || ""}
+                  onChange={contactInfoWrite}
+                  maxLength={11}
+                />
+              </HalfField>
+            </HalfFields>
+            {(contactErrorMsg.userName ||
+              contactErrorMsg.phoneNumber ||
+              contactErrorMsg.emergencyNumber) && (
+              <HalfFields>
+                <HalfLine>
+                  {contactErrorMsg.userName && (
+                    <GuideLine>{contactErrorMsg.userName}</GuideLine>
+                  )}
+                </HalfLine>
+                <HalfLine>
+                  {contactErrorMsg.phoneNumber && (
+                    <GuideLine>{contactErrorMsg.phoneNumber}</GuideLine>
+                  )}
+                </HalfLine>
+                <HalfLine>
+                  {contactErrorMsg.emergencyNumber && (
+                    <GuideLine>{contactErrorMsg.emergencyNumber}</GuideLine>
+                  )}
+                </HalfLine>
+              </HalfFields>
+            )}
+          </Form>
+        </BookerPhoneNumberInfo>
+
+        {/* // 연락처 상세정보
+const BookerPhoneNumberInfo = styled.div`
+  margin: 0 2% 30px 8%;
+  width: 90%;
+`;
+
+// 작성란 폼 전체 디자인 구성
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+`;
+ */}
 
         {/* 동의항목 */}
-        <div>
-          <MainTitle>동의항목</MainTitle>
-          <AgreeMenu>
-            <span>이용 약관 동의</span>
-            <label>
-              <input
-                type="radio"
-                name="termOfService"
-                value="true"
-                onChange={agreeChecking}
-                checked={isAgreed.termsOfService === true}
-              />
-              동의
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="termOfService"
-                value="false"
-                onChange={agreeChecking}
-                checked={isAgreed.termsOfService === false}
-              />
-              동의 안함
-            </label>
+        <div style={{ margin: "0 2% 30px 8%", width: "90%" }}>
+          <form
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+              width: "100%",
+            }}
+          >
+            <TitleClassfication>
+              <MainTitle>동의항목</MainTitle>
+            </TitleClassfication>
+            <AgreeMenu>
+              <span>이용 약관 동의</span>
+              <label>
+                <input
+                  type="radio"
+                  name="termOfService"
+                  value="true"
+                  onChange={agreeChecking}
+                  checked={isAgreed.termsOfService === true}
+                />
+                동의
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="termOfService"
+                  value="false"
+                  onChange={agreeChecking}
+                  checked={isAgreed.termsOfService === false}
+                />
+                동의 안함
+              </label>
 
-            {isDescriptionMored.termsOfService ? (
-              <MoreIcon
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                className="size-6"
-                onClick={() =>
-                  setIsDescriptionMored({
-                    ...isDescriptionMored,
-                    termsOfService: false,
-                  })
-                }
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                />
-              </MoreIcon>
-            ) : (
-              <MoreIcon
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                className="size-6"
-                onClick={() =>
-                  setIsDescriptionMored({
-                    ...isDescriptionMored,
-                    termsOfService: true,
-                  })
-                }
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                />
-              </MoreIcon>
+              {isDescriptionMored.termsOfService ? (
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                  onClick={() =>
+                    setIsDescriptionMored({
+                      ...isDescriptionMored,
+                      termsOfService: false,
+                    })
+                  }
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                  />
+                </MoreIcon>
+              ) : (
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                  onClick={() =>
+                    setIsDescriptionMored({
+                      ...isDescriptionMored,
+                      termsOfService: true,
+                    })
+                  }
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </MoreIcon>
+              )}
+            </AgreeMenu>
+            {isDescriptionMored.termsOfService && (
+              <div>
+                본 항공편 예약을 진행하기 위해서는 이용 약관에 동의하셔야
+                합니다. 예약 과정 중 발생할 수 있는 문제나 분쟁에 대해 규정된
+                내용을 확인하시고 동의해 주세요.
+              </div>
             )}
-          </AgreeMenu>
-          {isDescriptionMored.termsOfService && (
-            <div>
-              본 항공편 예약을 진행하기 위해서는 이용 약관에 동의하셔야 합니다.
-              예약 과정 중 발생할 수 있는 문제나 분쟁에 대해 규정된 내용을
-              확인하시고 동의해 주세요.
-            </div>
-          )}
 
-          <AgreeMenu>
-            <span>개인정보 처리방침 동의</span>
-            <label>
-              <input
-                type="radio"
-                name="privacyPolicy"
-                value="true"
-                onChange={agreeChecking}
-                checked={isAgreed.privacyPolicy === true}
-              />
-              동의
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="privacyPolicy"
-                value="false"
-                onChange={agreeChecking}
-                checked={isAgreed.privacyPolicy === false}
-              />
-              동의 안함
-            </label>
-            {isDescriptionMored.privacyPolicy ? (
-              <MoreIcon
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                className="size-6"
-                onClick={() =>
-                  setIsDescriptionMored({
-                    ...isDescriptionMored,
-                    privacyPolicy: false,
-                  })
-                }
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m4.5 15.75 7.5-7.5 7.5 7.5"
+            <AgreeMenu>
+              <span>개인정보 처리방침 동의</span>
+              <label>
+                <input
+                  type="radio"
+                  name="privacyPolicy"
+                  value="true"
+                  onChange={agreeChecking}
+                  checked={isAgreed.privacyPolicy === true}
                 />
-              </MoreIcon>
-            ) : (
-              <MoreIcon
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                className="size-6"
-                onClick={() =>
-                  setIsDescriptionMored({
-                    ...isDescriptionMored,
-                    privacyPolicy: true,
-                  })
-                }
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                동의
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="privacyPolicy"
+                  value="false"
+                  onChange={agreeChecking}
+                  checked={isAgreed.privacyPolicy === false}
                 />
-              </MoreIcon>
+                동의 안함
+              </label>
+              {isDescriptionMored.privacyPolicy ? (
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                  onClick={() =>
+                    setIsDescriptionMored({
+                      ...isDescriptionMored,
+                      privacyPolicy: false,
+                    })
+                  }
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                  />
+                </MoreIcon>
+              ) : (
+                <MoreIcon
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                  onClick={() =>
+                    setIsDescriptionMored({
+                      ...isDescriptionMored,
+                      privacyPolicy: true,
+                    })
+                  }
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </MoreIcon>
+              )}
+            </AgreeMenu>
+
+            {isDescriptionMored.privacyPolicy && (
+              <div>
+                저희는 예약을 진행하기 위해 필요한 개인정보를 수집하고
+                처리합니다. 개인정보 처리방침을 확인하시고 동의해 주세요.
+                개인정보 보호에 관한 상세한 내용은 정책을 통해 확인할 수
+                있습니다.
+              </div>
             )}
-          </AgreeMenu>
-
-          {isDescriptionMored.privacyPolicy && (
-            <div>
-              저희는 예약을 진행하기 위해 필요한 개인정보를 수집하고 처리합니다.
-              개인정보 처리방침을 확인하시고 동의해 주세요. 개인정보 보호에 관한
-              상세한 내용은 정책을 통해 확인할 수 있습니다.
-            </div>
-          )}
+          </form>
         </div>
 
         {/* 결제수단 */}
-        <div>
-          <MainTitle>결제수단</MainTitle>
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="kakaoPay"
-                value="kakaoPay"
-                onChange={paymentMethodChecking}
-                checked={isPaymentMethod.kakaoPay === true}
-              />
-              카카오페이
-            </label>
-          </div>
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="tossPayments"
-                value="tossPayments"
-                onChange={paymentMethodChecking}
-                checked={isPaymentMethod.tossPayments === true}
-              />
-              토스
-            </label>
-          </div>
+        <div style={{ margin: "0 2% 30px 8%", width: "90%" }}>
+          <form
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+              width: "100%",
+            }}
+          >
+            <TitleClassfication>
+              <MainTitle>결제수단</MainTitle>
+            </TitleClassfication>
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="kakaoPay"
+                    value="kakaoPay"
+                    onChange={paymentMethodChecking}
+                    checked={isPaymentMethod.kakaoPay === true}
+                  />
+                  카카오페이
+                </label>
+              </div>
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="tossPayments"
+                    value="tossPayments"
+                    onChange={paymentMethodChecking}
+                    checked={isPaymentMethod.tossPayments === true}
+                  />
+                  토스
+                </label>
+              </div>
+            </div>
+          </form>
+          {/* 결제금액 */}
+          <PriceInfo>
+            <DetailedPrice>
+              <span>결제금액</span>
+              <span>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</span>
+            </DetailedPrice>
+          </PriceInfo>
         </div>
-
-        {/* 결제금액 */}
-        <PriceInfo>
-          <DetailedPrice>
-            <span>결제금액</span>
-            <span>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</span>
-          </DetailedPrice>
-        </PriceInfo>
 
         <ButtonGroup>
           <ChoiceButton onClick={() => history.goBack()}>이전으로</ChoiceButton>
@@ -946,8 +1042,8 @@ function TravelerInfo() {
           <ChoiceButton
             onClick={proceedToPayment}
             disabled={
-              Object.values(isAgreed).some((value) => value === false) &&
-              Object.values(isPaymentMethod).some((value) => value === false)
+              !Object.values(isAgreed).every((value) => value === true) ||
+              !Object.values(isPaymentMethod).some((value) => value === true)
             }
           >
             결제진행
