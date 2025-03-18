@@ -167,6 +167,7 @@ const MoreBtn = styled.button`
   cursor: pointer;
 `;
 
+// 더 보기 icon
 const MoreIcon = styled.svg`
   width: 12px;
 `;

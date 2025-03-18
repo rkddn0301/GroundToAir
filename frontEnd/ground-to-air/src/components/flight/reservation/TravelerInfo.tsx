@@ -9,6 +9,8 @@ import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
 import axios from "axios";
 import { KakaoPayments, TossPayments } from "../../payment/Payments";
+import KakaoPayImg from "../../../img/payment_icon_yellow_small.png";
+import TossPayImg from "../../../img/Toss_Logo_Primary.png";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -60,8 +62,8 @@ const MyInfoCopyBox = styled.div`
   }
 `;
 
-// 연락처 상세정보
-const BookerPhoneNumberInfo = styled.div`
+// 단락 구분
+const ParagraphInfo = styled.div`
   margin: 0 2% 30px 8%;
   width: 90%;
 `;
@@ -137,28 +139,63 @@ const WriteInput = styled.input`
   outline: none;
 `;
 
-// 더보기 icon
+// 더 보기 icon
 const MoreIcon = styled.svg`
-  width: 12px;
+  width: 20px;
+  cursor: pointer;
 `;
 
 // 동의 항목 선택란 디자인 구성
 const AgreeMenu = styled.div`
+  width: 100%;
   display: flex;
-  justify-content: space-around;
+  margin: 5px 0 5px 20px;
+
+  // 동의 안내란
+  span:first-child {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 550;
+  }
+
+  // 동의 선택란
+  span:nth-child(2) {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+`;
+
+// 동의 안내
+const AgreementNotice = styled.div`
+  width: 70%;
+  margin-left: 10%;
+  margin-right: 10%;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  opacity: 0.7;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 8px;
+  box-shadow: inset 2px 2px 15px rgba(0, 0, 0, 0.1);
 `;
 
 // 요금 정보
 const PriceInfo = styled.div`
   border: 1px solid ${(props) => props.theme.black.font};
   background-color: ${(props) => props.theme.black.bg};
-  padding: 5px;
+  padding: 15px;
   color: ${(props) => props.theme.black.font};
   opacity: 80%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 5px;
   margin-bottom: 10px;
+  font-size: 20px;
 `;
 
 // 상세요금
@@ -166,9 +203,10 @@ const DetailedPrice = styled.div`
   width: 100%;
   display: flex;
   //justify-content: space-around;
+  align-items: center;
 
   span:first-child {
-    flex: 1;
+    flex: 0.5;
   }
 
   span:nth-child(2) {
@@ -177,14 +215,14 @@ const DetailedPrice = styled.div`
     //transform: translateX(15%);
   }
 
-  span:nth-child(3) {
+  div:nth-child(1) {
     flex: 1;
     text-align: right;
     //transform: translateX(50%);
   }
 
   span:last-child {
-    flex: 1;
+    flex: 0.5;
   }
 `;
 
@@ -737,7 +775,7 @@ function TravelerInfo() {
         )}
 
         {/* 연락처 상세정보 */}
-        <BookerPhoneNumberInfo>
+        <ParagraphInfo>
           <Form>
             <TitleClassfication>
               <MainTitle>연락처 상세정보</MainTitle>
@@ -804,237 +842,235 @@ function TravelerInfo() {
               </HalfFields>
             )}
           </Form>
-        </BookerPhoneNumberInfo>
-
-        {/* // 연락처 상세정보
-const BookerPhoneNumberInfo = styled.div`
-  margin: 0 2% 30px 8%;
-  width: 90%;
-`;
-
-// 작성란 폼 전체 디자인 구성
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 100%;
-`;
- */}
+        </ParagraphInfo>
 
         {/* 동의항목 */}
-        <div style={{ margin: "0 2% 30px 8%", width: "90%" }}>
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-              width: "100%",
-            }}
-          >
+        <ParagraphInfo>
+          <Form>
             <TitleClassfication>
               <MainTitle>동의항목</MainTitle>
             </TitleClassfication>
             <AgreeMenu>
               <span>이용 약관 동의</span>
-              <label>
-                <input
-                  type="radio"
-                  name="termOfService"
-                  value="true"
-                  onChange={agreeChecking}
-                  checked={isAgreed.termsOfService === true}
-                />
-                동의
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="termOfService"
-                  value="false"
-                  onChange={agreeChecking}
-                  checked={isAgreed.termsOfService === false}
-                />
-                동의 안함
-              </label>
+              <span>
+                <label>
+                  <input
+                    type="radio"
+                    name="termOfService"
+                    value="true"
+                    onChange={agreeChecking}
+                    checked={isAgreed.termsOfService === true}
+                  />
+                  동의
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="termOfService"
+                    value="false"
+                    onChange={agreeChecking}
+                    checked={isAgreed.termsOfService === false}
+                  />
+                  동의 안함
+                </label>
 
-              {isDescriptionMored.termsOfService ? (
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                  onClick={() =>
-                    setIsDescriptionMored({
-                      ...isDescriptionMored,
-                      termsOfService: false,
-                    })
-                  }
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                  />
-                </MoreIcon>
-              ) : (
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                  onClick={() =>
-                    setIsDescriptionMored({
-                      ...isDescriptionMored,
-                      termsOfService: true,
-                    })
-                  }
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                  />
-                </MoreIcon>
-              )}
+                {isDescriptionMored.termsOfService ? (
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                    onClick={() =>
+                      setIsDescriptionMored({
+                        ...isDescriptionMored,
+                        termsOfService: false,
+                      })
+                    }
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                    />
+                  </MoreIcon>
+                ) : (
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                    onClick={() =>
+                      setIsDescriptionMored({
+                        ...isDescriptionMored,
+                        termsOfService: true,
+                      })
+                    }
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </MoreIcon>
+                )}
+              </span>
             </AgreeMenu>
             {isDescriptionMored.termsOfService && (
-              <div>
+              <AgreementNotice>
                 본 항공편 예약을 진행하기 위해서는 이용 약관에 동의하셔야
-                합니다. 예약 과정 중 발생할 수 있는 문제나 분쟁에 대해 규정된
-                내용을 확인하시고 동의해 주세요.
-              </div>
+                합니다. 예약 과정에서 입력하신 개인정보는 항공편 예약 및 서비스
+                제공을 위해 사용됩니다. 또한 예약 완료 후 발생할 수 있는 일정
+                변경, 취소, 지연 및 기타 문제에 대해 규정된 내용을 반드시
+                확인하시고 동의해 주세요. 항공사 및 서비스 제공자의 규정에 따라
+                추가 비용이 발생할 수 있으며, 이에 대한 책임은 고객에게
+                있습니다.
+              </AgreementNotice>
             )}
 
             <AgreeMenu>
               <span>개인정보 처리방침 동의</span>
-              <label>
-                <input
-                  type="radio"
-                  name="privacyPolicy"
-                  value="true"
-                  onChange={agreeChecking}
-                  checked={isAgreed.privacyPolicy === true}
-                />
-                동의
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="privacyPolicy"
-                  value="false"
-                  onChange={agreeChecking}
-                  checked={isAgreed.privacyPolicy === false}
-                />
-                동의 안함
-              </label>
-              {isDescriptionMored.privacyPolicy ? (
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                  onClick={() =>
-                    setIsDescriptionMored({
-                      ...isDescriptionMored,
-                      privacyPolicy: false,
-                    })
-                  }
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
+              <span>
+                <label>
+                  <input
+                    type="radio"
+                    name="privacyPolicy"
+                    value="true"
+                    onChange={agreeChecking}
+                    checked={isAgreed.privacyPolicy === true}
                   />
-                </MoreIcon>
-              ) : (
-                <MoreIcon
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                  onClick={() =>
-                    setIsDescriptionMored({
-                      ...isDescriptionMored,
-                      privacyPolicy: true,
-                    })
-                  }
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  동의
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="privacyPolicy"
+                    value="false"
+                    onChange={agreeChecking}
+                    checked={isAgreed.privacyPolicy === false}
                   />
-                </MoreIcon>
-              )}
+                  동의 안함
+                </label>
+
+                {isDescriptionMored.privacyPolicy ? (
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                    onClick={() =>
+                      setIsDescriptionMored({
+                        ...isDescriptionMored,
+                        privacyPolicy: false,
+                      })
+                    }
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                    />
+                  </MoreIcon>
+                ) : (
+                  <MoreIcon
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                    onClick={() =>
+                      setIsDescriptionMored({
+                        ...isDescriptionMored,
+                        privacyPolicy: true,
+                      })
+                    }
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </MoreIcon>
+                )}
+              </span>
             </AgreeMenu>
 
             {isDescriptionMored.privacyPolicy && (
-              <div>
+              <AgreementNotice>
                 저희는 예약을 진행하기 위해 필요한 개인정보를 수집하고
                 처리합니다. 개인정보 처리방침을 확인하시고 동의해 주세요.
                 개인정보 보호에 관한 상세한 내용은 정책을 통해 확인할 수
                 있습니다.
-              </div>
+              </AgreementNotice>
             )}
-          </form>
-        </div>
+          </Form>
+        </ParagraphInfo>
 
         {/* 결제수단 */}
-        <div style={{ margin: "0 2% 30px 8%", width: "90%" }}>
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-              width: "100%",
-            }}
-          >
+        <ParagraphInfo>
+          <Form>
             <TitleClassfication>
               <MainTitle>결제수단</MainTitle>
             </TitleClassfication>
             <div style={{ display: "flex", justifyContent: "space-around" }}>
-              <div>
-                <label>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="kakaoPay"
                     value="kakaoPay"
                     onChange={paymentMethodChecking}
                     checked={isPaymentMethod.kakaoPay === true}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      marginRight: "15px",
+                    }}
                   />
-                  카카오페이
+                  <img src={KakaoPayImg} />
                 </label>
               </div>
-              <div>
-                <label>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="tossPayments"
                     value="tossPayments"
                     onChange={paymentMethodChecking}
                     checked={isPaymentMethod.tossPayments === true}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                    }}
                   />
-                  토스
+                  <img src={TossPayImg} />
                 </label>
               </div>
             </div>
-          </form>
+          </Form>
           {/* 결제금액 */}
           <PriceInfo>
             <DetailedPrice>
+              <span />
               <span>결제금액</span>
-              <span>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</span>
+              <div>
+                <div>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</div>
+                <div
+                  style={{ fontSize: "12px", opacity: 0.7, marginTop: "5px" }}
+                >
+                  유류할증료 및 제세공과금 포함
+                </div>
+              </div>
+              <span />
             </DetailedPrice>
           </PriceInfo>
-        </div>
+        </ParagraphInfo>
 
         <ButtonGroup>
           <ChoiceButton onClick={() => history.goBack()}>이전으로</ChoiceButton>
