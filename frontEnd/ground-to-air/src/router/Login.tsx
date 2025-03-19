@@ -5,8 +5,8 @@ import Title from "../components/Title";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory, useLocation } from "react-router-dom";
-import { useRecoilState, useSetRecoilState } from "recoil";
-import { isLoggedInState, tokenExpirationTime } from "../utils/atom";
+import { useRecoilState } from "recoil";
+import { isLoggedInState } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
 import { Alert } from "../utils/sweetAlert";
 
@@ -116,7 +116,6 @@ function Login() {
   }); // 오류 메시지 표시 state
 
   const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState); // 로그인 확인 여부 atom
-  const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
 
   const history = useHistory();
 
@@ -235,7 +234,11 @@ function Login() {
         const expirationTime =
           new Date(accessTokenExpiration).getTime() - Date.now();
 
-        setTokenExpiration(expirationTime);
+        localStorage.setItem(
+          "expirationTime",
+          CryptoJS.AES.encrypt(String(expirationTime), encryptionKey).toString()
+        ); // 토큰 만료시간 등록
+
         startSessionTimeout(expirationTime);
       } else {
         Alert(

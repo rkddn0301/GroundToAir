@@ -10,6 +10,7 @@ export const startSessionTimeout = (tokenExpiration: number) => {
   console.log(tokenExpiration);
   resetInactivityTimer(tokenExpiration); // 세션 타이머 초기화
   refreshInterval = setInterval(refreshAccessToken, tokenExpiration - 300000); // 1시간 - 5분 = 55분 마다 토큰 갱신
+  console.log("토큰 갱신시간 : ", refreshInterval);
 };
 
 // 비활동 타이머 리셋 함수
@@ -58,6 +59,7 @@ const sessionOut = async () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("flightOffers");
+  localStorage.removeItem("expirationTime");
   const sessionOutAlert = await Alert(
     "세션이 만료되었습니다. 다시 로그인 해주세요.",
     "info"
@@ -80,6 +82,7 @@ export const logout = async () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("flightOffers");
+    localStorage.removeItem("expirationTime");
 
     window.location.href = "/";
   }

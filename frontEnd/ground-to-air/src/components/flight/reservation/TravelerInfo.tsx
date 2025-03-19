@@ -106,6 +106,7 @@ const HalfFields = styled.div`
   gap: 15px;
 `;
 
+// 오류 메시지 출력칸 나눔
 const HalfLine = styled.div`
   width: 45%;
 `;
@@ -680,10 +681,10 @@ function TravelerInfo() {
     // 오류가 없다면 결제 진행
     try {
       if (isPaymentMethod.kakaoPay) {
-        console.log("카카오페이");
+        // 카카오페이
         KakaoPayments(total);
       } else if (isPaymentMethod.tossPayments) {
-        console.log("토스페이먼츠");
+        // 토스페이먼츠
         TossPayments(
           total,
           inputData[0].email,
@@ -691,6 +692,7 @@ function TravelerInfo() {
           contactData.phoneNumber
         );
       }
+      sessionStorage.setItem("test", "결제진행");
     } catch (error) {
       console.error("결제 진행 실패 : ", error);
     }
@@ -755,7 +757,6 @@ function TravelerInfo() {
                           email: "",
                         }
                       }
-                      setErrorMsg={setErrorMsg}
                     />
                   )
                 )}

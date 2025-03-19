@@ -8,9 +8,10 @@ import {
   federationAccessToken,
   isLoggedInState,
   socialId,
-  tokenExpirationTime,
 } from "../../utils/atom";
 import { startSessionTimeout } from "../../utils/jwtActivityTimer";
+import { encryptionKey } from "../../router/FlightSearch";
+import CryptoJS from "crypto-js";
 
 // GoogleAuth 전체 컴포넌트 구성
 const Btn = styled.button<{
@@ -45,7 +46,6 @@ function GoogleAuth(props: {
   padding?: string;
 }) {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 확인 여부 atom
-  const setTokenExpiration = useSetRecoilState(tokenExpirationTime); // 토큰 만료시간 atom
 
   // 타사인증을 통해 필요한 데이터를 가져옴
   const setSocialId = useSetRecoilState(socialId);
@@ -92,8 +92,10 @@ function GoogleAuth(props: {
         // 만료시간 변환작업
         const expirationTime =
           new Date(accessTokenExpiration).getTime() - Date.now();
-
-        setTokenExpiration(expirationTime);
+        localStorage.setItem(
+          "expirationTime",
+          CryptoJS.AES.encrypt(String(expirationTime), encryptionKey).toString()
+        ); // 토큰 만료시간 등록
         startSessionTimeout(expirationTime);
       }
     } catch (error) {

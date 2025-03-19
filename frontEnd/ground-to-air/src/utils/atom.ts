@@ -15,12 +15,6 @@ export const isLoggedInState = atom<boolean>({
   default: !!localStorage.getItem("accessToken"),
 });
 
-// 토큰 만료시간 데이터 atom
-export const tokenExpirationTime = atom<number>({
-  key: "tokenExpirationTime",
-  default: 0,
-});
-
 // 타사인증 토큰
 export const federationAccessToken = atom<String>({
   key: "federationAccessToken",

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import FlightSearch from "./router/FlightSearch";
+import FlightSearch, { encryptionKey } from "./router/FlightSearch";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Layout from "./components/Layout";
 import HotelSearch from "./router/HotelSearch";
@@ -12,7 +12,7 @@ import Login from "./router/Login";
 import PassportInfo from "./router/PassportInfo";
 import { resetInactivityTimer } from "./utils/jwtActivityTimer";
 import { useRecoilValue } from "recoil";
-import { isLoggedInState, tokenExpirationTime } from "./utils/atom";
+import { isLoggedInState } from "./utils/atom";
 import PwFind from "./router/PwFind";
 import IdFind from "./router/IdFind";
 import MyInfo from "./router/MyInfo";
@@ -21,6 +21,7 @@ import WishList from "./router/WishList";
 import PaymentResult from "./components/payment/PaymentResult";
 import FlightReservation from "./components/flight/reservation/FlightReservation";
 import TravelerInfo from "./components/flight/reservation/TravelerInfo";
+import CryptoJS from "crypto-js";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -41,7 +42,10 @@ let debounceTimer: NodeJS.Timeout; // 타이머 연속 호출 방지 타이머
 
 function App() {
   const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 여부 atom
-  const tokenExpiration = useRecoilValue(tokenExpirationTime); // 토큰 만료시간 atom
+  const expirationTime = CryptoJS.AES.decrypt(
+    localStorage.getItem("expirationTime") || "",
+    encryptionKey
+  ).toString(CryptoJS.enc.Utf8); // 토근 만료시간 localStorage
 
   // 전체 사이트에서 활동/비활동에 따라 세션 유지 여부를 결정
   useEffect(() => {
@@ -52,7 +56,9 @@ function App() {
     const resetTimer = () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        resetInactivityTimer(tokenExpiration);
+        resetInactivityTimer(
+          expirationTime ? parseInt(JSON.parse(expirationTime)) : 0
+        );
       }, 2000); // 2초 후 리셋
 
       console.log("동작");

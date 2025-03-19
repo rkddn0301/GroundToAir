@@ -55,6 +55,7 @@ const HalfField = styled.div`
   padding: 15px;
 `;
 
+// 오류 메시지 출력칸 나눔
 const HalfLine = styled.div`
   width: 45%;
 `;
@@ -142,9 +143,6 @@ interface TravelerInfoWriteProps {
   >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
   countryCodes: CountryCodeProps[]; // 국적 데이터
   errorMsg: InputData;
-  setErrorMsg: React.Dispatch<
-    React.SetStateAction<{ [key: number]: InputData }>
-  >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
 }
 
 function TravelerInfoWrite({
@@ -154,7 +152,6 @@ function TravelerInfoWrite({
   setInputData,
   countryCodes,
   errorMsg,
-  setErrorMsg,
 }: TravelerInfoWriteProps) {
   // 정보 입력 함수
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
