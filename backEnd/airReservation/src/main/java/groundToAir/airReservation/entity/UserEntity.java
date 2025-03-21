@@ -46,7 +46,7 @@ public class UserEntity {
     @Column(name = "SOCIAL_TYPE", nullable = false)
     private SocialType socialType;
 
-    @Column(name= "REG_DATE", columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    @Column(name= "REG_DATE")
     private LocalDate regDate;
 
     public UserEntity() {
@@ -68,4 +68,9 @@ public class UserEntity {
     // CascadeType.ALL : UserEntity에 있는 데이터가 지워질 경우 WishListEntity에서 JoinColumn과 일치하는 값을 찾아 같이 전부 지워버린다는 의미. (실제 DB에도 설정해놓았을 경우 여기다가 같이 써놓아야함)
     @OneToMany(mappedBy = "wishListUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<WishListEntity> wishList;
+
+    // 양방향 설정: UserEntity와 ReservationListEntity 간의 관계
+    // CascadeType.ALL : UserEntity에 있는 데이터가 지워질 경우 ReservationListEntity에서 JoinColumn과 일치하는 값을 찾아 같이 전부 지워버린다는 의미. (실제 DB에도 설정해놓았을 경우 여기다가 같이 써놓아야함)
+    @OneToMany(mappedBy = "reservationListUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ReservationListEntity> reservationList;
 }

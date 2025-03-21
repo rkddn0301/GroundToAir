@@ -1,9 +1,12 @@
 package groundToAir.airReservation.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groundToAir.airReservation.entity.AirlineCodeEntity;
 import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.service.AirService;
 import groundToAir.airReservation.utils.AccessTokenUtil;
+import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +21,12 @@ public class AirController {
 
     private final AirService airService;
     private final AccessTokenUtil accessTokenUtil;
+    private final JwtUtil jwtUtil;
 
-    public AirController(AirService airService, AccessTokenUtil accessTokenUtil) {
+    public AirController(AirService airService, AccessTokenUtil accessTokenUtil, JwtUtil jwtUtil) {
         this.airService = airService;
         this.accessTokenUtil = accessTokenUtil;
+        this.jwtUtil = jwtUtil;
     }
 
     // React 연동 테스트
@@ -91,6 +96,30 @@ public class AirController {
 
         return airService.getFlightPrice(accessToken, flightOffers);
 
+    }
+
+    // 예약내역 등록
+    // 현재 데이터 전송이 되는지 테스트 하기 위해 'void'로 처리함 추후에 'String'으로 변경 예정
+    // 아래 ObjectMapper와 같은 로직의 경우 Service 부분으로 옮길 예정
+    @PostMapping("/airReservation")
+    public void getAirReservation(@RequestBody String flightPricing) throws Exception {
+
+        // JSON 문자열을 Map으로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> flightPricingMap = objectMapper.readValue(flightPricing, new TypeReference<>() {});
+
+        log.info("flightPricingMap : {}", flightPricingMap);
+
+        // userNo 추출
+        if (flightPricingMap.get("userNo") != "") {
+            int userNo = jwtUtil.extractUserNo((String) flightPricingMap.get("userNo"));
+            log.info("userNo : {}", userNo);
+        }
+
+
+        log.info("flightPricing : {}", flightPricingMap.get("flightPricing"));
+        log.info("travelerData : {}", flightPricingMap.get("travelerData"));
+        log.info("contactData : {}", flightPricingMap.get("contactData"));
     }
 
 

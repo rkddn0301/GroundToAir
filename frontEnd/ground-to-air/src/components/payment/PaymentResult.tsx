@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { Alert } from "../../utils/sweetAlert";
 
 // 항공편 로딩 중 전체 디자인 구성
 const Loading = styled.div`
@@ -49,7 +50,7 @@ function PaymentResult() {
       // 카카오페이
       if (pathname.includes("/reservationResult/success") && pgToken) {
         try {
-          const res = await axios.post(
+          const response = await axios.post(
             "http://localhost:8080/payment/kakaopayApprove",
             {
               pgToken,
@@ -57,14 +58,19 @@ function PaymentResult() {
             },
             { withCredentials: true }
           );
-          console.log("결제 승인 성공:", res.data);
-          alert("결제가 완료되었습니다!");
-        } catch (err) {
-          console.error("결제 승인 실패:", err);
-          alert("결제 승인 중 오류 발생");
-          history.push("/"); // 실패 시 홈으로 이동
-        } finally {
+
+          if (response.data) {
+            console.log("결제 승인 성공:", response.data);
+            reservation();
+          }
+        } catch (error) {
+          console.error("결제 승인 실패:", error);
           setIsLoading(false);
+          sessionStorage.removeItem("pricing");
+          sessionStorage.removeItem("inputData");
+          sessionStorage.removeItem("contactData");
+          Alert("결제 승인 중 오류 발생", "error");
+          history.push("/"); // 실패 시 홈으로 이동
         }
       } // 토스페이먼츠
       else if (pathname.includes("/reservationResult/success") && paymentKey) {
@@ -79,19 +85,27 @@ function PaymentResult() {
             }
           );
           console.log("결제 승인 성공:", res.data);
-          alert("결제가 완료되었습니다!");
-        } catch (err) {
-          console.error("결제 승인 실패:", err);
-          alert("결제 승인 중 오류 발생");
-          history.push("/"); // 실패 시 홈으로 이동
-        } finally {
+          reservation();
+        } catch (error) {
+          console.error("결제 승인 실패:", error);
           setIsLoading(false);
+          sessionStorage.removeItem("pricing");
+          sessionStorage.removeItem("inputData");
+          sessionStorage.removeItem("contactData");
+          Alert("결제 승인 중 오류 발생", "error");
+          history.push("/"); // 실패 시 홈으로 이동
         }
       } else if (pathname.includes("/reservationResult/fail")) {
-        alert("결제에 실패했습니다.");
+        Alert("결제에 실패했습니다.", "error");
+        sessionStorage.removeItem("pricing");
+        sessionStorage.removeItem("inputData");
+        sessionStorage.removeItem("contactData");
         history.push("/"); // 실패 시 홈으로 이동
       } else if (pathname.includes("/reservationResult/cancel")) {
-        alert("결제가 취소되었습니다.");
+        Alert("결제가 취소되었습니다.", "error");
+        sessionStorage.removeItem("pricing");
+        sessionStorage.removeItem("inputData");
+        sessionStorage.removeItem("contactData");
         history.push("/"); // 취소 시 홈으로 이동
       }
     };
@@ -99,11 +113,59 @@ function PaymentResult() {
     approvePayment();
   }, [pgToken, paymentKey, pathname, history]);
 
+  const reservation = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/air/airReservation",
+        {
+          flightPricing: sessionStorage.getItem("pricing")
+            ? JSON.parse(sessionStorage.getItem("pricing") as string)
+            : null,
+          travelerData: sessionStorage.getItem("inputData")
+            ? JSON.parse(sessionStorage.getItem("inputData") as string)
+            : null,
+          contactData: sessionStorage.getItem("contactData")
+            ? JSON.parse(sessionStorage.getItem("contactData") as string)
+            : null,
+          userNo: localStorage.getItem("accessToken")
+            ? localStorage.getItem("accessToken")
+            : "",
+        }
+      );
+
+      if (response.data) {
+        console.log("예약 성공:", response.data);
+        const successAlert = await Alert("예약이 완료되었습니다!", "success");
+
+        if (successAlert.isConfirmed || successAlert.isDismissed) {
+          setIsLoading(false);
+          sessionStorage.removeItem("pricing");
+          sessionStorage.removeItem("inputData");
+          sessionStorage.removeItem("contactData");
+        }
+      }
+    } catch (error) {
+      console.error("예약 도중 오류 발생 : ", error);
+    } finally {
+      setIsLoading(false);
+      sessionStorage.removeItem("pricing");
+      sessionStorage.removeItem("inputData");
+      sessionStorage.removeItem("contactData");
+    }
+  };
+
   return (
     <div>
       {isLoading ? (
         <Loading>
-          <Spinner />
+          <Spinner
+            animate={{ rotate: [0, 360] }} // 회전 애니메이션
+            transition={{
+              duration: 1, // 1초 동안
+              ease: "linear", // 일정한 속도
+              repeat: Infinity, // 무한반복
+            }}
+          />
           <div style={{ fontWeight: "600" }}>결제 진행 중...</div>
         </Loading>
       ) : (

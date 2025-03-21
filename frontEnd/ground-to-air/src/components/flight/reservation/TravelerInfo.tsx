@@ -692,7 +692,10 @@ function TravelerInfo() {
           contactData.phoneNumber
         );
       }
-      sessionStorage.setItem("test", "결제진행");
+      // 예약에 필요한 데이터 전송을 위해 sessionStorage에 등록
+      sessionStorage.setItem("pricing", JSON.stringify(data));
+      sessionStorage.setItem("inputData", JSON.stringify(inputData));
+      sessionStorage.setItem("contactData", JSON.stringify(contactData));
     } catch (error) {
       console.error("결제 진행 실패 : ", error);
     }
