@@ -11,6 +11,8 @@ import axios from "axios";
 import { KakaoPayments, TossPayments } from "../../payment/Payments";
 import KakaoPayImg from "../../../img/payment_icon_yellow_small.png";
 import TossPayImg from "../../../img/Toss_Logo_Primary.png";
+import { encryptionKey } from "../../../router/FlightSearch";
+import CryptoJS from "crypto-js";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -693,9 +695,24 @@ function TravelerInfo() {
         );
       }
       // 예약에 필요한 데이터 전송을 위해 sessionStorage에 등록
-      sessionStorage.setItem("pricing", JSON.stringify(data));
-      sessionStorage.setItem("inputData", JSON.stringify(inputData));
-      sessionStorage.setItem("contactData", JSON.stringify(contactData));
+      sessionStorage.setItem(
+        "pricing",
+        CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString()
+      );
+      sessionStorage.setItem(
+        "inputData",
+        CryptoJS.AES.encrypt(
+          JSON.stringify(inputData),
+          encryptionKey
+        ).toString()
+      );
+      sessionStorage.setItem(
+        "contactData",
+        CryptoJS.AES.encrypt(
+          JSON.stringify(contactData),
+          encryptionKey
+        ).toString()
+      );
     } catch (error) {
       console.error("결제 진행 실패 : ", error);
     }
@@ -769,6 +786,7 @@ function TravelerInfo() {
                 <MyInfoCopyBox>
                   <input
                     type="checkBox"
+                    checked={booker === true}
                     onClick={() => setBooker((prev) => !prev)}
                   />
                   예약자와 동일

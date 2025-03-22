@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { Alert } from "../../utils/sweetAlert";
+import { encryptionKey } from "../../router/FlightSearch";
+import CryptoJS from "crypto-js";
 
 // 항공편 로딩 중 전체 디자인 구성
 const Loading = styled.div`
@@ -119,13 +121,28 @@ function PaymentResult() {
         "http://localhost:8080/air/airReservation",
         {
           flightPricing: sessionStorage.getItem("pricing")
-            ? JSON.parse(sessionStorage.getItem("pricing") as string)
+            ? JSON.parse(
+                CryptoJS.AES.decrypt(
+                  sessionStorage.getItem("pricing") || "",
+                  encryptionKey
+                ).toString(CryptoJS.enc.Utf8)
+              )
             : null,
           travelerData: sessionStorage.getItem("inputData")
-            ? JSON.parse(sessionStorage.getItem("inputData") as string)
+            ? JSON.parse(
+                CryptoJS.AES.decrypt(
+                  sessionStorage.getItem("inputData") || "",
+                  encryptionKey
+                ).toString(CryptoJS.enc.Utf8)
+              )
             : null,
           contactData: sessionStorage.getItem("contactData")
-            ? JSON.parse(sessionStorage.getItem("contactData") as string)
+            ? JSON.parse(
+                CryptoJS.AES.decrypt(
+                  sessionStorage.getItem("contactData") || "",
+                  encryptionKey
+                ).toString(CryptoJS.enc.Utf8)
+              )
             : null,
           userNo: localStorage.getItem("accessToken")
             ? localStorage.getItem("accessToken")
