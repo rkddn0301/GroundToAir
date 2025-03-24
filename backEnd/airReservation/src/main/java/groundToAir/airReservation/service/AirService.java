@@ -10,15 +10,19 @@ import groundToAir.airReservation.repository.CountryRepository;
 import groundToAir.airReservation.repository.IataCodeRepository;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -123,14 +127,9 @@ public class AirService {
     }
 
     // 예약 내역 API 호출
-    public String getFlightOrder(String accessToken, Map<String, Object> flightDataMap) throws Exception {
+    public String getFlightOrder(String accessToken, String flightPricing, Map<String, Object> travelerData, Map<String, Object> contactData) throws Exception {
 
         String url = "https://test.api.amadeus.com/v1/booking/flight-orders";
-
-
-        String flightPricing = objectMapper.writeValueAsString(flightDataMap.get("flightPricing")); // 항공편 상세
-        Map<String, Object> travelerData = (Map<String, Object>) flightDataMap.get("travelerData"); // 탑승자 정보 입력 데이터
-        Map<String, Object> contactData = (Map<String, Object>) flightDataMap.get("contactData"); // 연락처 상세정보
 
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("\"travelers\": [");
@@ -180,11 +179,6 @@ public class AirService {
         // 탑승자 정보를 넣기 위해 텍스트 분리
         String[] spliting = flightPricing.split("}}]}]}],");
 
-
-        /*log.info("flightPricing : {}", flightDataMap.get("flightPricing"));
-        log.info("travelerData : {}", flightDataMap.get("travelerData"));
-        log.info("contactData : {}", flightDataMap.get("contactData"));*/
-
         // API 호출 양식
         String template = spliting[0] + "}}]}]}]," + jsonResult + "," + spliting[1];
 
@@ -204,9 +198,25 @@ public class AirService {
         // HttpEntity에 헤더와 본문 설정
         HttpEntity<String> entity = new HttpEntity<>(template, headers);
 
-        return restTemplate.postForObject(url, entity, String.class);
 
+        return restTemplate.postForObject(url, entity, String.class);
     }
+
+    // 예약 코드 생성
+    private String generateReservationCode() {
+        // 현재 시간 추출
+        LocalDateTime now = LocalDateTime.now();
+
+        // DateTimeFormatter를 통해 'yyyyMMdd' 형식에 맞게 변환 후 date에 삽입
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String date = now.format(formatter);
+
+        // randomAlphanumeric를 통해 영어 대소문자와 숫자를 포함한 6글자를 생성 및 toUpperCase로 전부 대문자로 표현
+        String randomCode = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+
+        return "GTA" + date + randomCode;
+    }
+
 
     // 예약 내역 등록
     public boolean airReservation(String accessToken, String flightData) throws Exception {
@@ -214,21 +224,87 @@ public class AirService {
         Map<String, Object> flightDataMap = objectMapper.readValue(flightData, new TypeReference<>() {
         });
 
-        String test = getFlightOrder(accessToken, flightDataMap);
-        //getFlightOrder(accessToken, flightDataMap);
+        String flightPricing = objectMapper.writeValueAsString(flightDataMap.get("flightPricing")); // 항공편 상세
+        Map<String, Object> travelerData = (Map<String, Object>) flightDataMap.get("travelerData"); // 탑승자 정보 입력 데이터
+        Map<String, Object> contactData = (Map<String, Object>) flightDataMap.get("contactData"); // 연락처 상세정보
+
+        // Flight Create Order API 호출하여 데이터를 가져옴
+        String flightOrderData = getFlightOrder(accessToken, flightPricing, travelerData, contactData);
+        log.info("flightOrderData : {}", flightOrderData);
+
+        // flightOrderData를 다시 Map으로 변환
+        Map<String, Object> flightOrderMap = objectMapper.readValue(flightOrderData, new TypeReference<>() {});
+        log.info("flightOrderMap : {}", flightOrderMap);
+
+        // 예약 코드 생성 (GTA + 날짜 + 랜덤값)
+        String revCode = generateReservationCode();
+
+        log.info("revCode : " + revCode);
+        // userNo 추출 (비회원인 경우 X로 설정)
+        int userNo = flightDataMap.get("userNo") != null ? jwtUtil.extractUserNo((String) flightDataMap.get("userNo")) : null;
+        log.info("userNo : {}", userNo);
+
+        // 예약자명 추출
+        String revName = (String) contactData.get("userName");
+        log.info("revName : {}", revName);
+
+        // 가는편 정보
+        // ! 변수명칭 변경 필요, 가는편만 현재 추출 가능하며 오는편은 itineraries를 이용하여 조건문으로 get(1)이 있을 경우 표시, 그 외 인원수/좌석등급/가격/ORDERS 표시
+        Map<String, Object> data = flightOrderMap.get("data") != null ? (Map<String, Object>) flightOrderMap.get("data") : null;
+
+        List<Map<String, Object>> flightOffers = data != null ? (List<Map<String, Object>>) data.get("flightOffers") : null;
+        Map<String, Object> firstFlightOffer = (flightOffers != null && !flightOffers.isEmpty()) ? flightOffers.get(0) : null;
+
+        List<Map<String, Object>> itineraries = firstFlightOffer != null ? (List<Map<String, Object>>) firstFlightOffer.get("itineraries") : null;
+        Map<String, Object> firstItinerary = (itineraries != null && !itineraries.isEmpty()) ? itineraries.get(0) : null;
+
+        List<Map<String, Object>> segments = firstItinerary != null ? (List<Map<String, Object>>) firstItinerary.get("segments") : null;
+        if (segments != null && !segments.isEmpty()) {
+            String airlinesIata = (String) segments.get(0).get("carrierCode");
+            String departureIata = (String) ((Map<String, Object>) segments.get(0).get("departure")).get("iataCode");
+            String departureTime = (String) ((Map<String, Object>) segments.get(0).get("departure")).get("at");
+            String arrivalIata = (String) ((Map<String, Object>) segments.get(0).get("arrival")).get("iataCode");
+            String arrivalTime =(String) ((Map<String, Object>) segments.get(0).get("arrival")).get("at");
+            String flightNo =  airlinesIata + segments.get(0).get("number");
+            String turnaroundTime = (String) segments.get(0).get("duration");
+            String stopLine = segments.size()-1 == 0 ? "직항" : segments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
+            log.info("airlinesIata : {}", airlinesIata);
+            log.info("departureIata : {}", departureIata);
+            log.info("departureTime : {}", departureTime);
+            log.info("arrivalIata : {}", arrivalIata);
+            log.info("arrivalTime : {}", arrivalTime);
+            log.info("flightNo : {}", flightNo);
+            log.info("turnaroundTime : {}", turnaroundTime);
+            log.info("stopLine : {}", stopLine);
+        }
 
 
-        log.info("flightDataMap : {}", flightDataMap);
-        log.info("test : {}", test);
+       /*
+
+// 오는편 정보가 있을 경우만 처리
+        String reAirlinesIata = null, reDepartureIata = null, reDepartureTime = null, reArrivalIata = null,
+                reArrivalTime = null, reFlightNo = null, reTurnaroundTime = null, reStopLineText = null;
+
+        if (flightOrderMap.containsKey("flightOffers[0].itineraries[1]")) {
+            reAirlinesIata = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].carrierCode");
+            reDepartureIata = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].departure.iataCode");
+            reDepartureTime = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].departure.at");
+            reArrivalIata = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].arrival.iataCode");
+            reArrivalTime = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].arrival.at");
+            reFlightNo = reAirlinesIata + flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].number");
+            reTurnaroundTime = (String) flightOrderMap.get("flightOffers[0].itineraries[1].segments[0].duration");
+
+            // reStopLine 텍스트 처리
+         //   int reStopLine = ((List) flightOrderMap.get("flightOffers[0].itineraries[1].segments")).size() - 1;
+         //   reStopLineText = (reStopLine == 0) ? "직항" : (reStopLine == 1) ? "1회 경유" : "경유 2회 이상";
+        }*/
 
 
-        // 예약코드 랜덤으로 생성 (이따가 진행)
-
-        // userNo 추출
+ /*       // userNo 추출
         if (flightDataMap.get("userNo") != "") {
             int userNo = jwtUtil.extractUserNo((String) flightDataMap.get("userNo"));
             log.info("userNo : {}", userNo);
-        }
+        }*/
 
 
         return true;
