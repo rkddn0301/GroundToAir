@@ -540,9 +540,6 @@ function TravelerInfo() {
     e.preventDefault();
 
     let isError = false;
-    const departureDate =
-      data?.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure.at ||
-      "";
 
     /* 탑승자 정보 */
     // ! for-in은 객체의 key를 순회하기에 적합함
@@ -577,6 +574,10 @@ function TravelerInfo() {
 
       const traveler = inputData[index];
 
+      // travelerPricings에서 해당 인덱스의 항목 가져오기
+      const travelerPricing =
+        data?.data?.flightOffers[0]?.travelerPricings[index];
+
       // 영문명 검증
       if (traveler.userEngFN && traveler.userEngFN?.length < 2) {
         isError = true;
@@ -598,6 +599,86 @@ function TravelerInfo() {
             userEngLN: "영문 이름은 최소 2글자 이상이어야 합니다.",
           },
         }));
+      }
+
+      // 생년월일 검증
+
+      /*
+      * 생년월일 규정
+      EX) 2025년 3월 29일 ~ 2025년 3월 30일 여행
+      - 성인
+      > 성인끼리만 갈 경우 : 오는날 기준 만 12세 이상 (2013년 3월 30일 생 이후)
+      > 어린이, 유아 동반 할 경우 : 가는날 기준 만 18세 이상 (2007년 3월 29일 생 이후)
+
+      - 어린이 : 오는날 기준 만 2세 이상 ~ 만 12세 미만 (2013년 3월 31일 생 ~ 2023년 3월 30일 생)
+      - 유아 : 오는날 기준 만 2세 미만 (2023년 3월 31일 생 이전)
+      */
+
+      if (traveler.birth) {
+        const reDepartureDate =
+          data?.data.flightOffers.at(-1)?.itineraries[1].segments[0].departure
+            .at || ""; // 오는편 출발일 기준
+        const birthDay = new Date(traveler.birth); // 생년월일
+        birthDay.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
+        const departure = new Date(reDepartureDate); // 출발일
+
+        if (travelerPricing) {
+          let errorMsg = ""; // 오류메시지
+
+          // ADULT, CHILD, INFANT에 대한 생년월일 조건 체크
+          if (travelerPricing.travelerType === "ADULT") {
+            const adultCutOffDate = new Date(
+              departure.getFullYear() - 12,
+              departure.getMonth(),
+              departure.getDate()
+            );
+            adultCutOffDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
+            if (birthDay > adultCutOffDate) {
+              isError = true;
+              errorMsg = "성인의 생년월일을 확인해주세요.(만 12세 이상)";
+            }
+          } else if (travelerPricing.travelerType === "CHILD") {
+            const childMinDate = new Date(
+              departure.getFullYear() - 12,
+              departure.getMonth(),
+              departure.getDate()
+            );
+            const childMaxDate = new Date(
+              departure.getFullYear() - 2,
+              departure.getMonth(),
+              departure.getDate()
+            );
+
+            childMinDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
+            childMaxDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
+            if (birthDay <= childMinDate || birthDay > childMaxDate) {
+              isError = true;
+              errorMsg =
+                "어린이의 생년월일을 확인해주세요.(만 2세 이상 ~ 만 12세 미만)";
+            }
+          } else if (travelerPricing.travelerType === "HELD_INFANT") {
+            const infantMaxDate = new Date(
+              departure.getFullYear() - 2,
+              departure.getMonth(),
+              departure.getDate()
+            );
+
+            infantMaxDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
+            if (birthDay <= infantMaxDate) {
+              isError = true;
+              errorMsg = "유아의 생년월일을 확인해주세요.(만 2세 미만)";
+            }
+          }
+
+          // setErrorMsg로 오류 메시지를 저장
+          setErrorMsg((prev) => ({
+            ...prev,
+            [index]: {
+              ...prev[index],
+              birth: errorMsg,
+            },
+          }));
+        }
       }
 
       // 여권번호 검증 (6글자 이상)
@@ -627,6 +708,10 @@ function TravelerInfo() {
 
       // 여권 만료일 검증
       if (traveler.passportExDate) {
+        const departureDate =
+          data?.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure
+            .at || "";
+
         const passportExDate = new Date(traveler.passportExDate); // 여권 만료일
         const departure = new Date(departureDate); // 출발일
 

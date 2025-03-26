@@ -3,10 +3,7 @@ package groundToAir.airReservation.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import groundToAir.airReservation.entity.AirlineCodeEntity;
-import groundToAir.airReservation.entity.IataCodeEntity;
-import groundToAir.airReservation.entity.ReservationListEntity;
-import groundToAir.airReservation.entity.UserEntity;
+import groundToAir.airReservation.entity.*;
 import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.repository.AirlineCodeRepository;
 import groundToAir.airReservation.repository.CountryRepository;
@@ -41,13 +38,15 @@ public class AirService {
     private final JwtUtil jwtUtil;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final CountryRepository countryRepository;
     private final ReservationListRepository reservationListRepository;
 
-    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository, AirlineCodeRepository airlineCodeRepository, JwtUtil jwtUtil, ReservationListRepository reservationListRepository) {
+    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository, AirlineCodeRepository airlineCodeRepository, JwtUtil jwtUtil, CountryRepository countryRepository, ReservationListRepository reservationListRepository) {
         this.restTemplate = restTemplate;
         this.iataCodeRepository = iataCodeRepository;
         this.airlineCodeRepository = airlineCodeRepository;
         this.jwtUtil = jwtUtil;
+        this.countryRepository = countryRepository;
         this.reservationListRepository = reservationListRepository;
     }
 
@@ -165,8 +164,8 @@ public class AirService {
                     .append("\"documentType\": \"PASSPORT\",")
                     .append("\"number\": \"").append(data.get("passportNo")).append("\",")
                     .append("\"expiryDate\": \"").append(data.get("passportExDate")).append("\",")
-                    .append("\"issuanceCountry\": \"KR\",")
-                    .append("\"nationality\": \"KR\",")
+                    .append("\"issuanceCountry\": \"").append(countryRepository.findByCountry((String) data.get("passportCOI")).map(CountryEntity::getIsoAlpha2).orElse(null)).append("\",") // 여권발행국 2글자 코드로 변환
+                    .append("\"nationality\": \"").append(countryRepository.findByCountry((String) data.get("nationality")).map(CountryEntity::getIsoAlpha2).orElse(null)).append("\",") // 국적 2글자 코드로 변환
                     .append("\"holder\": true")
                     .append("}]")
                     .append("},");
@@ -325,7 +324,7 @@ public class AirService {
             // 오는편 정보
             Map<String, Object> reItineraries = ((List<Map<String, Object>>) flightOffers.get("itineraries")).stream().skip(1).findFirst().orElse(null);
 
-            List<Map<String, Object>> reSegments = reItineraries != null ? (List<Map<String, Object>>) itineraries.get("segments") : null;
+            List<Map<String, Object>> reSegments = reItineraries != null ? (List<Map<String, Object>>) reItineraries.get("segments") : null;
 
             String reAirlinesIata = null, reDepartureIata = null, reArrivalIata = null,
                      reFlightNo = null, reTurnaroundTime = null, reStopLine = null;
