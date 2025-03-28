@@ -3,6 +3,7 @@ package groundToAir.airReservation.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import groundToAir.airReservation.entity.*;
 import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.repository.AirlineCodeRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -38,6 +40,12 @@ public class AirService {
     private final JwtUtil jwtUtil;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        // Java 8 날짜/시간 타입을 처리하기 위한 모듈 등록
+        objectMapper.registerModule(new JavaTimeModule());
+    }
+
+
     private final CountryRepository countryRepository;
     private final ReservationListRepository reservationListRepository;
 
@@ -224,7 +232,7 @@ public class AirService {
 
 
     // 예약 내역 등록
-    public boolean airReservation(String accessToken, String flightData) throws Exception {
+    public Map<String, Object> airReservation(String accessToken, String flightData) throws Exception {
         // 예약내역 Entity 생성
         ReservationListEntity reservationList = new ReservationListEntity();
 
@@ -405,9 +413,9 @@ public class AirService {
 
             // 최종 저장
             reservationListRepository.save(reservationList);
-            return true;
+            return objectMapper.convertValue(reservationList, new TypeReference<>() {});
         } else { // 항공편 데이터가 없을 시
-            return false;
+            return null;
         }
     }
 

@@ -100,7 +100,7 @@ public class AirController {
 
     // 예약내역 등록
     @PostMapping("/airReservation")
-    public boolean airReservation(@RequestBody String flightData) throws Exception {
+    public Map<String, Object> airReservation(@RequestBody String flightData) throws Exception {
 
         log.info("flightData : {}", flightData);
 

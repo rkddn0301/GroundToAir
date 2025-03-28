@@ -150,7 +150,7 @@ function PaymentResult() {
         }
       );
 
-      if (response.data) {
+      if (response.data !== null) {
         console.log("예약 성공:", response.data);
         const successAlert = await Alert("예약이 완료되었습니다!", "success");
 
@@ -159,6 +159,15 @@ function PaymentResult() {
           sessionStorage.removeItem("pricing");
           sessionStorage.removeItem("inputData");
           sessionStorage.removeItem("contactData");
+          history.push({
+            pathname: `${JSON.parse(
+              CryptoJS.AES.decrypt(
+                sessionStorage.getItem("redirection") || "",
+                encryptionKey
+              ).toString(CryptoJS.enc.Utf8)
+            )}/result`,
+            state: { data: response.data },
+          });
         }
       }
     } catch (error) {

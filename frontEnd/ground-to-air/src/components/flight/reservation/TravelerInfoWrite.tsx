@@ -1,7 +1,7 @@
 // 예약상세정보 입력란
 
 import styled from "styled-components";
-import { travelerPricings } from "../../../utils/api";
+import { TravelerPricings } from "../../../utils/api";
 import DatePicker from "react-datepicker";
 import { ko } from "date-fns/locale";
 import { CountryCodeProps, InputData } from "./TravelerInfo";
@@ -136,7 +136,7 @@ const SelectInput = styled.select`
 
 interface TravelerInfoWriteProps {
   index: number;
-  travelerPricings: travelerPricings;
+  travelerPricings: TravelerPricings;
   inputData: InputData;
   setInputData: React.Dispatch<
     React.SetStateAction<{ [key: number]: InputData }>

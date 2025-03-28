@@ -63,7 +63,15 @@ export interface FlightPricing {
     includedCheckedBagsOnly: boolean; // 무료 위탁 수하물 포함 여부
   };
 
-  travelerPricings: travelerPricings[];
+  travelerPricings: TravelerPricings[];
+}
+
+// AmadeusAPI(FlightCreateOrder) 호출된 데이터 지정
+export interface FlightOrder {
+  type: string;
+  id: string;
+  flightOffers: FlightPricing[];
+  travelers: Travelers[];
 }
 
 // 항공편 행선지 정보
@@ -92,8 +100,8 @@ export interface Segments {
   numberOfStops: number; // 경유 횟수
 }
 
-// 탑승자 정보
-export interface travelerPricings {
+// 탑승자별 금액 정보
+export interface TravelerPricings {
   travelerId: string; // 여행자 ID
   fareOption: string; // 요금 옵션 EX) STANDARD
   travelerType: string; // 여행자 유형 EX) ADULT
@@ -118,6 +126,36 @@ export interface travelerPricings {
     };
   }[];
   validatingAirlineCodes: string[]; // 판매 항공사
+}
+
+// 탑승자 정보
+export interface Travelers {
+  id: string; // 탑승자 순서
+  dateOfBirth: string; // 생년월일
+  gender: string; // 성별
+  name: {
+    firstName: string; // 성
+    lastName: string; // 명
+  };
+
+  contact: {
+    emailAddress: string; // 이메일
+    phones: {
+      countryCallingCode: string; // 번호 국가코드
+      deviceType: string; // 기기유형 EX) MOBILE
+      number: string; // 번호
+    }[];
+    purpose: string; // 여행 목적
+  };
+
+  documents: {
+    documentType: string; // 문서유형 EX) PASSPORT
+    expiryDate: string; // 만료일
+    holder: boolean; // 보유여부
+    issuanceCountry: string; // 발행국가
+    nationality: string; // 국적
+    number: string; // 문서번호 EX) 여권번호
+  }[];
 }
 
 // 호텔

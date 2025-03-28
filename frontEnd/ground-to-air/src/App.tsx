@@ -22,6 +22,7 @@ import PaymentResult from "./components/payment/PaymentResult";
 import FlightReservation from "./components/flight/reservation/FlightReservation";
 import TravelerInfo from "./components/flight/reservation/TravelerInfo";
 import CryptoJS from "crypto-js";
+import FlightReservationComplete from "./components/flight/reservation/FlightReservationComplete";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -85,6 +86,7 @@ function App() {
             "/wishList",
             "/flightReservation/:id",
             "/flightReservation/:id/traveler",
+            "/flightReservation/:id/traveler/result",
           ]}
           exact
         >
@@ -136,6 +138,11 @@ function App() {
             <Route path="/reservationResult" component={PaymentResult} />
 
             <Route
+              path="/flightReservation/:id/traveler/result"
+              component={FlightReservationComplete}
+            />
+
+            <Route
               path="/flightReservation/:id/traveler"
               component={TravelerInfo}
             />
@@ -157,6 +164,7 @@ function App() {
             "/flightReservation/:id",
             "/wishList/flightReservation/:id",
             "/flightReservation/:id/traveler",
+            "/flightReservation/:id/traveler/result",
           ]}
           exact
         >
