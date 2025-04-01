@@ -603,11 +603,11 @@ function TravelerInfo() {
       * 생년월일 규정
       EX) 2025년 3월 29일 ~ 2025년 3월 30일 여행
       - 성인
-      > 성인끼리만 갈 경우 : 오는날 기준 만 12세 이상 (2013년 3월 30일 생 이후)
+      > 성인끼리만 갈 경우 : (왕복) 오는날 기준 만 12세 이상 (2013년 3월 30일 생 이후)
       > 어린이, 유아 동반 할 경우 : 가는날 기준 만 18세 이상 (2007년 3월 29일 생 이후)
 
-      - 어린이 : 오는날 기준 만 2세 이상 ~ 만 12세 미만 (2013년 3월 31일 생 ~ 2023년 3월 30일 생)
-      - 유아 : 오는날 기준 만 2세 미만 (2023년 3월 31일 생 이전)
+      - 어린이 : (왕복) 오는날 기준 만 2세 이상 ~ 만 12세 미만 (2013년 3월 31일 생 ~ 2023년 3월 30일 생)
+      - 유아 : (왕복) 오는날 기준 만 2세 미만 (2023년 3월 31일 생 이전)
       */
 
       if (traveler.birth) {
@@ -618,13 +618,17 @@ function TravelerInfo() {
         const departureDate =
           data?.data.flightOffers.at(-1)?.itineraries[0].segments[0].departure
             .at || ""; // 가는편 출발일 기준
+
         const reDepartureDate =
-          data?.data.flightOffers.at(-1)?.itineraries[1].segments[0].departure
-            .at || ""; // 오는편 출발일 기준
+          data?.data.flightOffers.at(-1)?.itineraries?.[1]?.segments?.[0]
+            ?.departure.at || ""; // 오는편 출발일 기준
+
         const birthDay = new Date(traveler.birth); // 생년월일
         birthDay.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
         const departure = new Date(departureDate); // 출발일
-        const reDeparture = new Date(reDepartureDate); // 출발일
+
+        const reDeparture =
+          reDepartureDate !== "" ? new Date(reDepartureDate) : ""; // 출발일
 
         if (travelerPricing) {
           let errorMsg = ""; // 오류메시지
@@ -645,11 +649,18 @@ function TravelerInfo() {
                   departure.getMonth(),
                   departure.getDate()
                 )
-              : new Date(
+              : reDeparture !== ""
+              ? new Date(
                   reDeparture.getFullYear() - 12,
                   reDeparture.getMonth(),
                   reDeparture.getDate()
+                )
+              : new Date(
+                  departure.getFullYear() - 12,
+                  departure.getMonth(),
+                  departure.getDate()
                 );
+
             adultCutOffDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
             if (birthDay > adultCutOffDate) {
               isError = true;
@@ -658,17 +669,30 @@ function TravelerInfo() {
                 : "성인의 생년월일을 확인해주세요. (만 12세 이상)";
             }
           } else if (travelerPricing.travelerType === "CHILD") {
-            const childMinDate = new Date(
-              reDeparture.getFullYear() - 12,
-              reDeparture.getMonth(),
-              reDeparture.getDate()
-            );
-            const childMaxDate = new Date(
-              reDeparture.getFullYear() - 2,
-              reDeparture.getMonth(),
-              reDeparture.getDate()
-            );
-
+            const childMinDate =
+              reDeparture !== ""
+                ? new Date(
+                    reDeparture.getFullYear() - 12,
+                    reDeparture.getMonth(),
+                    reDeparture.getDate()
+                  )
+                : new Date(
+                    departure.getFullYear() - 12,
+                    departure.getMonth(),
+                    departure.getDate()
+                  );
+            const childMaxDate =
+              reDeparture !== ""
+                ? new Date(
+                    reDeparture.getFullYear() - 2,
+                    reDeparture.getMonth(),
+                    reDeparture.getDate()
+                  )
+                : new Date(
+                    departure.getFullYear() - 2,
+                    departure.getMonth(),
+                    departure.getDate()
+                  );
             childMinDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
             childMaxDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
             if (birthDay <= childMinDate || birthDay > childMaxDate) {
@@ -677,11 +701,18 @@ function TravelerInfo() {
                 "어린이의 생년월일을 확인해주세요. (만 2세 이상 ~ 만 12세 미만)";
             }
           } else if (travelerPricing.travelerType === "HELD_INFANT") {
-            const infantMaxDate = new Date(
-              reDeparture.getFullYear() - 2,
-              reDeparture.getMonth(),
-              reDeparture.getDate()
-            );
+            const infantMaxDate =
+              reDeparture !== ""
+                ? new Date(
+                    reDeparture.getFullYear() - 2,
+                    reDeparture.getMonth(),
+                    reDeparture.getDate()
+                  )
+                : new Date(
+                    departure.getFullYear() - 2,
+                    departure.getMonth(),
+                    departure.getDate()
+                  );
 
             infantMaxDate.setHours(0, 0, 0, 0); // 시간을 0시로 맞춤(기본으로 한국시간 +9:00로 되어있어서 수정함)
             if (birthDay <= infantMaxDate) {

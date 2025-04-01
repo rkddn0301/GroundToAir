@@ -23,6 +23,7 @@ import FlightReservation from "./components/flight/reservation/FlightReservation
 import TravelerInfo from "./components/flight/reservation/TravelerInfo";
 import CryptoJS from "crypto-js";
 import FlightReservationComplete from "./components/flight/reservation/FlightReservationComplete";
+import ReservationDetail from "./router/ReservationDetail";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -87,6 +88,7 @@ function App() {
             "/flightReservation/:id",
             "/flightReservation/:id/traveler",
             "/flightReservation/:id/traveler/result",
+            "/reservationDetail/:revCode",
           ]}
           exact
         >
@@ -135,6 +137,10 @@ function App() {
             />
             <ProtectedRoute path="/join" component={Join} restricted={true} />
 
+            <Route
+              path="/reservationDetail/:revCode"
+              component={ReservationDetail}
+            />
             <Route path="/reservationResult" component={PaymentResult} />
 
             <Route
@@ -165,6 +171,7 @@ function App() {
             "/wishList/flightReservation/:id",
             "/flightReservation/:id/traveler",
             "/flightReservation/:id/traveler/result",
+            "/reservationDetail/:revCode",
           ]}
           exact
         >

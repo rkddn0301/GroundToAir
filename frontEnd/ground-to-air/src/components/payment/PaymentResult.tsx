@@ -47,6 +47,13 @@ function PaymentResult() {
     `${process.env.REACT_APP_TOSSPAY_SECRET_KEY}:`
   )}`;
 
+  // sessionStorage 자동 삭제 함수
+  const removeStorage = () => {
+    sessionStorage.removeItem("pricing");
+    sessionStorage.removeItem("inputData");
+    sessionStorage.removeItem("contactData");
+  };
+
   useEffect(() => {
     const approvePayment = async () => {
       // 카카오페이
@@ -68,9 +75,7 @@ function PaymentResult() {
         } catch (error) {
           console.error("결제 승인 실패:", error);
           setIsLoading(false);
-          sessionStorage.removeItem("pricing");
-          sessionStorage.removeItem("inputData");
-          sessionStorage.removeItem("contactData");
+          removeStorage();
           Alert("결제 승인 중 오류 발생", "error");
           history.push("/"); // 실패 시 홈으로 이동
         }
@@ -91,23 +96,17 @@ function PaymentResult() {
         } catch (error) {
           console.error("결제 승인 실패:", error);
           setIsLoading(false);
-          sessionStorage.removeItem("pricing");
-          sessionStorage.removeItem("inputData");
-          sessionStorage.removeItem("contactData");
+          removeStorage();
           Alert("결제 승인 중 오류 발생", "error");
           history.push("/"); // 실패 시 홈으로 이동
         }
       } else if (pathname.includes("/reservationResult/fail")) {
         Alert("결제에 실패했습니다.", "error");
-        sessionStorage.removeItem("pricing");
-        sessionStorage.removeItem("inputData");
-        sessionStorage.removeItem("contactData");
+        removeStorage();
         history.push("/"); // 실패 시 홈으로 이동
       } else if (pathname.includes("/reservationResult/cancel")) {
         Alert("결제가 취소되었습니다.", "error");
-        sessionStorage.removeItem("pricing");
-        sessionStorage.removeItem("inputData");
-        sessionStorage.removeItem("contactData");
+        removeStorage();
         history.push("/"); // 취소 시 홈으로 이동
       }
     };
@@ -156,9 +155,7 @@ function PaymentResult() {
 
         if (successAlert.isConfirmed || successAlert.isDismissed) {
           setIsLoading(false);
-          sessionStorage.removeItem("pricing");
-          sessionStorage.removeItem("inputData");
-          sessionStorage.removeItem("contactData");
+          removeStorage();
           history.push({
             pathname: `${JSON.parse(
               CryptoJS.AES.decrypt(
@@ -174,9 +171,7 @@ function PaymentResult() {
       console.error("예약 도중 오류 발생 : ", error);
     } finally {
       setIsLoading(false);
-      sessionStorage.removeItem("pricing");
-      sessionStorage.removeItem("inputData");
-      sessionStorage.removeItem("contactData");
+      removeStorage();
     }
   };
 

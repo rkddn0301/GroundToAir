@@ -38,6 +38,7 @@ public class UserService {
     private final WishListRepository wishListRepository;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
+    private final ReservationListRepository reservationListRepository;
 
     // 이메일 이용
     private JavaMailSender mailSender;
@@ -45,7 +46,7 @@ public class UserService {
     // JSON 파싱 클래스 선언
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender, ReservationListRepository reservationListRepository) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,6 +56,7 @@ public class UserService {
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
         this.mailSender = mailSender;
+        this.reservationListRepository = reservationListRepository;
     }
 
     // 아이디 중복 체크
@@ -799,7 +801,8 @@ public class UserService {
 
                     // JSON 문자열 --> Java 객체 변환
                     // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
-                    Map<String, Object> offer = objectMapper.readValue(offerString, new TypeReference<>() {});
+                    Map<String, Object> offer = objectMapper.readValue(offerString, new TypeReference<>() {
+                    });
 
                     // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
                     Map<String, Object> updatedWishItem = new HashMap<>(wishItem);  // 새로운 Map을 생성
@@ -824,7 +827,6 @@ public class UserService {
 
         return wishList;
     }
-
 
 
     // 찜 아이콘 클릭 스위칭
@@ -939,6 +941,56 @@ public class UserService {
 
         }
     }
+
+    // 예약내역 상세 데이터 호출
+    public List<Map<String, Object>> reservationDetail(Map<String, Object> reservationDetailInfo) {
+        if ("".equals(reservationDetailInfo.get("revName")) && "".equals(reservationDetailInfo.get("revCode"))) {
+            return null;
+        } else {
+            String revName = (String) reservationDetailInfo.get("revName"); // 예약자명
+            String revCode = (String) reservationDetailInfo.get("revCode"); // 예약코드
+
+            // 예약자명, 예약코드가 일치하는 상세 데이터 추출
+            List<Map<String, Object>> reservationList = reservationListRepository.findByRevNameAndRevCode(revName, revCode);
+
+            for (Map<String, Object> reservation : reservationList) {
+                if (reservation.containsKey("orders")) {
+                    try {
+                        // orders는 String으로 되어 있음
+                        String orderString = (String) reservation.get("orders");
+
+                        // JSON 문자열 --> Java 객체 변환
+                        // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
+                        Map<String, Object> orders = objectMapper.readValue(orderString, new TypeReference<>() {
+                        });
+
+                        // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
+                        Map<String, Object> updatedReservation = new HashMap<>(reservation);  // 새로운 Map을 생성
+                        updatedReservation.put("orders", orders);  // 변환된 orders를 새로운 Map에 추가
+
+                        // 기존 reservation을 새로운 Map으로 교체
+                        // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
+                        int index = reservationList.indexOf(reservation);
+                        reservationList.set(index, updatedReservation); // reservationList에서 index 순번에 업데이트한 reservation을 그대로 삽입한다.
+
+                    } catch (JsonProcessingException e) {
+                        // 변환 실패 시 처리 방법
+                        log.error("orders 변환 중 오류 발생: " + e.getMessage(), e);
+                        Map<String, Object> emptyOffer = new HashMap<>();  // 빈 객체를 넣어주기
+                        reservation.put("orders", emptyOffer);
+                    }
+                }
+            }
+
+            // 변환 후의 reservationList 로그 출력
+            log.info("변환 완료된 reservationList 데이터: " + reservationList);
+
+            return reservationList;
+
+
+
+                }
+            }
 
 
 }

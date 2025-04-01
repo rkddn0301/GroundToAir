@@ -1,7 +1,7 @@
 // 예약완료 페이지
 
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { SeatClass } from "../../../router/FlightSearch";
 import styled from "styled-components";
 
@@ -51,9 +51,32 @@ const ValueList = styled.div`
 `;
 
 // 버튼 전체 구성
-const ButtonGroup = styled.div``;
+const ButtonGroup = styled.div`
+  margin-top: 10px;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+`;
+
+// 버튼 디자인 구성
+const ChoiceButton = styled.button`
+  background-color: ${(props) => props.theme.white.bg};
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  width: 25%;
+  padding: 15px 5px 15px 5px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
+`;
 
 interface FlightReservationCompleteProps {
+  revName: string; // 예약자명
   revCode: string; // 예약코드
   regDate: number[]; // 예약날짜
 
@@ -84,6 +107,8 @@ function FlightReservationComplete() {
   const location = useLocation<{ data?: FlightReservationCompleteProps }>();
   const { data } = location.state || {};
 
+  const history = useHistory();
+
   // 초기 렌더링
   useEffect(() => {
     if (sessionStorage.getItem("redirection")) {
@@ -93,6 +118,8 @@ function FlightReservationComplete() {
       console.log(data);
     }
   }, [data]);
+
+  const revName = data?.revName; // 예약자명
 
   const revCode = data?.revCode; // 예약코드
   const regDate = data?.regDate.join("-")?.replace(/-(\d)\b/g, "-0$1"); // 예약일 ( '-(\d)' : '-' 뒤 숫자, '\b' : '\d'뒤에 문자가 없으면 동작하게 하는 것  )
@@ -141,7 +168,7 @@ function FlightReservationComplete() {
               <p>가는편</p>
               {data.reFlightNo && <p>오는편</p>}
               <p>출국일</p>
-              <p>귀국일</p>
+              {data.reFlightNo && <p>귀국일</p>}
               <p>탑승인원</p>
               <p>좌석등급</p>
               <p>결제금액</p>
@@ -161,8 +188,22 @@ function FlightReservationComplete() {
         )}
       </ResultList>
       <ButtonGroup>
-        <button>메인으로</button>
-        <button>예약정보 확인</button>
+        <ChoiceButton onClick={() => history.push("/")}>메인으로</ChoiceButton>
+
+        {/* revCode(예약코드), revName(예약자명) 데이터를 전달해야함 */}
+        <ChoiceButton
+          onClick={() =>
+            history.push({
+              pathname: `/reservationDetail/${revCode}`,
+              state: {
+                revName: revName,
+                revCode: revCode,
+              },
+            })
+          }
+        >
+          예약정보 확인
+        </ChoiceButton>
       </ButtonGroup>
     </Container>
   );

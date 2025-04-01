@@ -256,13 +256,22 @@ public class UserController {
     }
 
     // 찜 제거
-    @PostMapping("wishDelete")
+    @PostMapping("/wishDelete")
     public boolean wishDelete(@RequestBody WishListEntity wishListEntity) {
-        log.info("찜 번호 : " + wishListEntity.getWishNo() );
+        log.info("찜 번호 : " + wishListEntity.getWishNo());
 
         return userService.wishDelete(wishListEntity.getWishNo());
     }
 
+    // 예약내역 상세 데이터 호출
+    @PostMapping("/reservationDetail")
+    public ResponseEntity<List<Map<String, Object>>> reservationDetail(@RequestBody Map<String, Object> reservationDetailInfo) {
+        log.info("예약 상세 호출에 필요한 데이터 : {}", reservationDetailInfo);
+        // 예약내역 상세 데이터 확인
+        List<Map<String, Object>> response = userService.reservationDetail(reservationDetailInfo);
+        return ResponseEntity.ok(response);
+
+    }
 
 
 }
