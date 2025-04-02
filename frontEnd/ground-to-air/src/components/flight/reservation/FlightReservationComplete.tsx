@@ -111,6 +111,7 @@ function FlightReservationComplete() {
 
   // 초기 렌더링
   useEffect(() => {
+    // 예약 완료 페이지로 리다이렉션 후 삭제 조치
     if (sessionStorage.getItem("redirection")) {
       sessionStorage.removeItem("redirection");
     }

@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
+import { Alert } from "../utils/sweetAlert";
 
 function ReservationDetail() {
   const location = useLocation<{ revName?: string; revCode?: string }>();
@@ -32,9 +33,19 @@ function ReservationDetail() {
           revCode: revCode,
         }
       );
-      if (response.data) {
-        console.log(response.data);
+      // 예약자명, 예약코드가 일치하지 않을 경우
+      if (response.data.length === 0) {
+        const errorAlert = await Alert(
+          "예약자명 혹은 예약코드가 일치하지 않습니다.",
+          "error"
+        );
+
+        if (errorAlert.isConfirmed || errorAlert.isDismissed) {
+          history.goBack();
+          return;
+        }
       }
+      console.log(response.data);
     } catch (error) {
       console.error("예약 상세 데이터 가져오기 실패 : ", error);
     } finally {

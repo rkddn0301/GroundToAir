@@ -4,7 +4,7 @@ import InfoBox from "../components/InfoBox";
 import Title from "../components/Title";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useHistory, useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { isLoggedInState } from "../utils/atom";
 import { startSessionTimeout } from "../utils/jwtActivityTimer";
@@ -102,6 +102,15 @@ const FederationBtnField = styled.div`
   display: flex;
   flex-direction: row;
   gap: 15px;
+`;
+
+// 비회원 예약조회 버튼 디자인 구성
+const GuestBtnField = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 5px 0;
+  font-weight: 600;
+  text-decoration: underline;
 `;
 
 function Login() {
@@ -302,6 +311,9 @@ function Login() {
             />
           </FederationBtnField>
         </FederationField>
+        <GuestBtnField>
+          <Link to="/guestReservation">비회원 예약조회</Link>
+        </GuestBtnField>
       </InfoBox>
     </Container>
   );

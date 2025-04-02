@@ -24,6 +24,7 @@ import TravelerInfo from "./components/flight/reservation/TravelerInfo";
 import CryptoJS from "crypto-js";
 import FlightReservationComplete from "./components/flight/reservation/FlightReservationComplete";
 import ReservationDetail from "./router/ReservationDetail";
+import GuestReservationList from "./router/GuestReservationList";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -114,6 +115,11 @@ function App() {
             />
 
             {/* 로그인된 사용자는 접근 불가 */}
+            <ProtectedRoute
+              path="/guestReservation"
+              component={GuestReservationList}
+              restricted={true}
+            />
             <ProtectedRoute
               path="/pwFind"
               component={PwFind}
