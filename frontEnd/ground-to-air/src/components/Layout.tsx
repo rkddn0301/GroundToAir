@@ -156,7 +156,7 @@ function Layout() {
           </>
         )}
 
-        <Link to="/reservationList">
+        <Link to={isLoggedIn ? "/reservationList" : "/guestReservation"}>
           <Menus>
             <Icon
               xmlns="http://www.w3.org/2000/svg"

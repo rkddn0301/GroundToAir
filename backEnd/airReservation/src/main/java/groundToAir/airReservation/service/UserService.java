@@ -986,12 +986,52 @@ public class UserService {
             log.info("변환 완료된 reservationList 데이터: " + reservationList);
 
             return reservationList;
-
-
-
                 }
             }
 
+    // 예약내역 조회
+    public List<Map<String, Object>> getRevList(int userNo) {
+
+        // ! ReservationListEntity의 order 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
+
+        // DB에서 가져온 데이터
+        List<Map<String, Object>> revList = reservationListRepository.findRevList(userNo);
+
+        // orders 변환
+        for (Map<String, Object> revItem : revList) {
+            if (revItem.containsKey("orders")) {
+                try {
+                    // ordersString는 String으로 되어 있음
+                    String ordersString = (String) revItem.get("orders");
+
+                    // JSON 문자열 --> Java 객체 변환
+                    // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
+                    Map<String, Object> orders = objectMapper.readValue(ordersString, new TypeReference<>() {
+                    });
+
+                    // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
+                    Map<String, Object> updatedRevItem = new HashMap<>(revItem);  // 새로운 Map을 생성
+                    updatedRevItem.put("orders", orders);  // 변환된 orders를 새로운 Map에 추가
+
+                    // 기존 revItem을 새로운 Map으로 교체
+                    // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
+                    int index = revList.indexOf(revItem);
+                    revList.set(index, updatedRevItem); // revList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
+
+                } catch (JsonProcessingException e) {
+                    // 변환 실패 시 처리 방법
+                    log.error("orders 변환 중 오류 발생: " + e.getMessage(), e);
+                    Map<String, Object> emptyOrders = new HashMap<>();  // 빈 객체를 넣어주기
+                    revItem.put("orders", emptyOrders);
+                }
+            }
+        }
+
+        // 변환 후의 revList 로그 출력
+        log.info("변환 완료된 revList 데이터: " + revList);
+
+        return revList;
+    }
 
 }
 

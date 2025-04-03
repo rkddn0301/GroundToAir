@@ -273,5 +273,21 @@ public class UserController {
 
     }
 
+    // 예약내역 조회
+    @PostMapping("/getRevList")
+    public ResponseEntity<List<Map<String, Object>>> getRevList(@RequestHeader("Authorization") String accessToken) {
+        // Bearer 토큰에서 "Bearer " 부분 제거
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+
+        // 토큰에서 사용자 번호 추출
+        int userNo = jwtUtil.extractUserNo(accessToken);
+
+        // 사용자 번호로 찜 데이터 가져오기
+        List<Map<String, Object>> revListDetails = userService.getRevList(userNo);
+        return ResponseEntity.ok(revListDetails);
+    }
+
 
 }

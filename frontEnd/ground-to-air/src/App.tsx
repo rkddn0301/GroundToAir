@@ -25,6 +25,7 @@ import CryptoJS from "crypto-js";
 import FlightReservationComplete from "./components/flight/reservation/FlightReservationComplete";
 import ReservationDetail from "./router/ReservationDetail";
 import GuestReservationList from "./router/GuestReservationList";
+import ReservationList from "./router/ReservationList";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -90,6 +91,7 @@ function App() {
             "/flightReservation/:id/traveler",
             "/flightReservation/:id/traveler/result",
             "/reservationDetail/:revCode",
+            "/reservationList",
           ]}
           exact
         >
@@ -111,6 +113,12 @@ function App() {
             <ProtectedRoute
               path="/wishList"
               component={WishList}
+              restricted={false}
+            />
+
+            <ProtectedRoute
+              path="/reservationList"
+              component={ReservationList}
               restricted={false}
             />
 
@@ -178,6 +186,7 @@ function App() {
             "/flightReservation/:id/traveler",
             "/flightReservation/:id/traveler/result",
             "/reservationDetail/:revCode",
+            "/reservationList",
           ]}
           exact
         >
