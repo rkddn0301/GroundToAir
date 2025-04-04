@@ -786,46 +786,11 @@ public class UserService {
 
     // 찜 조회
     public List<Map<String, Object>> getWish(int userNo) {
-
         // ! wishListEntity의 offer 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
-
         // DB에서 가져온 데이터
         List<Map<String, Object>> wishList = wishListRepository.findWishList(userNo);
 
-        // offer 변환
-        for (Map<String, Object> wishItem : wishList) {
-            if (wishItem.containsKey("offer")) {
-                try {
-                    // offer는 String으로 되어 있음
-                    String offerString = (String) wishItem.get("offer");
-
-                    // JSON 문자열 --> Java 객체 변환
-                    // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
-                    Map<String, Object> offer = objectMapper.readValue(offerString, new TypeReference<>() {
-                    });
-
-                    // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
-                    Map<String, Object> updatedWishItem = new HashMap<>(wishItem);  // 새로운 Map을 생성
-                    updatedWishItem.put("offer", offer);  // 변환된 offer를 새로운 Map에 추가
-
-                    // 기존 wishItem을 새로운 Map으로 교체
-                    // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
-                    int index = wishList.indexOf(wishItem);
-                    wishList.set(index, updatedWishItem); // wishList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
-
-                } catch (JsonProcessingException e) {
-                    // 변환 실패 시 처리 방법
-                    log.error("offer 변환 중 오류 발생: " + e.getMessage(), e);
-                    Map<String, Object> emptyOffer = new HashMap<>();  // 빈 객체를 넣어주기
-                    wishItem.put("offer", emptyOffer);
-                }
-            }
-        }
-
-        // 변환 후의 wishList 로그 출력
-        log.info("변환 완료된 wishList 데이터: " + wishList);
-
-        return wishList;
+        return parsingText(wishList, "offer");
     }
 
 
@@ -953,84 +918,55 @@ public class UserService {
             // 예약자명, 예약코드가 일치하는 상세 데이터 추출
             List<Map<String, Object>> reservationList = reservationListRepository.findByRevNameAndRevCode(revName, revCode);
 
-            for (Map<String, Object> reservation : reservationList) {
-                if (reservation.containsKey("orders")) {
-                    try {
-                        // orders는 String으로 되어 있음
-                        String orderString = (String) reservation.get("orders");
-
-                        // JSON 문자열 --> Java 객체 변환
-                        // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
-                        Map<String, Object> orders = objectMapper.readValue(orderString, new TypeReference<>() {
-                        });
-
-                        // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
-                        Map<String, Object> updatedReservation = new HashMap<>(reservation);  // 새로운 Map을 생성
-                        updatedReservation.put("orders", orders);  // 변환된 orders를 새로운 Map에 추가
-
-                        // 기존 reservation을 새로운 Map으로 교체
-                        // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
-                        int index = reservationList.indexOf(reservation);
-                        reservationList.set(index, updatedReservation); // reservationList에서 index 순번에 업데이트한 reservation을 그대로 삽입한다.
-
-                    } catch (JsonProcessingException e) {
-                        // 변환 실패 시 처리 방법
-                        log.error("orders 변환 중 오류 발생: " + e.getMessage(), e);
-                        Map<String, Object> emptyOffer = new HashMap<>();  // 빈 객체를 넣어주기
-                        reservation.put("orders", emptyOffer);
-                    }
-                }
-            }
-
-            // 변환 후의 reservationList 로그 출력
-            log.info("변환 완료된 reservationList 데이터: " + reservationList);
-
-            return reservationList;
+            return parsingText(reservationList, "orders");
                 }
             }
 
     // 예약내역 조회
     public List<Map<String, Object>> getRevList(int userNo) {
-
         // ! ReservationListEntity의 order 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
-
         // DB에서 가져온 데이터
         List<Map<String, Object>> revList = reservationListRepository.findRevList(userNo);
 
-        // orders 변환
-        for (Map<String, Object> revItem : revList) {
-            if (revItem.containsKey("orders")) {
+        return parsingText(revList, "orders");
+    }
+
+    // JSON 문자열 변환 메서드 (찜 내역, 예약내역, 예약상세)
+    private List<Map<String, Object>> parsingText(List<Map<String, Object>> parsingList, String containsKey) {
+        // containsKey 변환
+        for (Map<String, Object> item : parsingList) {
+            if (item.containsKey(containsKey)) {
                 try {
-                    // ordersString는 String으로 되어 있음
-                    String ordersString = (String) revItem.get("orders");
+                    // containsKeyString는 String으로 되어 있음
+                    String containsKeyString = (String) item.get(containsKey);
 
                     // JSON 문자열 --> Java 객체 변환
                     // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
-                    Map<String, Object> orders = objectMapper.readValue(ordersString, new TypeReference<>() {
+                    Map<String, Object> containsKeyData = objectMapper.readValue(containsKeyString, new TypeReference<>() {
                     });
 
                     // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
-                    Map<String, Object> updatedRevItem = new HashMap<>(revItem);  // 새로운 Map을 생성
-                    updatedRevItem.put("orders", orders);  // 변환된 orders를 새로운 Map에 추가
+                    Map<String, Object> updatedItem = new HashMap<>(item);  // 새로운 Map을 생성
+                    updatedItem.put(containsKey, containsKeyData);  // 변환된 데이터를 새로운 Map에 추가
 
                     // 기존 revItem을 새로운 Map으로 교체
                     // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
-                    int index = revList.indexOf(revItem);
-                    revList.set(index, updatedRevItem); // revList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
+                    int index = parsingList.indexOf(item);
+                    parsingList.set(index, updatedItem); // parsingList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
 
                 } catch (JsonProcessingException e) {
                     // 변환 실패 시 처리 방법
-                    log.error("orders 변환 중 오류 발생: " + e.getMessage(), e);
-                    Map<String, Object> emptyOrders = new HashMap<>();  // 빈 객체를 넣어주기
-                    revItem.put("orders", emptyOrders);
+                    log.error("emptyContainsKeys 변환 중 오류 발생: " + e.getMessage(), e);
+                    Map<String, Object> emptyContainsKeys = new HashMap<>();  // 빈 객체를 넣어주기
+                    item.put(containsKey, emptyContainsKeys);
                 }
             }
         }
 
-        // 변환 후의 revList 로그 출력
-        log.info("변환 완료된 revList 데이터: " + revList);
+        // 변환 후의 parsingList 로그 출력
+        log.info("변환 완료된 parsingList 데이터: " + parsingList);
 
-        return revList;
+        return parsingList;
     }
 
 }

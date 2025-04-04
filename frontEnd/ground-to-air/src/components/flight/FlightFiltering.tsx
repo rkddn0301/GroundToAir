@@ -39,7 +39,11 @@ const CodeShare = styled.div`
 `;
 
 // 공동운항 버튼
-const CodeShareButton = styled.button<{ isActive: boolean }>`
+const CodeShareButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !["isActive"].includes(prop),
+})<{
+  isActive: boolean;
+}>`
   margin-top: 5%;
   background-color: ${(props) =>
     props.isActive ? props.theme.black.bg : props.theme.white.bg};
@@ -1014,13 +1018,13 @@ function FlightFiltering({
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     className="size-6"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="m19.5 8.25-7.5 7.5-7.5-7.5"
                     />
                   </MoreIcon>
@@ -1034,13 +1038,13 @@ function FlightFiltering({
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     className="size-6"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="m4.5 15.75 7.5-7.5 7.5 7.5"
                     />
                   </MoreIcon>
