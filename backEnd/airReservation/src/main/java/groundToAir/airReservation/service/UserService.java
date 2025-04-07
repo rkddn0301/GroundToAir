@@ -969,5 +969,24 @@ public class UserService {
         return parsingList;
     }
 
+    // 예약내역 제거
+    public boolean revDelete(int revId) {
+        // 기존 데이터 조회
+        ReservationListEntity existingRev = reservationListRepository.findById(revId).orElse(null);
+        if (existingRev == null) {
+            log.warn("예약내역 데이터가 존재하지 않습니다: 예약번호 {}", revId);
+            return false; // 데이터가 없는 경우 업데이트 실패
+        }
+        try {
+            reservationListRepository.deleteById(revId);
+            log.info("예약내역 데이터 삭제 성공: 예약번호 {}", revId);
+            return true;
+        } catch (Exception e) {
+            log.error("예약내역 데이터 삭제 실패: 예약번호 {}, 오류: {}", revId, e.getMessage());
+            return false;
+
+        }
+    }
+
 }
 

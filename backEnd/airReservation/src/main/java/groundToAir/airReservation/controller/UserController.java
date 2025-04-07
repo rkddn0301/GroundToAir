@@ -1,19 +1,17 @@
 package groundToAir.airReservation.controller;
 
+import groundToAir.airReservation.entity.ReservationListEntity;
 import groundToAir.airReservation.entity.UserEntity;
 import groundToAir.airReservation.entity.UserPassportEntity;
 import groundToAir.airReservation.entity.WishListEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 // 회원 정보 관련 Controller
 @RestController
@@ -287,6 +285,14 @@ public class UserController {
         // 사용자 번호로 찜 데이터 가져오기
         List<Map<String, Object>> revListDetails = userService.getRevList(userNo);
         return ResponseEntity.ok(revListDetails);
+    }
+
+    // 예약내역 제거
+    @PostMapping("/revDelete")
+    public boolean revDelete(@RequestBody ReservationListEntity reservationListEntity) {
+        log.info("예약 번호 : " + reservationListEntity.getRevId());
+
+        return userService.revDelete(reservationListEntity.getRevId());
     }
 
 

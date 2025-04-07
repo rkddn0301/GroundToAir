@@ -132,7 +132,7 @@ function WishList() {
     e.preventDefault();
     if (indexGroup * wishPageCount < totalWishes) {
       setIndexGroup(indexGroup + 1);
-      setCurrentIndex(indexGroup * wishPageCount + 1); // 현재 그룹의 마지막 페이지 번호를 currentIndex로 설정
+      setCurrentIndex(indexGroup * wishPageCount + 1); // 다음 그룹의 첫 페이지 번호를 currentIndex로 설정
     }
   };
 
@@ -140,7 +140,7 @@ function WishList() {
     e.preventDefault();
     if (indexGroup > 1) {
       setIndexGroup(indexGroup - 1);
-      setCurrentIndex((indexGroup - 1) * wishPageCount); // 이전 그룹의 첫 번째 페이지 번호를 currentIndex로 설정
+      setCurrentIndex((indexGroup - 1) * wishPageCount); // 이전 그룹의 마지막 페이지 번호를 currentIndex로 설정
     }
   };
 

@@ -7,6 +7,7 @@ import { isLoggedInState } from "../utils/atom";
 import { AirlineCodes, FlightOrder } from "../utils/api";
 import axios from "axios";
 import { SeatClass } from "./FlightSearch";
+import ReservationResult from "../components/revList/ReservationResult";
 
 // ReservationList 전체 컴포넌트 구성
 const Container = styled.div`
@@ -79,48 +80,37 @@ const ElementTitle = styled.div.withConfig({
   border: 1px solid ${(props) => props.theme.white.font};
 `;
 
-// 요소 값
-const ElementValue = styled.div.withConfig({
-  shouldForwardProp: (prop) => !["isWidth"].includes(prop),
-})<{
-  isWidth: string;
-}>`
+// 페이지네이션 전체 구성
+const PagenationContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  width: ${(props) => props.isWidth};
-  justify-content: center;
-  align-items: center;
-  border: 1px solid ${(props) => props.theme.white.font};
   gap: 5px;
-  font-size: 80%;
-  padding: 5px;
-  word-break: break-word;
+  margin: 0 auto;
 `;
 
-// 요소 버튼
-// shouldForwardProp : styled-components에서 특정 props가 DOM에 전달되지 않도록 필터링함(오류방지)
-const ElementButton = styled.button.withConfig({
-  shouldForwardProp: (prop) =>
-    !["fontSize", "backgroundColor", "hoverColor"].includes(prop),
-})<{
-  fontSize: string;
-  backgroundColor: string;
-  hoverColor: string;
-}>`
-  width: 100%;
-  height: 100%;
-  font-size: ${(props) => props.fontSize};
-  background-color: ${(props) => props.backgroundColor};
-  border: transparent;
+// 페이지네이션 버튼 디자인 구성
+const PagenationBtn = styled.button`
+  background-color: ${(props) => props.theme.white.bg};
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  border-radius: 3px;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 550;
   cursor: pointer;
   &:hover {
-    background-color: ${(props) => props.hoverColor};
+    background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
+  }
+
+  &:disabled {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+    cursor: default;
   }
 `;
 
 // FlightReservation 타입 지정
-interface FlightReservation {
+export interface FlightReservation {
   revId: number;
   revCode: string;
   userNo?: number;
@@ -166,6 +156,84 @@ function ReservationList() {
     revList: true, // 예약내역
     pastList: false, // 지난내역
   }); // 내역 선택 state
+
+  // 예약내역/지난내역 선택에 따라 필터링
+  const filteredRev = getRevList.filter((rev: FlightReservation) => {
+    const today = new Date().toISOString().split("T")[0];
+    return listChoice.pastList
+      ? rev.departureTime.split("T")[0] < today
+      : rev.departureTime.split("T")[0] >= today;
+  });
+
+  /* 페이지네이션 구간 시작 */
+
+  // 페이지네이션은 이전, 다음버튼을 제외한 최대 5개 버튼을 보여준다.
+  // 버튼마다 찜 데이터를 5개씩 보여준다.
+
+  const [currentIndex, setCurrentIndex] = useState(1); // 선택한 페이지네이션 state
+  const [indexGroup, setIndexGroup] = useState(1); // 페이지네이션 그룹 state
+
+  const revPageCount = 5; // 조회되는 예약내역 데이터 & 페이지네이션 버튼 개수
+
+  const totalRevs = Math.ceil(filteredRev.length / revPageCount); // 생성되는 페이지네이션 버튼 총 개수
+
+  // sort(a,b) : return 값이 -1이면 a가 앞으로, 0이면 유지, 1이면 b가 앞으로 감
+  // a.localeCompare(b) : 문자열 날짜를 비교해서 a가 b보다 이전이면 -1, 같으면 0, 이후면 1을 출력.
+  /* ['2025-05-03', '2025-05-05', '2025-05-01'] 이 있을 때의 가정 (내림차순)
+  1. 비교: '2025-05-05' vs '2025-05-03'
+  '2025-05-05'.localeCompare('2025-05-03') → 양수
+
+  즉, '2025-05-05'가 뒤 → 앞으로 정렬됨
+
+  2. 비교: '2025-05-01' vs '2025-05-05'
+  '2025-05-01'.localeCompare('2025-05-05') → 음수
+
+  즉, '2025-05-01'이 앞 → 위치 그대로
+
+  3. 비교: '2025-05-01' vs '2025-05-03'
+  '2025-05-01'.localeCompare('2025-05-03') → 음수
+
+  즉, '2025-05-01'이 앞 → 위치 그대로
+  */
+  const sortedRev = listChoice.pastList
+    ? [...filteredRev].sort(
+        (a, b) => b.departureTime.localeCompare(a.departureTime) // 내림차순 (a.departureTime.localeCompare(b.departureTime)으로하면 오름차순)
+      )
+    : filteredRev;
+  // 지난내역 탭일 시 최근 예약한 내역이 앞에 표시되도록 정렬
+  const currentRevData = sortedRev.slice(
+    (currentIndex - 1) * revPageCount,
+    currentIndex * revPageCount
+  ); // 선택한 페이지네이션 번호에 따라 보여주는 예약내역 데이터 순서
+  console.log(currentRevData);
+
+  // 페이지네이션 클릭 시 동작
+  const pagenationClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number
+  ) => {
+    e.preventDefault();
+    setCurrentIndex(index);
+  };
+
+  // 그룹 이동을 위한 함수
+  const goToNextGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (indexGroup * revPageCount < totalRevs) {
+      setIndexGroup(indexGroup + 1);
+      setCurrentIndex(indexGroup * revPageCount + 1); // 다음 그룹의 첫 페이지 번호를 currentIndex로 설정
+    }
+  };
+
+  const goToPrevGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (indexGroup > 1) {
+      setIndexGroup(indexGroup - 1);
+      setCurrentIndex((indexGroup - 1) * revPageCount); // 이전 그룹의 마지막 페이지 번호를 currentIndex로 설정
+    }
+  };
+
+  /* 페이지네이션 구간 끝 */
 
   // 예약내역 데이터 가져오기
   const reservationListData = async () => {
@@ -218,6 +286,10 @@ function ReservationList() {
       revList: id === "revList" ? true : false,
       pastList: id === "pastList" ? true : false,
     });
+
+    // 내역 변경 시 페이지네이션 처음으로 돌아감
+    setCurrentIndex(1);
+    setIndexGroup(1);
   };
 
   return (
@@ -256,78 +328,16 @@ function ReservationList() {
             <ElementTitle isWidth={"5%"} />
           </div>
 
-          {getRevList.length > 0 ? (
-            <div style={{ display: "flex" }}>
-              <ElementValue isWidth={"16%"}>
-                <span>{getRevList[0].regDate}</span>
-                <span>{getRevList[0].revCode}</span>
-              </ElementValue>
-              <ElementValue isWidth={"30%"}>
-                <span>
-                  {getRevList[0].airlinesIata} {getRevList[0].departureIata}-
-                  {getRevList[0].arrivalIata} {getRevList[0].departureTime}~
-                  {getRevList[0].arrivalTime}
-                </span>
-                {getRevList[0].reStopLine ? (
-                  <span>
-                    {getRevList[0].reAirlinesIata}{" "}
-                    {getRevList[0].reDepartureIata}-
-                    {getRevList[0].reArrivalIata}{" "}
-                    {getRevList[0].reDepartureTime}~
-                    {getRevList[0].reArrivalTime}
-                  </span>
-                ) : (
-                  ""
-                )}
-              </ElementValue>
-              <ElementValue isWidth={"13%"}>
-                <span>{getRevList[0].departureTime}</span>
-                {getRevList[0].reStopLine ? (
-                  <>
-                    <span>~</span>
-                    <span>{getRevList[0].reDepartureTime}</span>
-                  </>
-                ) : (
-                  ""
-                )}
-              </ElementValue>
-              <ElementValue isWidth={"15%"}>
-                <span>
-                  {(getRevList[0].adults ?? 0) +
-                    (getRevList[0].childrens ?? 0) +
-                    (getRevList[0].infants ?? 0)}
-                  명 /{" "}
-                  {getRevList[0].seatClass === "FIRST"
-                    ? "일등석"
-                    : getRevList[0].seatClass === "BUSINESS"
-                    ? "비즈니스석"
-                    : getRevList[0].seatClass === "PREMIUM_ECONOMY"
-                    ? "프리미엄 일반석"
-                    : "일반석"}
-                </span>
-              </ElementValue>
-              <ElementValue isWidth={"11%"}>
-                {getRevList[0].totalPrice}
-              </ElementValue>
-              <ElementValue isWidth={"10%"} style={{ padding: "0px" }}>
-                <ElementButton
-                  fontSize={"9px"}
-                  backgroundColor={"skyblue"}
-                  hoverColor={"#595959"}
-                >
-                  예약상세확인
-                </ElementButton>
-              </ElementValue>
-              <ElementValue isWidth={"5%"} style={{ padding: "0px" }}>
-                <ElementButton
-                  fontSize={"12px"}
-                  backgroundColor={"#ff4d4f"}
-                  hoverColor={"#b03044"}
-                >
-                  X
-                </ElementButton>
-              </ElementValue>
-            </div>
+          {/* 예약내역/지난내역 선택 여부에 따라 filteredRev로 필터링 */}
+          {filteredRev.length > 0 ? (
+            currentRevData.map((rev: FlightReservation) => (
+              <ReservationResult
+                key={rev.revId}
+                rev={rev}
+                airlineCodeOffers={airlineCodeOffers}
+                setGetRevList={setGetRevList}
+              />
+            ))
           ) : (
             <div
               style={{
@@ -344,10 +354,39 @@ function ReservationList() {
           )}
         </RevList>
 
-        {/* 페이지네이션 */}
-        <div>
-          <button>1</button>
-        </div>
+        {/* 페이지네이션 구간 */}
+        <PagenationContainer>
+          {/* 이전 버튼 */}
+          {indexGroup > 1 && (
+            <PagenationBtn onClick={(e) => goToPrevGroup(e)}>
+              &lt;&lt;
+            </PagenationBtn>
+          )}
+
+          {/* 페이지네이션 번호 구성 */}
+          {[...Array(revPageCount)].map((_, index) => {
+            const page = (indexGroup - 1) * revPageCount + (index + 1);
+            if (page <= totalRevs) {
+              return (
+                <PagenationBtn
+                  key={page}
+                  onClick={(e) => pagenationClick(e, page)}
+                  disabled={currentIndex === page}
+                >
+                  {page}
+                </PagenationBtn>
+              );
+            }
+            return null;
+          })}
+
+          {/* 다음 버튼 */}
+          {indexGroup * revPageCount < totalRevs && (
+            <PagenationBtn onClick={(e) => goToNextGroup(e)}>
+              &gt;&gt;
+            </PagenationBtn>
+          )}
+        </PagenationContainer>
       </ListBox>
     </Container>
   );
