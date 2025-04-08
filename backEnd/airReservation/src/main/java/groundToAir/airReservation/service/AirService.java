@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -307,7 +308,23 @@ public class AirService {
                         .map(LocalDateTime::parse)
                         .orElse(null);
                 flightNo =  airlinesIata + segments.get(0).get("number");
-                turnaroundTime = (String) segments.get(0).get("duration");
+
+                // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
+                if (segments.size()-1 == 0) {
+                    turnaroundTime = (String) segments.get(0).get("duration");
+                } else if (departureTime != null && arrivalTime != null) {
+                    Duration duration = Duration.between(departureTime, arrivalTime);
+                    long hours = duration.toHours();
+                    long minutes = duration.toMinutesPart();
+                    if (minutes == 0) {
+                        turnaroundTime = String.format("PT%dH", hours);
+                    } else if (hours == 0) {
+                        turnaroundTime = String.format("PT%dM", minutes);
+                    } else {
+                        turnaroundTime = String.format("PT%dH%dM", hours, minutes);
+                    }
+                }
+
                 stopLine = segments.size()-1 == 0 ? "직항" : segments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
                 log.info("airlinesIata : {}", airlinesIata);
                 log.info("departureIata : {}", departureIata);
@@ -352,7 +369,23 @@ public class AirService {
                         .map(LocalDateTime::parse)
                         .orElse(null);
                 reFlightNo =  reAirlinesIata + reSegments.get(0).get("number");
-                reTurnaroundTime = (String) reSegments.get(0).get("duration");
+
+                // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
+                if (reSegments.size()-1 == 0) {
+                    reTurnaroundTime = (String) reSegments.get(0).get("duration");
+                } else if (reDepartureTime != null && reArrivalTime != null) {
+                    Duration duration = Duration.between(reDepartureTime, reArrivalTime);
+                    long hours = duration.toHours();
+                    long minutes = duration.toMinutesPart();
+                    if (minutes == 0) {
+                        reTurnaroundTime = String.format("PT%dH", hours);
+                    } else if (hours == 0) {
+                        reTurnaroundTime = String.format("PT%dM", minutes);
+                    } else {
+                        reTurnaroundTime = String.format("PT%dH%dM", hours, minutes);
+                    }
+                }
+
                 reStopLine = reSegments.size()-1 == 0 ? "직항" : reSegments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
                 log.info("reAirlinesIata : {}", reAirlinesIata);
                 log.info("reDepartureIata : {}", reDepartureIata);

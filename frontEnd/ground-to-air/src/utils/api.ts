@@ -68,10 +68,12 @@ export interface FlightPricing {
 
 // AmadeusAPI(FlightCreateOrder) 호출된 데이터 지정
 export interface FlightOrder {
-  type: string;
-  id: string;
-  flightOffers: FlightPricing[];
-  travelers: Travelers[];
+  data: {
+    type: string;
+    id: string;
+    flightOffers: FlightPricing[];
+    travelers: Travelers[];
+  };
 }
 
 // 항공편 행선지 정보

@@ -163,7 +163,7 @@ function ReservationResult({
           hoverColor={"#595959"}
           onClick={() =>
             history.push({
-              pathname: `/reservationDetail /${rev.revCode}`,
+              pathname: `/reservationDetail/${rev.revCode}`,
               state: {
                 revName: rev.revName,
                 revCode: rev.revCode,

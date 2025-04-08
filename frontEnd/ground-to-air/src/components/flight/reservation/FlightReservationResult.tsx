@@ -130,6 +130,8 @@ const DetailedPrice = styled.div`
 
 interface FlightReservationResultProps {
   pricing: FlightPricing; // 항공편 상세 코드
+  turnaroundTime?: string; // 가는편 총 소요시간
+  reTurnaroundTime?: string; // 오는편 총 소요시간
   offer?: FlightOffer; // 항공편 조회 코드
   airlineCodeOffers: AirlineCodes[]; // 항공사 코드 DB
   iataCodeOffers: IataCodes[]; // 공항 코드 DB
@@ -137,7 +139,8 @@ interface FlightReservationResultProps {
 
 function FlightReservationResult({
   pricing,
-  offer,
+  turnaroundTime,
+  reTurnaroundTime,
   airlineCodeOffers,
   iataCodeOffers,
 }: FlightReservationResultProps) {
@@ -170,7 +173,7 @@ function FlightReservationResult({
     pricing.itineraries[0]?.segments.at(-1)?.arrival?.at
   ); // 도착일
 
-  const totalDuration = formatDuration(offer?.itineraries[0]?.duration); // 총 소요시간
+  const totalDuration = formatDuration(turnaroundTime); // 총 소요시간
 
   // 오는편
 
@@ -182,7 +185,7 @@ function FlightReservationResult({
     pricing.itineraries[1]?.segments.at(-1)?.arrival?.at
   ); // 도착일
 
-  const returnTotalDuration = formatDuration(offer?.itineraries[1]?.duration); // 총 소요시간
+  const returnTotalDuration = formatDuration(reTurnaroundTime); // 총 소요시간
 
   // 요금 관련
   // reduce는 첫 번째 매개변수로 누적값을 받고, 두 번째 매개변수로 배열의 각 요소를 처리해 누적값을 계산하며, 초기값은 숫자, 문자 등 어떤 값도 될 수 있음.

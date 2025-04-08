@@ -1,5 +1,5 @@
 // 예약 상세 페이지
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import {
   AirlineCodes,
@@ -7,7 +7,6 @@ import {
   FlightPricing,
   IataCodes,
 } from "../../../utils/api";
-import CryptoJS from "crypto-js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -194,14 +193,17 @@ function FlightReservation() {
             }}
           />
         </Loading>
-      ) : flightPrice && iataCodeOffers && airlineCodeOffers ? (
+      ) : flightPrice &&
+        iataCodeOffers.length > 0 &&
+        airlineCodeOffers.length > 0 ? (
         <DetailList>
           {flightPrice.data.flightOffers.map(
             (pricing: FlightPricing, index) => (
               <FlightReservationResult
                 key={index}
                 pricing={pricing}
-                offer={data}
+                turnaroundTime={data?.itineraries[0]?.duration}
+                reTurnaroundTime={data?.itineraries[1]?.duration}
                 airlineCodeOffers={airlineCodeOffers}
                 iataCodeOffers={iataCodeOffers}
               />
