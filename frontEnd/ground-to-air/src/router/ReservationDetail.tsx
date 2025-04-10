@@ -7,8 +7,9 @@ import { Alert } from "../utils/sweetAlert";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { FlightReservation } from "./ReservationList";
-import { AirlineCodes, IataCodes } from "../utils/api";
+import { AirlineCodes, IataCodes, Travelers } from "../utils/api";
 import FlightReservationResult from "../components/flight/reservation/FlightReservationResult";
+import { CountryCodeProps } from "../components/flight/reservation/TravelerInfo";
 
 // 예약상세 전체 컴포넌트 구성
 const Container = styled.div`
@@ -64,6 +65,8 @@ function ReservationDetail() {
   ); // 항공사 코드 추출
   const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 공항 코드 추출
 
+  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 추출
+
   useEffect(() => {
     if (revName !== undefined && revCode !== undefined) {
       airCodeFetch();
@@ -73,15 +76,19 @@ function ReservationDetail() {
 
   // 항공사 코드 추출 함수
   const airCodeFetch = async () => {
-    console.log("aircodeFetch");
     const airlineCodeResponse = await axios.get(
       `http://localhost:8080/air/airlineCode`
     );
     const iataCodeResponse = await axios.get(
       `http://localhost:8080/air/iataCode`
     );
+    const countryCodeResponse = await axios.get(
+      `http://localhost:8080/country/code`
+    );
+
     setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
     setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
+    setCountryCodes(countryCodeResponse.data); // 국적 코드
   };
 
   // 예약 상세 데이터 추출
@@ -125,6 +132,9 @@ function ReservationDetail() {
     }
   }, [revData, iataCodeOffers, airlineCodeOffers]);
 
+  const travelerPricings =
+    revData?.orders?.data.flightOffers?.at(-1)?.travelerPricings ?? []; // 탑승자 결제정보
+
   return (
     <Container>
       {isLoading ? (
@@ -142,6 +152,7 @@ function ReservationDetail() {
         iataCodeOffers.length > 0 &&
         airlineCodeOffers.length > 0 ? (
         <DetailList>
+          {/* 예약정보 */}
           <div>
             <h3>{revData.revName}님의 예약정보</h3>
             <div>
@@ -192,7 +203,10 @@ function ReservationDetail() {
               </span>
             </div>
           </div>
+
+          {/* 상세일정 */}
           <div>
+            <h3>상세일정</h3>
             <FlightReservationResult
               pricing={revData.orders?.data.flightOffers[0]!}
               turnaroundTime={revData.turnaroundTime}
@@ -200,6 +214,67 @@ function ReservationDetail() {
               airlineCodeOffers={airlineCodeOffers}
               iataCodeOffers={iataCodeOffers}
             />
+          </div>
+
+          {/* 탑승자정보 */}
+          <div>
+            <h3>탑승자정보</h3>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <div>번호</div>
+              <div>성명(영문)</div>
+              <div>탑승자유형</div>
+              <div>생년월일</div>
+              <div>성별</div>
+              <div>여권번호/국적</div>
+              <div>여권만료일/여권발행국</div>
+              <div>이메일</div>
+            </div>
+            {revData.orders?.data.travelers.map(
+              (traveler: Travelers, index) => (
+                <div key={index} style={{ display: "flex", gap: "5px" }}>
+                  <div>{traveler.id}</div>
+                  <div>
+                    {traveler.name.firstName} {traveler.name.lastName}
+                  </div>
+                  <div>
+                    {travelerPricings[index].travelerType === "ADULT"
+                      ? "성인"
+                      : travelerPricings[index].travelerType === "CHILD"
+                      ? "어린이"
+                      : travelerPricings[index].travelerType === "HELD_INFANT"
+                      ? "유아"
+                      : "알 수 없음"}
+                  </div>
+                  <div>{traveler.dateOfBirth}</div>
+                  <div>{traveler.gender === "MALE" ? "남" : "여"}</div>
+                  <div>
+                    {traveler.documents.at(-1)?.number} /{" "}
+                    {countryCodes.find(
+                      (country) =>
+                        country.isoAlpha2 ===
+                        traveler.documents.at(-1)?.nationality
+                    )?.countryKor || ""}
+                  </div>
+                  <div>
+                    {traveler.documents.at(-1)?.expiryDate} /{" "}
+                    {countryCodes.find(
+                      (country) =>
+                        country.isoAlpha2 ===
+                        traveler.documents.at(-1)?.issuanceCountry
+                    )?.countryKor || ""}
+                  </div>
+                  <div>{traveler.contact.emailAddress}</div>
+                </div>
+              )
+            )}
+          </div>
+          {/* 연락처 상세정보 */}
+          <div>
+            <h3>연락처 상세정보</h3>
+          </div>
+          {/* 결제내역 */}
+          <div>
+            <h3>결제내역</h3>
           </div>
         </DetailList>
       ) : (

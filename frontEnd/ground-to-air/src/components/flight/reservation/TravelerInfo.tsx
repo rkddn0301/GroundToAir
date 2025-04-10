@@ -278,6 +278,7 @@ export interface InputData {
 // 국적, 여권발행국 Select 값
 export interface CountryCodeProps {
   codeNo: number;
+  isoAlpha2: string;
   country: string;
   countryKor: string;
 }
