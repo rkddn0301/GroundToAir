@@ -8,6 +8,7 @@ import { AirlineCodes, FlightOrder } from "../utils/api";
 import axios from "axios";
 import { SeatClass } from "./FlightSearch";
 import ReservationResult from "../components/revList/ReservationResult";
+import { fetchAirlineCodes } from "../utils/useAirCodeData";
 
 // ReservationList 전체 컴포넌트 구성
 const Container = styled.div`
@@ -257,19 +258,17 @@ function ReservationList() {
     }
   };
 
-  // 항공사 코드 가져오기
-  const airlineCodeData = async () => {
-    const airlineCodeResponse = await axios.get(
-      `http://localhost:8080/air/airlineCode`
-    );
-    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
-  };
-
   // 초기 렌더링 시 실행
   useEffect(() => {
     if (isLoggedIn) {
       reservationListData(); // 예약내역 데이터 출력 함수
-      airlineCodeData(); // 항공사 로고 데이터 출력 함수
+      // 항공편 데이터 추출
+      const airCodeFetch = async () => {
+        const airlineCodes = await fetchAirlineCodes();
+
+        setAirlineCodeOffers(airlineCodes); // 항공사 코드
+      };
+      airCodeFetch();
     }
   }, []);
 

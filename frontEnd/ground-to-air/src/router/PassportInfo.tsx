@@ -11,6 +11,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useRecoilValue } from "recoil";
 import { JoinUserNo } from "../utils/atom";
 import { Alert, Confirm } from "../utils/sweetAlert";
+import { fetchCountryCodes } from "../utils/useAirCodeData";
+import { CountryCodes } from "../utils/api";
 
 // PassportInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -149,13 +151,6 @@ const SubmitBtn = styled.button`
   }
 `;
 
-// 국적, 여권발행국 Select 값
-interface CountryCodeProps {
-  codeNo: number;
-  country: string;
-  countryKor: string;
-}
-
 function PassportInfo() {
   const userNoData = useRecoilValue(JoinUserNo); // 회원정보를 JoinInfo.tsx 받아옴
   const [inputData, setInputData] = useState({
@@ -167,21 +162,19 @@ function PassportInfo() {
     passportCOI: "", // 여권발행국
   }); // input 입력 state
 
-  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]);
+  const [countryCodes, setCountryCodes] = useState<CountryCodes[]>([]);
 
   const history = useHistory();
 
   // 초기에 필요한 데이터 가져오기
   useEffect(() => {
-    countryCode();
+    // 항공편 데이터 추출
+    const airCodeFetch = async () => {
+      const countryCodes = await fetchCountryCodes();
+      setCountryCodes(countryCodes); // 국적 코드
+    };
+    airCodeFetch();
   }, []);
-
-  // 국적 데이터 가져오기
-  const countryCode = async () => {
-    const response = await axios.get(`http://localhost:8080/country/code`);
-
-    setCountryCodes(response.data);
-  };
 
   // 성(영문) 입력란 변경 시 동작
   const userEngFNChange = (e: React.ChangeEvent<HTMLInputElement>) => {

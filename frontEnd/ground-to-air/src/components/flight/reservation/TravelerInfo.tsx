@@ -1,7 +1,7 @@
 // 예약정보입력
 
 import { useHistory, useLocation } from "react-router-dom";
-import { FlightPricing } from "../../../utils/api";
+import { CountryCodes, FlightPricing } from "../../../utils/api";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import TravelerInfoWrite from "./TravelerInfoWrite";
@@ -13,6 +13,7 @@ import KakaoPayImg from "../../../img/payment_icon_yellow_small.png";
 import TossPayImg from "../../../img/Toss_Logo_Primary.png";
 import { encryptionKey } from "../../../router/FlightSearch";
 import CryptoJS from "crypto-js";
+import { fetchCountryCodes } from "../../../utils/useAirCodeData";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -275,14 +276,6 @@ export interface InputData {
   email: string; // 이메일
 }
 
-// 국적, 여권발행국 Select 값
-export interface CountryCodeProps {
-  codeNo: number;
-  isoAlpha2: string;
-  country: string;
-  countryKor: string;
-}
-
 function TravelerInfo() {
   const isLoggedIn = useRecoilValue(isLoggedInState);
 
@@ -306,7 +299,7 @@ function TravelerInfo() {
     emergencyNumber: "", // 비상연락처
   }); // 연락처 상세정보 오류 state
 
-  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 state
+  const [countryCodes, setCountryCodes] = useState<CountryCodes[]>([]); // 국적 코드 state
 
   // 동의 항목 관련 state
   const [isAgreed, setIsAgreed] = useState({
@@ -327,7 +320,12 @@ function TravelerInfo() {
 
   // 초기 렌더링 동작
   useEffect(() => {
-    countryCode();
+    // 항공편 데이터 추출
+    const airCodeFetch = async () => {
+      const countryCodes = await fetchCountryCodes();
+      setCountryCodes(countryCodes); // 국적 코드
+    };
+    airCodeFetch();
   }, []);
 
   // data가 존재할 시 초기 인원 수에 맞게 데이터 초기화
@@ -398,13 +396,6 @@ function TravelerInfo() {
       },
     }));
     return isError;
-  };
-
-  // 국적 데이터 가져오기
-  const countryCode = async () => {
-    const response = await axios.get(`http://localhost:8080/country/code`);
-
-    setCountryCodes(response.data);
   };
 
   // 예약자 정보 자동 입력 함수

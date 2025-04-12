@@ -14,6 +14,10 @@ import FlightReservationResult from "./FlightReservationResult";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
 import { Confirm } from "../../../utils/sweetAlert";
+import {
+  fetchAirlineCodes,
+  fetchIataCodes,
+} from "../../../utils/useAirCodeData";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -195,23 +199,17 @@ function FlightReservation() {
   useEffect(() => {
     if (data) {
       console.log(data);
-
+      // 항공편 데이터 추출
+      const airCodeFetch = async () => {
+        const airlineCodes = await fetchAirlineCodes();
+        const iataCodes = await fetchIataCodes();
+        setAirlineCodeOffers(airlineCodes); // 항공사 코드
+        setIataCodeOffers(iataCodes); // 공항 코드
+      };
       airCodeFetch();
       checkflightPrice();
     }
   }, [data]);
-
-  // 항공사 코드 추출 함수
-  const airCodeFetch = async () => {
-    const airlineCodeResponse = await axios.get(
-      `http://localhost:8080/air/airlineCode`
-    );
-    const iataCodeResponse = await axios.get(
-      `http://localhost:8080/air/iataCode`
-    );
-    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
-    setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
-  };
 
   // 항공편 상세 조회 함수
   const checkflightPrice = async () => {

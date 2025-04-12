@@ -15,6 +15,7 @@ import FlightFiltering from "../components/flight/FlightFiltering";
 import { Alert } from "../utils/sweetAlert";
 
 import CryptoJS from "crypto-js";
+import { fetchAirlineCodes, fetchIataCodes } from "../utils/useAirCodeData";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div`
@@ -459,21 +460,16 @@ function FlightSearch() {
 
   /* 항공 입력 구간 시작 */
 
-  // 항공사 코드 추출 함수
-  const airCodeFetch = async () => {
-    const airlineCodeResponse = await axios.get(
-      `http://localhost:8080/air/airlineCode`
-    );
-    const iataCodeResponse = await axios.get(
-      `http://localhost:8080/air/iataCode`
-    );
-    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
-    setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
-  };
-
   // 초기 렌더링 시 조건에 따라 기능 적용
   useEffect(() => {
-    airCodeFetch(); // 항공 코드 데이터 저장
+    // 항공편 데이터 추출
+    const airCodeFetch = async () => {
+      const airlineCodes = await fetchAirlineCodes();
+      const iataCodes = await fetchIataCodes();
+      setAirlineCodeOffers(airlineCodes); // 항공사 코드
+      setIataCodeOffers(iataCodes); // 공항 코드
+    };
+    airCodeFetch();
 
     // 유지 할 검색 데이터가 존재 할 경우
     if (flightOffers) {

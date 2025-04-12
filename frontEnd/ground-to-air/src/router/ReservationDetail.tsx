@@ -7,9 +7,13 @@ import { Alert } from "../utils/sweetAlert";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { FlightReservation } from "./ReservationList";
-import { AirlineCodes, IataCodes, Travelers } from "../utils/api";
+import { AirlineCodes, CountryCodes, IataCodes, Travelers } from "../utils/api";
 import FlightReservationResult from "../components/flight/reservation/FlightReservationResult";
-import { CountryCodeProps } from "../components/flight/reservation/TravelerInfo";
+import {
+  fetchAirlineCodes,
+  fetchCountryCodes,
+  fetchIataCodes,
+} from "../utils/useAirCodeData";
 
 // 예약상세 전체 컴포넌트 구성
 const Container = styled.div`
@@ -65,31 +69,23 @@ function ReservationDetail() {
   ); // 항공사 코드 추출
   const [iataCodeOffers, setIataCodeOffers] = useState<IataCodes[]>([]); // 공항 코드 추출
 
-  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 추출
+  const [countryCodes, setCountryCodes] = useState<CountryCodes[]>([]); // 국적 코드 추출
 
   useEffect(() => {
     if (revName !== undefined && revCode !== undefined) {
+      // 항공편 데이터 추출
+      const airCodeFetch = async () => {
+        const airlineCodes = await fetchAirlineCodes();
+        const iataCodes = await fetchIataCodes();
+        const countryCodes = await fetchCountryCodes();
+        setAirlineCodeOffers(airlineCodes); // 항공사 코드
+        setIataCodeOffers(iataCodes); // 공항 코드
+        setCountryCodes(countryCodes); // 국적 코드
+      };
       airCodeFetch();
       reservationDataExtraction(revName, revCode);
     }
   }, [revName, revCode]);
-
-  // 항공사 코드 추출 함수
-  const airCodeFetch = async () => {
-    const airlineCodeResponse = await axios.get(
-      `http://localhost:8080/air/airlineCode`
-    );
-    const iataCodeResponse = await axios.get(
-      `http://localhost:8080/air/iataCode`
-    );
-    const countryCodeResponse = await axios.get(
-      `http://localhost:8080/country/code`
-    );
-
-    setAirlineCodeOffers(airlineCodeResponse.data); // 항공사 코드
-    setIataCodeOffers(iataCodeResponse.data); // 항공편 코드
-    setCountryCodes(countryCodeResponse.data); // 국적 코드
-  };
 
   // 예약 상세 데이터 추출
   const reservationDataExtraction = async (

@@ -24,6 +24,14 @@ export interface AirlineCodes {
   icao: string; // 항공사코드(ICAO)
 }
 
+// 국적코드 데이터 수집(COUNTRY_CODE)
+export interface CountryCodes {
+  codeNo: number;
+  isoAlpha2: string;
+  country: string;
+  countryKor: string;
+}
+
 // AmadeusAPI(FlightOfferSearch) 호출된 데이터 지정
 export interface FlightOffer {
   type: string; // 응답 데이터의 유형

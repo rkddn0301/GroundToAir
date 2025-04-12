@@ -15,6 +15,8 @@ import { inactivityTimer, refreshInterval } from "../utils/jwtActivityTimer";
 import DatePicker from "react-datepicker";
 import { ko } from "date-fns/locale";
 import { format } from "date-fns";
+import { fetchCountryCodes } from "../utils/useAirCodeData";
+import { CountryCodes } from "../utils/api";
 
 // MyInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -188,13 +190,6 @@ const SubmitBtn = styled.button`
   }
 `;
 
-// 국적, 여권발행국 Select 값
-interface CountryCodeProps {
-  codeNo: number;
-  country: string;
-  countryKor: string;
-}
-
 function MyInfo() {
   const setIsLoggedIn = useSetRecoilState(isLoggedInState); // 로그인 여부 atom
   const [inputData, setInputData] = useState({
@@ -253,7 +248,7 @@ function MyInfo() {
   const defaultSocialId = useRecoilValue(socialId);
   const defaultFederationAccessToken = useRecoilValue(federationAccessToken);
 
-  const [countryCodes, setCountryCodes] = useState<CountryCodeProps[]>([]); // 국적 코드 state
+  const [countryCodes, setCountryCodes] = useState<CountryCodes[]>([]); // 국적 코드 state
 
   const [idExisting, setIdExisting] = useState(false); // 아이디 중복 여부 스위칭
   const [emailExisting, setEmailExisting] = useState(false); // 이메일 중복 여부 스위칭
@@ -263,7 +258,12 @@ function MyInfo() {
   // 개인정보 페이지 접속 시 기존 정보를 가져오기 위해 동작
   useEffect(() => {
     defaultMyInfoHandler();
-    countryCode();
+    // 항공편 데이터 추출
+    const airCodeFetch = async () => {
+      const countryCodes = await fetchCountryCodes();
+      setCountryCodes(countryCodes); // 국적 코드
+    };
+    airCodeFetch();
   }, []);
 
   useEffect(() => {
@@ -341,13 +341,6 @@ function MyInfo() {
     } catch (error) {
       console.error("개인정보 추출 실패:", error);
     }
-  };
-
-  // 국적 데이터 가져오기
-  const countryCode = async () => {
-    const response = await axios.get(`http://localhost:8080/country/code`);
-
-    setCountryCodes(response.data);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

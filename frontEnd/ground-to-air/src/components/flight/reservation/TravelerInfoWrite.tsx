@@ -1,10 +1,10 @@
 // 예약상세정보 입력란
 
 import styled from "styled-components";
-import { TravelerPricings } from "../../../utils/api";
+import { CountryCodes, TravelerPricings } from "../../../utils/api";
 import DatePicker from "react-datepicker";
 import { ko } from "date-fns/locale";
-import { CountryCodeProps, InputData } from "./TravelerInfo";
+import { InputData } from "./TravelerInfo";
 import { format } from "date-fns";
 import React from "react";
 
@@ -141,7 +141,7 @@ interface TravelerInfoWriteProps {
   setInputData: React.Dispatch<
     React.SetStateAction<{ [key: number]: InputData }>
   >; // 탑승자 입력 데이터를 형식에 맞게 삽입하여 부모에게 전송
-  countryCodes: CountryCodeProps[]; // 국적 데이터
+  countryCodes: CountryCodes[]; // 국적 데이터
   errorMsg: InputData;
 }
 
