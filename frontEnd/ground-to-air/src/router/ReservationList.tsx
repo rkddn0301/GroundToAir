@@ -160,10 +160,9 @@ function ReservationList() {
 
   // 예약내역/지난내역 선택에 따라 필터링
   const filteredRev = getRevList.filter((rev: FlightReservation) => {
-    const today = new Date().toISOString().split("T")[0];
     return listChoice.pastList
-      ? rev.departureTime.split("T")[0] < today
-      : rev.departureTime.split("T")[0] >= today;
+      ? new Date(rev.departureTime) <= new Date()
+      : new Date(rev.departureTime) > new Date();
   });
 
   /* 페이지네이션 구간 시작 */
@@ -323,8 +322,8 @@ function ReservationList() {
             <ElementTitle isWidth={"13%"}>출국일/귀국일</ElementTitle>
             <ElementTitle isWidth={"15%"}>인원/좌석등급</ElementTitle>
             <ElementTitle isWidth={"11%"}>결제금액</ElementTitle>
-            <ElementTitle isWidth={"10%"} />
-            <ElementTitle isWidth={"5%"} />
+            <ElementTitle isWidth={listChoice.revList ? "10%" : "15%"} />
+            {listChoice.revList && <ElementTitle isWidth={"5%"} />}
           </div>
 
           {/* 예약내역/지난내역 선택 여부에 따라 filteredRev로 필터링 */}
@@ -335,6 +334,10 @@ function ReservationList() {
                 rev={rev}
                 airlineCodeOffers={airlineCodeOffers}
                 setGetRevList={setGetRevList}
+                listChoice={{
+                  revList: listChoice.revList,
+                  pastList: listChoice.pastList,
+                }}
               />
             ))
           ) : (

@@ -53,12 +53,17 @@ interface ReservationResultProps {
   rev: FlightReservation;
   airlineCodeOffers: AirlineCodes[];
   setGetRevList: React.Dispatch<React.SetStateAction<FlightReservation[]>>;
+  listChoice: {
+    revList: boolean;
+    pastList: boolean;
+  };
 }
 
 function ReservationResult({
   rev,
   airlineCodeOffers,
   setGetRevList,
+  listChoice,
 }: ReservationResultProps) {
   const history = useHistory();
 
@@ -156,7 +161,10 @@ function ReservationResult({
       <ElementValue
         isWidth={"11%"}
       >{`\\${rev.totalPrice.toLocaleString()}`}</ElementValue>
-      <ElementValue isWidth={"10%"} style={{ padding: "0px" }}>
+      <ElementValue
+        isWidth={listChoice.revList ? "10%" : "15%"}
+        style={{ padding: "0px" }}
+      >
         <ElementButton
           fontSize={"9px"}
           backgroundColor={"skyblue"}
@@ -174,16 +182,18 @@ function ReservationResult({
           예약상세확인
         </ElementButton>
       </ElementValue>
-      <ElementValue isWidth={"5%"} style={{ padding: "0px" }}>
-        <ElementButton
-          onClick={revListDelete}
-          fontSize={"12px"}
-          backgroundColor={"#ff4d4f"}
-          hoverColor={"#b03044"}
-        >
-          X
-        </ElementButton>
-      </ElementValue>
+      {listChoice.revList && (
+        <ElementValue isWidth={"5%"} style={{ padding: "0px" }}>
+          <ElementButton
+            onClick={revListDelete}
+            fontSize={"12px"}
+            backgroundColor={"#ff4d4f"}
+            hoverColor={"#b03044"}
+          >
+            X
+          </ElementButton>
+        </ElementValue>
+      )}
     </div>
   );
 }

@@ -149,7 +149,7 @@ public class AirService {
         jsonBuilder.append("\"travelers\": [");
 
         // 탑승자 정보 데이터를 순차적(key)으로 삽입
-        // ! 휴대폰번호, 국적 등 한 번 더 확인 필요함
+        // ! 휴대폰번호 등 한 번 더 확인 필요함
         travelerData.forEach((key, value) -> {
             Map<String, Object> data = (Map<String, Object>) value; // key 내부 값(value)을 data에 삽입 EX) data.get("birth")
 
@@ -168,6 +168,11 @@ public class AirService {
                     .append("\"countryCallingCode\": \"82\",")
                     .append("\"number\": \"").append(contactData.get("phoneNumber")).append("\"")
                     .append("}]")
+                    .append("},")
+                    .append("\"emergencyContact\": {")
+                    .append("\"addresseeName\": \"").append(data.get("userEngFN")).append(data.get("userEngLN")).append("\",")
+                    .append("\"countryCode\": \"").append(countryRepository.findByCountry((String) data.get("nationality")).map(CountryEntity::getIsoAlpha2).orElse(null)).append("\",") // 국적 2글자 코드로 변환
+                    .append("\"number\": \"").append(contactData.get("emergencyNumber")).append("\"")
                     .append("},")
                     .append("\"documents\": [{")
                     .append("\"documentType\": \"PASSPORT\",")

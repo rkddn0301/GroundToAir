@@ -3,7 +3,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { Alert } from "../utils/sweetAlert";
+import { Alert, Confirm } from "../utils/sweetAlert";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { FlightReservation } from "./ReservationList";
@@ -52,6 +52,70 @@ const DetailList = styled.div`
   margin: 0 auto;
   border-radius: 8px;
   box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.2);
+`;
+// 요금 정보
+const PriceInfo = styled.div`
+  border: 1px solid ${(props) => props.theme.black.font};
+  background-color: ${(props) => props.theme.black.bg};
+  padding: 5px;
+  color: ${(props) => props.theme.black.font};
+  opacity: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+`;
+
+// 상세요금
+const DetailedPrice = styled.div`
+  width: 100%;
+  display: flex;
+  //justify-content: space-around;
+
+  span:first-child {
+    flex: 1;
+  }
+
+  span:nth-child(2) {
+    flex: 1;
+    text-align: left;
+    //transform: translateX(15%);
+  }
+
+  span:nth-child(3) {
+    flex: 1;
+    text-align: right;
+    //transform: translateX(50%);
+  }
+
+  span:last-child {
+    flex: 1;
+  }
+`;
+
+// 버튼 전체 구성
+const ButtonGroup = styled.div`
+  margin-top: 10px;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+`;
+
+// 버튼 디자인 구성
+const ChoiceButton = styled.button`
+  background-color: skyblue;
+  color: ${(props) => props.theme.white.font};
+  border: 1px solid ${(props) => props.theme.white.font};
+  width: 25%;
+  padding: 15px 5px 15px 5px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => props.theme.black.bg};
+    color: ${(props) => props.theme.black.font};
+  }
 `;
 
 function ReservationDetail() {
@@ -128,8 +192,96 @@ function ReservationDetail() {
     }
   }, [revData, iataCodeOffers, airlineCodeOffers]);
 
+  // 예약취소 함수
+  const revListDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    const deleteConfirm = await Confirm("삭제하시겠습니까?", "question");
+
+    if (deleteConfirm.isConfirmed) {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/user/revDelete",
+          {
+            revId: revData?.revId,
+          }
+        );
+        console.log(response.data);
+        if (response.data) {
+          const successAlert = await Alert("삭제가 완료되었습니다.", "success");
+
+          if (successAlert.isConfirmed || successAlert.isDismissed) {
+            history.replace("/");
+          }
+        }
+      } catch (error) {
+        console.error("예약내역 삭제 실패 : ", error);
+        Alert("삭제 도중 오류가 발생하였습니다.", "error");
+      }
+    }
+  };
+
   const travelerPricings =
     revData?.orders?.data.flightOffers?.at(-1)?.travelerPricings ?? []; // 탑승자 결제정보
+
+  const phoneNumber =
+    revData?.orders?.data.travelers[0].contact.phones[0].number ?? ""; // 연락처
+  const emergencyNumber =
+    revData?.orders?.data.travelers[0].emergencyContact.number ?? ""; // 비상연락처
+
+  // 요금 관련
+  // reduce는 첫 번째 매개변수로 누적값을 받고, 두 번째 매개변수로 배열의 각 요소를 처리해 누적값을 계산하며, 초기값은 숫자, 문자 등 어떤 값도 될 수 있음.
+  // forEach는 배열 내부 각 요소에 대해 반복적으로 순환시킬 수 있으나 반환은 하지 않는다. 따라서 reduce에서 누적해야 할 값을 forEach에 넣으면 계산만 해주고 reduce가 별도로 누적된 값을 return 할 수 있다.
+
+  const peoples = travelerPricings.length ?? 0; // 인원 수
+
+  const base =
+    "\\" +
+    new Intl.NumberFormat("ko-KR").format(
+      travelerPricings.reduce(
+        (sum, traveler) => sum + parseFloat(traveler.price.base),
+        0
+      ) ?? 0
+    ); // 항공 요금
+
+  const fuelSurcharge =
+    "\\" +
+    new Intl.NumberFormat("ko-KR").format(
+      travelerPricings.reduce((sum, traveler) => {
+        traveler.price.taxes?.forEach((tax) => {
+          // code가 "YQ" 혹은 "YR" 일 경우 sum에 amount 값을 누적 계산함.
+          if (tax.code === "YQ" || tax.code === "YR") {
+            sum += parseFloat(tax.amount);
+          }
+        });
+        return sum;
+      }, 0) ?? 0
+    ); // 유류할증료(YQ/YR)
+
+  const taxFees =
+    "\\" +
+    new Intl.NumberFormat("ko-KR").format(
+      travelerPricings.reduce((sum, traveler) => {
+        traveler.price.taxes?.forEach((tax) => {
+          // code 중 "YQ","YR"를 제외한 모든 amount 값을 sum에 누적 계산함.
+          if (tax.code !== "YQ" && tax.code !== "YR") {
+            sum += parseFloat(tax.amount);
+          }
+        });
+        return sum;
+      }, 0) ?? 0
+    ); // 제세공과금
+
+  const total =
+    "\\" +
+    new Intl.NumberFormat("ko-KR").format(
+      travelerPricings.reduce(
+        (sum, traveler) => sum + parseFloat(traveler.price.total),
+        0
+      ) ?? 0
+    ); // 총 요금
+
+  const revListDeleteChk = new Date(revData?.departureTime!) > new Date(); // 예약내역 삭제 여부 체크
 
   return (
     <Container>
@@ -267,11 +419,61 @@ function ReservationDetail() {
           {/* 연락처 상세정보 */}
           <div>
             <h3>연락처 상세정보</h3>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <div>예약자명</div>
+              <div>연락처</div>
+              <div>비상연락처</div>
+            </div>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <div>{revData.revName}</div>
+              <div>
+                {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")}
+              </div>
+              <div>
+                {emergencyNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")}
+              </div>
+            </div>
           </div>
           {/* 결제내역 */}
           <div>
             <h3>결제내역</h3>
           </div>
+          {/* 항공 요금 */}
+          <PriceInfo>
+            <DetailedPrice>
+              <span />
+              <span>항공요금 {peoples > 1 && `X ${peoples}`}</span>
+              <span>{base}</span>
+              <span />
+            </DetailedPrice>
+            <DetailedPrice>
+              <span />
+              <span>유류할증료 {peoples > 1 && `X ${peoples}`}</span>
+              <span>{fuelSurcharge}</span>
+              <span />
+            </DetailedPrice>
+            <DetailedPrice>
+              <span />
+              <span>제세공과금 {peoples > 1 && `X ${peoples}`}</span>
+              <span>{taxFees}</span>
+              <span />
+            </DetailedPrice>
+            <DetailedPrice>
+              <span />
+              <span>총 금액 {peoples > 1 && `X ${peoples}`}</span>
+              <span>{total}</span>
+              <span />
+            </DetailedPrice>
+          </PriceInfo>
+
+          <ButtonGroup>
+            <ChoiceButton onClick={() => history.goBack()}>
+              이전으로
+            </ChoiceButton>
+            {revListDeleteChk && (
+              <ChoiceButton onClick={revListDelete}>예약취소</ChoiceButton>
+            )}
+          </ButtonGroup>
         </DetailList>
       ) : (
         ""

@@ -158,6 +158,13 @@ export interface Travelers {
     purpose: string; // 여행 목적
   };
 
+  emergencyContact: {
+    // 비상연락처
+    addresseeName: string; // 명의
+    countryCode: string; // 국적
+    number: string; // 번호
+  };
+
   documents: {
     documentType: string; // 문서유형 EX) PASSPORT
     expiryDate: string; // 만료일

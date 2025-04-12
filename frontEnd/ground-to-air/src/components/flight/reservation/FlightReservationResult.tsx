@@ -9,18 +9,6 @@ import {
 import { formatDate, formatDuration } from "../../../utils/formatTime";
 import FlightReservationOptions from "./FlightReservationOptions";
 
-// 헤더 디자인 구성
-const Header = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid ${(props) => props.theme.white.font};
-`;
-
 // 바디 디자인 구성
 const Body = styled.div`
   width: 90%;
