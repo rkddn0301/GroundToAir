@@ -285,7 +285,7 @@ function FlightReservation() {
   // forEach는 배열 내부 각 요소에 대해 반복적으로 순환시킬 수 있으나 반환은 하지 않는다. 따라서 reduce에서 누적해야 할 값을 forEach에 넣으면 계산만 해주고 reduce가 별도로 누적된 값을 return 할 수 있다.
 
   const base =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       pricing?.travelerPricings?.reduce(
         (sum, traveler) => sum + parseFloat(traveler.price.base),
@@ -294,7 +294,7 @@ function FlightReservation() {
     ); // 항공 요금
 
   const fuelSurcharge =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       pricing?.travelerPricings?.reduce((sum, traveler) => {
         traveler.price.taxes?.forEach((tax) => {
@@ -308,7 +308,7 @@ function FlightReservation() {
     ); // 유류할증료(YQ/YR)
 
   const taxFees =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       pricing?.travelerPricings?.reduce((sum, traveler) => {
         traveler.price.taxes?.forEach((tax) => {
@@ -322,7 +322,7 @@ function FlightReservation() {
     ); // 제세공과금
 
   const total =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       pricing?.travelerPricings?.reduce(
         (sum, traveler) => sum + parseFloat(traveler.price.total),

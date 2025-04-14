@@ -686,7 +686,7 @@ function FlightResult({
           >
             <ReservationBtn>예약하기</ReservationBtn>
           </Link>
-          <div style={{ fontWeight: 600 }}>{`\\${new Intl.NumberFormat().format(
+          <div style={{ fontWeight: 600 }}>{`₩${new Intl.NumberFormat().format(
             parseFloat(totalPrice)
           )}`}</div>
         </ReservationBtnGroups>

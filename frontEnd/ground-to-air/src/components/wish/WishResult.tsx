@@ -160,7 +160,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             border: "1px solid #595959",
             padding: "5px",
           }}
-        >{`\\${wish.totalPrice.toLocaleString()}`}</td>
+        >{`₩${wish.totalPrice.toLocaleString()}`}</td>
 
         {/* 버튼란 */}
         <td

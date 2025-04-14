@@ -14,6 +14,7 @@ import {
   fetchCountryCodes,
   fetchIataCodes,
 } from "../utils/useAirCodeData";
+import { formatDate, formatTime } from "../utils/formatTime";
 
 // 예약상세 전체 컴포넌트 구성
 const Container = styled.div`
@@ -53,6 +54,77 @@ const DetailList = styled.div`
   border-radius: 8px;
   box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.2);
 `;
+
+// 제목 디자인
+const MainTitle = styled.h3`
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+`;
+
+// 예약 정보
+const RevInfo = styled.div`
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 18px;
+  margin-bottom: 20px;
+`;
+
+// 예약 정보 자간
+const RevInfoGroupsSpace = styled.div`
+  display: flex;
+
+  span:first-child {
+    flex: 1;
+  }
+
+  span:last-child {
+    flex: 1;
+    text-align: left;
+  }
+`;
+
+// 예약 정보 요소 제목
+const RevInfoElementTitle = styled.label`
+  font-weight: 550;
+`;
+
+// 요소 제목
+const ElementTitle = styled.div.withConfig({
+  shouldForwardProp: (prop) => !["isWidth"].includes(prop),
+})<{
+  isWidth: string;
+}>`
+  display: flex;
+  width: ${(props) => props.isWidth};
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid ${(props) => props.theme.white.font};
+`;
+
+// 요소 값
+const ElementValue = styled.div.withConfig({
+  shouldForwardProp: (prop) => !["isWidth"].includes(prop),
+})<{
+  isWidth: string;
+}>`
+  display: flex;
+  flex-direction: column;
+  width: ${(props) => props.isWidth};
+  justify-content: center;
+  align-items: center;
+  border: 1px solid ${(props) => props.theme.white.font};
+  gap: 10px;
+  font-size: 90%;
+  padding: 5px;
+  word-break: break-word;
+`;
+
 // 요금 정보
 const PriceInfo = styled.div`
   border: 1px solid ${(props) => props.theme.black.font};
@@ -96,7 +168,6 @@ const DetailedPrice = styled.div`
 // 버튼 전체 구성
 const ButtonGroup = styled.div`
   margin-top: 10px;
-  width: 50%;
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -107,7 +178,7 @@ const ChoiceButton = styled.button`
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};
-  width: 25%;
+  width: 20%;
   padding: 15px 5px 15px 5px;
   border-radius: 10px;
   cursor: pointer;
@@ -221,6 +292,20 @@ function ReservationDetail() {
     }
   };
 
+  // 예약정보
+
+  // 가는편
+  const carrierCode =
+    airlineCodeOffers.find((airline) => {
+      return airline.iata === revData?.airlinesIata;
+    }) || ""; // 기본값을 객체로 설정
+
+  // 오는편
+  const returnCarrierCode =
+    airlineCodeOffers.find((airline) => {
+      return airline.iata === revData?.reAirlinesIata;
+    }) || ""; // 기본값을 객체로 설정
+
   const travelerPricings =
     revData?.orders?.data.flightOffers?.at(-1)?.travelerPricings ?? []; // 탑승자 결제정보
 
@@ -236,7 +321,7 @@ function ReservationDetail() {
   const peoples = travelerPricings.length ?? 0; // 인원 수
 
   const base =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       travelerPricings.reduce(
         (sum, traveler) => sum + parseFloat(traveler.price.base),
@@ -245,7 +330,7 @@ function ReservationDetail() {
     ); // 항공 요금
 
   const fuelSurcharge =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       travelerPricings.reduce((sum, traveler) => {
         traveler.price.taxes?.forEach((tax) => {
@@ -259,7 +344,7 @@ function ReservationDetail() {
     ); // 유류할증료(YQ/YR)
 
   const taxFees =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       travelerPricings.reduce((sum, traveler) => {
         traveler.price.taxes?.forEach((tax) => {
@@ -273,7 +358,7 @@ function ReservationDetail() {
     ); // 제세공과금
 
   const total =
-    "\\" +
+    "₩" +
     new Intl.NumberFormat("ko-KR").format(
       travelerPricings.reduce(
         (sum, traveler) => sum + parseFloat(traveler.price.total),
@@ -301,46 +386,70 @@ function ReservationDetail() {
         airlineCodeOffers.length > 0 ? (
         <DetailList>
           {/* 예약정보 */}
-          <div>
-            <h3>{revData.revName}님의 예약정보</h3>
+          <RevInfo>
+            <MainTitle>{revData.revName}님의 예약정보</MainTitle>
+            <RevInfoGroupsSpace>
+              <span>
+                <RevInfoElementTitle>예약날짜</RevInfoElementTitle> :{" "}
+                {formatDate(revData.regDate)}
+              </span>
+              <span>
+                <RevInfoElementTitle>예약코드</RevInfoElementTitle> :{" "}
+                {revData.revCode}
+              </span>
+            </RevInfoGroupsSpace>
             <div>
-              <span>예약날짜 : {revData.regDate}</span>
-              <span>예약코드 : {revData.revCode}</span>
-            </div>
-            <div>
-              <div>가는편{revData.reStopLine ? "/오는편" : ""} : </div>
-              <div>
-                {revData.airlinesIata} {revData.departureIata} -&gt;{" "}
-                {revData.arrivalIata}
-              </div>{" "}
+              <span>
+                <RevInfoElementTitle>
+                  가는편{revData.reStopLine ? "/오는편" : ""}
+                </RevInfoElementTitle>{" "}
+                :{" "}
+              </span>
+              <span>
+                {carrierCode !== ""
+                  ? carrierCode.airlinesKor
+                  : revData.airlinesIata}{" "}
+                {revData.departureIata} -&gt; {revData.arrivalIata}
+              </span>{" "}
               {revData.reStopLine ? (
-                <div>
-                  {revData.reAirlinesIata} {revData.reDepartureIata} -&gt;{" "}
-                  {revData.reArrivalIata}
-                </div>
+                <span>
+                  /{" "}
+                  {returnCarrierCode !== ""
+                    ? returnCarrierCode.airlinesKor
+                    : revData.reAirlinesIata}{" "}
+                  {revData.reDepartureIata} -&gt; {revData.reArrivalIata}
+                </span>
               ) : (
                 ""
               )}
             </div>
-            <div>
-              <span>출국일 : {revData.departureTime}</span>
+            <RevInfoGroupsSpace>
               <span>
-                탑승인원 :{" "}
+                <RevInfoElementTitle>출국일</RevInfoElementTitle> :{" "}
+                {formatDate(revData.departureTime)}{" "}
+                {formatTime(revData.departureTime)}
+              </span>
+              <span>
+                <RevInfoElementTitle>탑승인원</RevInfoElementTitle> :{" "}
                 {`${
                   (revData.adults ?? 0) +
                   (revData.childrens ?? 0) +
                   (revData.infants ?? 0)
                 }명`}
               </span>
-            </div>
-            <div>
+            </RevInfoGroupsSpace>
+            <RevInfoGroupsSpace>
               {revData.reStopLine ? (
-                <span>귀국일 : {revData.reDepartureTime}</span>
+                <span>
+                  <RevInfoElementTitle>귀국일</RevInfoElementTitle> :{" "}
+                  {formatDate(revData.reDepartureTime)}{" "}
+                  {formatTime(revData.reDepartureTime)}
+                </span>
               ) : (
                 ""
               )}
               <span>
-                좌석등급 :{" "}
+                <RevInfoElementTitle>좌석등급</RevInfoElementTitle> :{" "}
                 {revData.seatClass === "FIRST"
                   ? "일등석"
                   : revData.seatClass === "BUSINESS"
@@ -349,42 +458,49 @@ function ReservationDetail() {
                   ? "프리미엄 일반석"
                   : "일반석"}
               </span>
-            </div>
-          </div>
+            </RevInfoGroupsSpace>
+          </RevInfo>
 
           {/* 상세일정 */}
-          <div>
-            <h3>상세일정</h3>
-            <FlightReservationResult
-              pricing={revData.orders?.data.flightOffers[0]!}
-              turnaroundTime={revData.turnaroundTime}
-              reTurnaroundTime={revData.reTurnaroundTime}
-              airlineCodeOffers={airlineCodeOffers}
-              iataCodeOffers={iataCodeOffers}
-            />
+          <div style={{ width: "100%", marginBottom: "20px" }}>
+            <MainTitle>상세일정</MainTitle>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <FlightReservationResult
+                pricing={revData.orders?.data.flightOffers[0]!}
+                turnaroundTime={revData.turnaroundTime}
+                reTurnaroundTime={revData.reTurnaroundTime}
+                airlineCodeOffers={airlineCodeOffers}
+                iataCodeOffers={iataCodeOffers}
+              />
+            </div>
           </div>
 
           {/* 탑승자정보 */}
-          <div>
-            <h3>탑승자정보</h3>
-            <div style={{ display: "flex", gap: "5px" }}>
-              <div>번호</div>
-              <div>성명(영문)</div>
-              <div>탑승자유형</div>
-              <div>생년월일</div>
-              <div>성별</div>
-              <div>여권번호/국적</div>
-              <div>여권만료일/여권발행국</div>
-              <div>이메일</div>
+          <div style={{ marginBottom: "20px", width: "100%" }}>
+            <MainTitle>탑승자정보</MainTitle>
+            <div style={{ display: "flex" }}>
+              <ElementTitle isWidth={"5%"}>번호</ElementTitle>
+              <ElementTitle isWidth={"15%"}>성명(영문)</ElementTitle>
+              <ElementTitle isWidth={"10%"}>탑승자유형</ElementTitle>
+              <ElementTitle isWidth={"10%"}>생년월일</ElementTitle>
+              <ElementTitle isWidth={"5%"}>성별</ElementTitle>
+              <ElementTitle isWidth={"17%"}>여권번호/국적</ElementTitle>
+              <ElementTitle isWidth={"18%"}>여권만료일/여권발행국</ElementTitle>
+              <ElementTitle isWidth={"20%"}>이메일</ElementTitle>
             </div>
             {revData.orders?.data.travelers.map(
               (traveler: Travelers, index) => (
-                <div key={index} style={{ display: "flex", gap: "5px" }}>
-                  <div>{traveler.id}</div>
-                  <div>
+                <div key={index} style={{ display: "flex" }}>
+                  <ElementValue isWidth={"5%"}>{traveler.id}</ElementValue>
+                  <ElementValue isWidth={"15%"}>
                     {traveler.name.firstName} {traveler.name.lastName}
-                  </div>
-                  <div>
+                  </ElementValue>
+                  <ElementValue isWidth={"10%"}>
                     {travelerPricings[index].travelerType === "ADULT"
                       ? "성인"
                       : travelerPricings[index].travelerType === "CHILD"
@@ -392,51 +508,57 @@ function ReservationDetail() {
                       : travelerPricings[index].travelerType === "HELD_INFANT"
                       ? "유아"
                       : "알 수 없음"}
-                  </div>
-                  <div>{traveler.dateOfBirth}</div>
-                  <div>{traveler.gender === "MALE" ? "남" : "여"}</div>
-                  <div>
+                  </ElementValue>
+                  <ElementValue isWidth={"10%"}>
+                    {traveler.dateOfBirth}
+                  </ElementValue>
+                  <ElementValue isWidth={"5%"}>
+                    {traveler.gender === "MALE" ? "남" : "여"}
+                  </ElementValue>
+                  <ElementValue isWidth={"17%"}>
                     {traveler.documents.at(-1)?.number} /{" "}
                     {countryCodes.find(
                       (country) =>
                         country.isoAlpha2 ===
                         traveler.documents.at(-1)?.nationality
                     )?.countryKor || ""}
-                  </div>
-                  <div>
+                  </ElementValue>
+                  <ElementValue isWidth={"18%"}>
                     {traveler.documents.at(-1)?.expiryDate} /{" "}
                     {countryCodes.find(
                       (country) =>
                         country.isoAlpha2 ===
                         traveler.documents.at(-1)?.issuanceCountry
                     )?.countryKor || ""}
-                  </div>
-                  <div>{traveler.contact.emailAddress}</div>
+                  </ElementValue>
+                  <ElementValue isWidth={"20%"}>
+                    {traveler.contact.emailAddress}
+                  </ElementValue>
                 </div>
               )
             )}
           </div>
           {/* 연락처 상세정보 */}
-          <div>
-            <h3>연락처 상세정보</h3>
-            <div style={{ display: "flex", gap: "5px" }}>
-              <div>예약자명</div>
-              <div>연락처</div>
-              <div>비상연락처</div>
+          <div style={{ marginBottom: "20px", width: "100%" }}>
+            <MainTitle>연락처 상세정보</MainTitle>
+            <div style={{ display: "flex" }}>
+              <ElementTitle isWidth={"20%"}>예약자명</ElementTitle>
+              <ElementTitle isWidth={"20%"}>연락처</ElementTitle>
+              <ElementTitle isWidth={"20%"}>비상연락처</ElementTitle>
             </div>
-            <div style={{ display: "flex", gap: "5px" }}>
-              <div>{revData.revName}</div>
-              <div>
+            <div style={{ display: "flex" }}>
+              <ElementValue isWidth={"20%"}>{revData.revName}</ElementValue>
+              <ElementValue isWidth={"20%"}>
                 {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")}
-              </div>
-              <div>
+              </ElementValue>
+              <ElementValue isWidth={"20%"}>
                 {emergencyNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")}
-              </div>
+              </ElementValue>
             </div>
           </div>
           {/* 결제내역 */}
           <div>
-            <h3>결제내역</h3>
+            <MainTitle>결제내역</MainTitle>
           </div>
           {/* 항공 요금 */}
           <PriceInfo>

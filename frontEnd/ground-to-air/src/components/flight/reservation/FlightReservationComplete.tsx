@@ -183,7 +183,7 @@ function FlightReservationComplete() {
               {data.reFlightNo && <p>{ReturnDate}</p>}
               <p>{`${adults + childrens + infants}명`}</p>
               <p>{seatClass}</p>
-              <p>{`\\${new Intl.NumberFormat("ko-KR").format(totalPrice)}`}</p>
+              <p>{`₩${new Intl.NumberFormat("ko-KR").format(totalPrice)}`}</p>
             </ValueList>
           </>
         )}

@@ -1218,7 +1218,7 @@ function TravelerInfo() {
               <span />
               <span>결제금액</span>
               <div>
-                <div>{"\\" + new Intl.NumberFormat("ko-KR").format(total)}</div>
+                <div>{"₩" + new Intl.NumberFormat("ko-KR").format(total)}</div>
                 <div
                   style={{ fontSize: "12px", opacity: 0.7, marginTop: "5px" }}
                 >

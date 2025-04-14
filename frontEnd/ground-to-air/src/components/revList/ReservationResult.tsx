@@ -160,7 +160,7 @@ function ReservationResult({
       </ElementValue>
       <ElementValue
         isWidth={"11%"}
-      >{`\\${rev.totalPrice.toLocaleString()}`}</ElementValue>
+      >{`₩${rev.totalPrice.toLocaleString()}`}</ElementValue>
       <ElementValue
         isWidth={listChoice.revList ? "10%" : "15%"}
         style={{ padding: "0px" }}
