@@ -19,7 +19,6 @@ export interface AirlineCodes {
   codeNo: number;
   airlines: string; // 항공사명
   airlinesKor: string; // 항공사명(한국어)
-  airlinesLogo: string; // 항공사 로고 URL
   iata: string; // 항공사코드(IATA)
   icao: string; // 항공사코드(ICAO)
 }

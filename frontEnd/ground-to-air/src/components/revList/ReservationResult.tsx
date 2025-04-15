@@ -68,18 +68,14 @@ function ReservationResult({
   const history = useHistory();
 
   // 가는편
-
   const carrierCode =
-    airlineCodeOffers.find((airline) => {
-      return airline.iata === rev.airlinesIata;
-    }) || ""; // 기본값을 객체로 설정
+    airlineCodeOffers.find((airline) => airline.iata === rev.airlinesIata)
+      ?.airlinesKor || ""; // 항공사명
 
   // 오는편
-
   const returnCarrierCode =
-    airlineCodeOffers.find((airline) => {
-      return airline.iata === rev.reAirlinesIata;
-    }) || ""; // 기본값을 객체로 설정
+    airlineCodeOffers.find((airline) => airline.iata === rev.reAirlinesIata)
+      ?.airlinesKor || ""; // 항공사명
 
   const revListDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -119,16 +115,12 @@ function ReservationResult({
       </ElementValue>
       <ElementValue isWidth={"30%"}>
         <span>
-          {carrierCode !== "" ? carrierCode.airlinesKor : rev.airlinesIata}{" "}
-          {rev.departureIata}-{rev.arrivalIata} {formatTime(rev.departureTime)}~
-          {formatTime(rev.arrivalTime)}
+          {carrierCode} {rev.departureIata}-{rev.arrivalIata}{" "}
+          {formatTime(rev.departureTime)}~{formatTime(rev.arrivalTime)}
         </span>
         {rev.reStopLine ? (
           <span>
-            {returnCarrierCode !== ""
-              ? returnCarrierCode.airlinesKor
-              : rev.reAirlinesIata}{" "}
-            {rev.reDepartureIata}-{rev.reArrivalIata}{" "}
+            {returnCarrierCode} {rev.reDepartureIata}-{rev.reArrivalIata}{" "}
             {formatTime(rev.reDepartureTime)}~{formatTime(rev.reArrivalTime)}
           </span>
         ) : (

@@ -296,15 +296,15 @@ function ReservationDetail() {
 
   // 가는편
   const carrierCode =
-    airlineCodeOffers.find((airline) => {
-      return airline.iata === revData?.airlinesIata;
-    }) || ""; // 기본값을 객체로 설정
+    airlineCodeOffers.find((airline) => airline.iata === revData?.airlinesIata)
+      ?.airlinesKor || ""; // 항공사명
 
   // 오는편
+
   const returnCarrierCode =
-    airlineCodeOffers.find((airline) => {
-      return airline.iata === revData?.reAirlinesIata;
-    }) || ""; // 기본값을 객체로 설정
+    airlineCodeOffers.find(
+      (airline) => airline.iata === revData?.reAirlinesIata
+    )?.airlinesKor || ""; // 항공사명
 
   const travelerPricings =
     revData?.orders?.data.flightOffers?.at(-1)?.travelerPricings ?? []; // 탑승자 결제정보
@@ -406,18 +406,13 @@ function ReservationDetail() {
                 :{" "}
               </span>
               <span>
-                {carrierCode !== ""
-                  ? carrierCode.airlinesKor
-                  : revData.airlinesIata}{" "}
-                {revData.departureIata} -&gt; {revData.arrivalIata}
+                {carrierCode} {revData.departureIata} -&gt;{" "}
+                {revData.arrivalIata}
               </span>{" "}
               {revData.reStopLine ? (
                 <span>
-                  /{" "}
-                  {returnCarrierCode !== ""
-                    ? returnCarrierCode.airlinesKor
-                    : revData.reAirlinesIata}{" "}
-                  {revData.reDepartureIata} -&gt; {revData.reArrivalIata}
+                  / {returnCarrierCode} {revData.reDepartureIata} -&gt;{" "}
+                  {revData.reArrivalIata}
                 </span>
               ) : (
                 ""

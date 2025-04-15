@@ -79,16 +79,6 @@ function FlightReservationOptions({
   const operatingCode = segment.operating?.carrierCode; // 운항 항공사
   const validatingCode = segment.carrierCode; // 판매 항공사
 
-  const carrierCodeLogo =
-    airlineCodeOffers.find((airline) => {
-      const matchesIata = airline.iata === validatingCode || "";
-      const isLogoValid =
-        airline.airlinesLogo &&
-        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
-
-      return matchesIata && isLogoValid;
-    }) || ""; // 항공사 로고
-
   const carrierCode =
     airlineCodeOffers.find((airline) => airline.iata === validatingCode)
       ?.airlinesKor || ""; // 항공사명
@@ -169,16 +159,10 @@ function FlightReservationOptions({
               gap: "5px",
             }}
           >
-            {carrierCodeLogo !== "" ? (
-              <>
-                <img src={carrierCodeLogo.airlinesLogo} />{" "}
-                <span style={{ fontSize: "17px" }}>
-                  {carrierCodeLogo.airlinesKor}
-                </span>
-              </>
-            ) : (
-              <span style={{ fontSize: "17px" }}>{carrierCode}</span>
-            )}
+            <span style={{ fontSize: "17px", fontWeight: "600" }}>
+              {" "}
+              {carrierCode}
+            </span>
           </div>
           <div style={{ fontSize: "14px" }}>{airlineCode}</div>
           {operatingCode !== validatingCode && (

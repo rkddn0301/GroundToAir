@@ -22,14 +22,11 @@ const Btn = styled.button<{
   width: ${(props) => props.width || "300px"};
   font-size: ${(props) => props.fontSize || "20px"};
   padding: ${(props) => props.padding || "20px"};
-  background-color: ${(props) => props.theme.white.bg};
+  background-color: transparent;
+  border: none;
   color: ${(props) => props.theme.white.font};
   border-radius: 25px;
   cursor: pointer;
-  &:hover {
-    background-color: ${(props) => props.theme.black.bg};
-    color: ${(props) => props.theme.black.font};
-  }
 `;
 
 // 카카오 로고 이미지 구성

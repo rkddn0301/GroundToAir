@@ -104,6 +104,15 @@ const FederationBtnField = styled.div`
   gap: 15px;
 `;
 
+// 타사 인증 버튼
+const FederationBtnBanner = styled.div`
+  &:hover {
+    button {
+      font-weight: 600;
+    }
+  }
+`;
+
 // 비회원 예약조회 버튼 디자인 구성
 const GuestBtnField = styled.div`
   display: flex;
@@ -295,20 +304,24 @@ function Login() {
         <FederationField>
           <p style={{ marginTop: "10px" }}>간편 로그인</p>
           <FederationBtnField>
-            <KakaoAuth
-              redirectRoute={history.location.pathname}
-              title="카카오 로그인"
-              width="50%"
-              fontSize="16px"
-              padding="10px"
-            />
-            <GoogleAuth
-              redirectRoute={history.location.pathname}
-              title="구글 로그인"
-              width="50%"
-              fontSize="16px"
-              padding="10px"
-            />
+            <FederationBtnBanner>
+              <KakaoAuth
+                redirectRoute={history.location.pathname}
+                title="카카오 로그인"
+                width="100%"
+                fontSize="16px"
+                padding="0px"
+              />
+            </FederationBtnBanner>
+            <FederationBtnBanner>
+              <GoogleAuth
+                redirectRoute={history.location.pathname}
+                title="구글 로그인"
+                width="100%"
+                fontSize="16px"
+                padding="0px"
+              />
+            </FederationBtnBanner>
           </FederationBtnField>
         </FederationField>
         <GuestBtnField>

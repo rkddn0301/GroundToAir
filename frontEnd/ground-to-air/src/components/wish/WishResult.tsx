@@ -16,29 +16,15 @@ interface WishResultProps {
 function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
   // 가는편
 
-  const carrierCodeLogo =
-    airlineCodeOffers.find((airline) => {
-      const matchesIata = airline.iata === wish.airlinesIata;
-
-      const isLogoValid =
-        airline.airlinesLogo &&
-        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
-
-      return matchesIata && isLogoValid;
-    }) || ""; // 기본값을 객체로 설정
+  const carrierCode =
+    airlineCodeOffers.find((airline) => airline.iata === wish.airlinesIata)
+      ?.airlinesKor || ""; // 항공사명
 
   // 오는편
 
-  const returnCarrierCodeLogo =
-    airlineCodeOffers.find((airline) => {
-      const matchesIata = airline.iata === wish.reAirlinesIata;
-
-      const isLogoValid =
-        airline.airlinesLogo &&
-        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
-
-      return matchesIata && isLogoValid;
-    }) || ""; // 기본값을 객체로 설정
+  const returnCarrierCode =
+    airlineCodeOffers.find((airline) => airline.iata === wish.reAirlinesIata)
+      ?.airlinesKor || ""; // 항공사명
 
   const wishDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -83,11 +69,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             verticalAlign: "middle",
           }}
         >
-          {carrierCodeLogo !== "" ? (
-            <img src={carrierCodeLogo.airlinesLogo} />
-          ) : (
-            wish.airlinesIata
-          )}{" "}
+          {carrierCode}
           {wish.departureIata}-{wish.arrivalIata}{" "}
           {formatTime(wish.departureTime)}~{formatTime(wish.arrivalTime)} (
           {formatDuration(wish.turnaroundTime)}){" "}
@@ -97,11 +79,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             <>
               <br />
               <br />
-              {returnCarrierCodeLogo !== "" ? (
-                <img src={returnCarrierCodeLogo.airlinesLogo} />
-              ) : (
-                wish.reAirlinesIata
-              )}{" "}
+              {returnCarrierCode}
               {wish.reDepartureIata}-{wish.reArrivalIata}{" "}
               {formatTime(wish.reDepartureTime)}~
               {formatTime(wish.reArrivalTime)} (
@@ -126,7 +104,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
           {wish.reStopLine ? (
             <>
               <br />~<br />
-              {wish.reArrivalTime?.split("T")[0]}
+              {wish.reDepartureTime?.split("T")[0]}
             </>
           ) : (
             ""

@@ -32,10 +32,6 @@ public class AirlineCodeEntity {
     @Column(name="REGION", nullable = false)
     private String region;
 
-    // 항공사 로고 경로
-    @Column(name="AIRLINES_LOGO")
-    private String airlinesLogo;
-
     // 항공사 국가명 (EX : South Korea)
     // 외래키 설정 (ManyToOne: N:1 관계)
     // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.

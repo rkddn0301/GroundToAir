@@ -1,5 +1,5 @@
 // 회원가입 페이지
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Title from "../components/Title";
 import styled from "styled-components";
 import InfoBox from "../components/InfoBox";
@@ -27,18 +27,28 @@ const Menus = styled.div`
 `;
 
 // 각 버튼 디자인 구성
-const Btn = styled.button`
+const BtnBanner = styled.div`
   width: 300px;
-  padding: 20px;
-  font-size: 20px;
-  background-color: ${(props) => props.theme.white.bg};
-  color: ${(props) => props.theme.white.font};
+  border: 2px solid ${(props) => props.theme.black.bg};
   border-radius: 25px;
-  cursor: pointer;
+  background-color: ${(props) => props.theme.white.bg};
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
-    color: ${(props) => props.theme.black.font};
+    button {
+      color: ${(props) => props.theme.black.font};
+    }
   }
+`;
+
+// 버튼
+const Btn = styled.button`
+  width: 100%;
+  font-size: 20px;
+  padding: 20px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: ${(props) => props.theme.white.font};
 `;
 function Join() {
   const isLoggedIn = useRecoilValue(isLoggedInState); // 로그인 확인 여부 atom
@@ -102,18 +112,26 @@ function Join() {
       <InfoBox>
         <Title parentBgColor="white" />
         <Menus>
-          <Link to="/join/info">
-            <Btn>GroundToAir 회원가입</Btn>
-          </Link>
-          <KakaoAuth
-            redirectRoute={history.location.pathname}
-            title={"카카오 시작하기"}
-          />
+          <BtnBanner>
+            <Btn onClick={() => history.push("/join/info")}>
+              GroundToAir 회원가입
+            </Btn>
+          </BtnBanner>
+          <BtnBanner>
+            <KakaoAuth
+              width="100%"
+              redirectRoute={history.location.pathname}
+              title={"카카오 시작하기"}
+            />
+          </BtnBanner>
 
-          <GoogleAuth
-            redirectRoute={history.location.pathname}
-            title={"구글 시작하기"}
-          />
+          <BtnBanner>
+            <GoogleAuth
+              width="100%"
+              redirectRoute={history.location.pathname}
+              title={"구글 시작하기"}
+            />
+          </BtnBanner>
         </Menus>
       </InfoBox>
     </Container>

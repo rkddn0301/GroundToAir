@@ -64,6 +64,9 @@ const ReservationDetails = styled.div`
 // 항공사 라인
 const Airline = styled.div`
   width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 `;
 
 // 출발지
@@ -220,38 +223,6 @@ function FlightResult({
 
   const validatingCode = offer.itineraries[0]?.segments[0]?.carrierCode; // 판매 항공사
 
-  /*
-   * 항공사 로고 로직
-   * 1. matchesIata, isLogoValid가 일치하는 값이 나올 때까지 진행
-   * 2. matchesIata : 항공사 테이블(airlineCodeOffers)에서 일치하는 항공사 코드랑 일치하는지 확인
-   * 3. isLogoValid : 항공사 테이블에서 일치하는 로고가 있는지 확인
-   */
-  const carrierCodeLogo =
-    airlineCodeOffers.find((airline) => {
-      // 판매항공사를 carrierCode로 대체 (12/10)
-      const matchesIata = airline.iata === validatingCode || "";
-
-      /* 운항항공사
-     const matchesIata =
-        airline.iata ===
-          offer.itineraries[0]?.segments[0]?.operating?.carrierCode ||
-        airline.iata ===
-          offer.itineraries[0]?.segments[
-            offer.itineraries[0]?.segments.length - 1
-          ]?.operating?.carrierCode ||
-        ""; */
-
-      /* 판매항공사
-       const matchesValidatingAirline =
-        offer.validatingAirlineCodes?.includes(airline.iata) || ""; */
-
-      const isLogoValid =
-        airline.airlinesLogo &&
-        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
-
-      return matchesIata && isLogoValid;
-    }) || ""; // 기본값을 객체로 설정
-
   const carrierCode =
     airlineCodeOffers.find((airline) => airline.iata === validatingCode)
       ?.airlinesKor || ""; // 항공사명
@@ -280,6 +251,14 @@ function FlightResult({
       ?.arrival?.at
   ); // 도착시간
 
+  const dayDifference =
+    new Date(
+      offer.itineraries[0]?.segments[
+        offer.itineraries[0]?.segments.length - 1
+      ]?.arrival?.at
+    ).getDate() -
+    new Date(offer.itineraries[0]?.segments[0]?.departure?.at).getDate(); // 일차 = 도착시간 - 출발시간
+
   const originLocationCode =
     offer.itineraries[0]?.segments[0]?.departure?.iataCode; // 출발지 공항코드
   const destinationLocationCode =
@@ -296,32 +275,6 @@ function FlightResult({
     offer.itineraries?.[1]?.segments?.[0]?.operating?.carrierCode; // 운항 항공사
 
   const returnValidatingCode = offer.itineraries[1]?.segments[0]?.carrierCode; // 판매 항공사
-
-  const returnCarrierCodeLogo =
-    airlineCodeOffers.find((airline) => {
-      // 판매항공사를 carrierCode로 대체 (12/10)
-      const matchesIata = airline.iata === returnValidatingCode || "";
-
-      /* 운항항공사
-      const matchesIata =
-        airline.iata ===
-          offer.itineraries[1]?.segments[0]?.operating?.carrierCode ||
-        airline.iata ===
-          offer.itineraries[1]?.segments[
-            offer.itineraries[1]?.segments.length - 1
-          ]?.operating?.carrierCode ||
-        ""; */
-
-      /* 판매항공사
-       const matchesValidatingAirline =
-        offer.validatingAirlineCodes?.includes(airline.iata) || ""; */
-
-      const isLogoValid =
-        airline.airlinesLogo &&
-        airline.airlinesLogo.split("images/")[1] !== "pop_sample_img03.gif";
-
-      return matchesIata && isLogoValid;
-    }) || "";
 
   const returnCarrierCode =
     airlineCodeOffers.find((airline) => airline.iata === returnValidatingCode)
@@ -348,6 +301,14 @@ function FlightResult({
     offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
       ?.arrival?.at
   ); // 도착시간
+
+  const returnDayDifference =
+    new Date(
+      offer.itineraries[1]?.segments[
+        offer.itineraries[1]?.segments.length - 1
+      ]?.arrival?.at
+    ).getDate() -
+    new Date(offer.itineraries[1]?.segments[0]?.departure?.at).getDate(); // 일차 = 도착시간 - 출발시간
 
   const returnOriginLocationCode =
     offer.itineraries[1]?.segments[0]?.departure?.iataCode; // 출발지 공항코드
@@ -465,26 +426,7 @@ function FlightResult({
       <FlightInfoGroups>
         <FlightInfo>
           <Airline>
-            {carrierCodeLogo !== "" ? (
-              <img src={carrierCodeLogo.airlinesLogo} />
-            ) : (
-              <>
-                {carrierCode}
-                {/* 운항항공사
-                {
-                  dictionaries.carriers[
-                    offer.itineraries[0]?.segments[
-                      offer.itineraries[0]?.segments.length - 1
-                    ]?.operating?.carrierCode || ""
-                  ]
-                } */}
-
-                {/* 판매항공사
-                   {dictionaries.carriers[
-                    offer.validatingAirlineCodes?.[0] || ""
-                  ] || ""} */}
-              </>
-            )}
+            <span style={{ fontWeight: "600" }}>{carrierCode}</span>
 
             <AirlineCode>
               <span>{airlineCode}</span>
@@ -564,7 +506,14 @@ function FlightResult({
             </div>
           </MiddleInfoLine>
           <DestinationLine>
-            {arrivalTime}
+            <div>
+              {arrivalTime}
+              {dayDifference > 0 && (
+                <span style={{ fontSize: "10px", verticalAlign: "super" }}>
+                  +{dayDifference}
+                </span>
+              )}
+            </div>
             <IataCode>{destinationLocationCode}</IataCode>
           </DestinationLine>
         </FlightInfo>
@@ -573,25 +522,8 @@ function FlightResult({
         {offer.itineraries[1] && (
           <FlightInfo>
             <Airline>
-              {returnCarrierCodeLogo !== "" ? (
-                <img src={returnCarrierCodeLogo.airlinesLogo} />
-              ) : (
-                <>
-                  {returnCarrierCode}
-                  {/* 운항항공사 
-                   {
-                    dictionaries.carriers[
-                      offer.itineraries[1]?.segments[
-                        offer.itineraries[1]?.segments.length - 1
-                      ]?.operating?.carrierCode || ""
-                    ]
-                  } */}
-                  {/* 판매항공사
-                   {dictionaries.carriers[
-                    offer.validatingAirlineCodes?.[0] || ""
-                  ] || ""} */}
-                </>
-              )}
+              <span style={{ fontWeight: "600" }}>{returnCarrierCode}</span>
+
               <AirlineCode>
                 <span>{returnAirlineCode}</span>
 
@@ -667,7 +599,15 @@ function FlightResult({
               </div>
             </MiddleInfoLine>
             <DestinationLine>
-              {returnArrivalTime}
+              <div>
+                {returnArrivalTime}
+                {returnDayDifference > 0 && (
+                  <span style={{ fontSize: "10px", verticalAlign: "super" }}>
+                    +{returnDayDifference}
+                  </span>
+                )}
+              </div>
+
               <IataCode>{returnDestinationLocationCode}</IataCode>
             </DestinationLine>
           </FlightInfo>
