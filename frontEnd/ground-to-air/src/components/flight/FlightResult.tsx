@@ -9,18 +9,15 @@ import { Link } from "react-router-dom";
 
 // FlightResult 전체 컴포넌트 구성
 const Banner = styled.div`
-  width: 70%;
+  //width: 90%;
   max-height: 250px;
   display: flex;
-  // flex-direction: column;
   background-color: ${(props) => props.theme.white.bg};
   color: ${(props) => props.theme.white.font};
-  margin: 0 10% 0 23%;
+  margin: 2% 12% 1% 10%;
   box-shadow: 3px 2px 4px rgba(0, 0, 0, 0.2); // 그림자 순서 : x축, y축, 흐림효과, 색상
-  //border: 1px solid ${(props) => props.theme.white.font};
   border-radius: 25px;
   padding: 25px;
-  margin-bottom: 20px;
   gap: 25px;
 `;
 

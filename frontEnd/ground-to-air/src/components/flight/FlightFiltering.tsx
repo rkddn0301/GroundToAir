@@ -9,12 +9,10 @@ import { AirlineCodes } from "../../utils/api";
 // FlightFiltering 전체 컴포넌트 구성
 const Banner = styled.div`
   width: 15%;
-  position: absolute;
   padding-left: 5px;
   margin-bottom: 10px;
   background-color: ${(props) => props.theme.white.bg};
-  min-height: 450px;
-  //height: 100%;
+  height: 100%;
   box-shadow: 5px 3px 2px rgba(0, 0, 0, 0.2); // 오른쪽 + 아래쪽 그림자
 `;
 

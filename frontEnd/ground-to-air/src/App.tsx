@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import FlightSearch, { encryptionKey } from "./router/FlightSearch";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Layout from "./components/Layout";
-import HotelSearch from "./router/HotelSearch";
-import ChoiceButton from "./components/ChoiceButton";
 import Join from "./router/Join";
 import styled from "styled-components";
 import Footer from "./components/Footer";
@@ -34,7 +32,7 @@ const Container = styled.div`
   background-color: skyblue;
   padding-top: 114px;
   //width: 100%;
-  min-height: 150vh; // 페이지 최소 높이를 150vh로 변경
+  min-height: 100vh; // 페이지 최소 높이를 150vh로 변경
 `;
 
 // Layout, Footer 사이에 있는 Main div 태그
@@ -49,7 +47,7 @@ function App() {
   const expirationTime = CryptoJS.AES.decrypt(
     localStorage.getItem("expirationTime") || "",
     encryptionKey
-  ).toString(CryptoJS.enc.Utf8); // 토근 만료시간 localStorage
+  ).toString(CryptoJS.enc.Utf8); // 토큰 만료시간 localStorage
 
   // 전체 사이트에서 활동/비활동에 따라 세션 유지 여부를 결정
   useEffect(() => {
@@ -76,14 +74,13 @@ function App() {
       events.forEach((event) => window.removeEventListener(event, resetTimer));
       clearTimeout(debounceTimer); // 짧은 타이머이지만 메모리 누수에 문제가 발생할 수 있어 작성됨.
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, expirationTime]);
 
   return (
     <Container>
       <Router>
         <Route
           path={[
-            "/hotels",
             "/",
             "/myInfo",
             "/wishList",
@@ -98,10 +95,6 @@ function App() {
           <Layout />
         </Route>
         <MainContent>
-          {/* ChoiceButton의 경우 항공, 호텔 조회 페이지에만 보여야함 */}
-          <Route path={["/hotels", "/"]} exact>
-            <ChoiceButton />
-          </Route>
           <Switch>
             {/* 로그인된 사용자만 접근 가능 */}
             <ProtectedRoute
@@ -171,13 +164,11 @@ function App() {
               component={FlightReservation}
             />
 
-            <Route path="/hotels" component={HotelSearch} />
             <Route exact path="/" component={FlightSearch} />
           </Switch>
         </MainContent>
         <Route
           path={[
-            "/hotels",
             "/",
             "/myInfo",
             "/wishList",

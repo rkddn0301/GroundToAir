@@ -18,9 +18,14 @@ import CryptoJS from "crypto-js";
 import { fetchAirlineCodes, fetchIataCodes } from "../utils/useAirCodeData";
 
 // FlightSearch 전체 컴포넌트 구성
-const Container = styled.div`
+const Container = styled.div.withConfig({
+  shouldForwardProp: (prop) => !["flightOffers"].includes(prop),
+})<{
+  flightOffers: FlightOffersResponse | null;
+}>`
   min-width: 100%;
-  margin: 0 auto;
+  margin-top: 50px;
+  min-height: ${(props) => (props.flightOffers ? "150vh" : "100vh")};
 `;
 
 // 왕복/편도 전체 디자인 구성
@@ -48,10 +53,10 @@ const FormWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   background-color: ${(props) => props.theme.white.bg};
-  height: 15vh;
+  //height: 15vh;
   box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  gap: 5px;
+  padding: 15px 0 30px 0;
+  gap: 10px;
   width: 100%;
 `;
 
@@ -156,7 +161,8 @@ const TravelerButton = styled.button`
 // 버튼 디자인 구성
 const SubmitBtn = styled.button`
   width: 10%;
-  height: 100%;
+  max-width: 200px;
+  min-height: 100px;
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};
@@ -190,26 +196,22 @@ const Spinner = styled(motion.div)`
 
 // 항공 조회 결과 전체 디자인 구성
 const ResultContainer = styled.div`
-  //background-color: ${(props) => props.theme.white.bg};
-  position: relative;
+  display: flex;
 `;
 
 // 항공 조회 결과 폰트 디자인 구성
 const ResultFont = styled.div`
+  width: 50%;
   font-weight: 600;
-  padding: 0 0 1% 8%;
-  background-color: ${(props) => props.theme.white.bg};
-  margin: 0 0 20px 15%;
-  box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2); // 아래쪽 그림자만
-  position: relative; // FlightFiltering을 덮도록
-  //z-index: 1; // FlightFiltering 위에 위치
+  display: flex;
+  justify-content: flex-start;
 `;
 
 // 더 보기 버튼 디자인 구성
 const MoreBtnField = styled.div`
   display: flex;
   justify-content: center;
-  margin: 0 10% 10px 27%;
+  margin: 0 10% 10px 8%;
 `;
 
 // 더 보기 버튼 구성
@@ -867,7 +869,7 @@ function FlightSearch() {
           },
         }
       );
-      // console.log(response.data);
+      console.log(response.data);
 
       /* 
       - 검색결과는 아래 조건대로 출력됨.
@@ -945,7 +947,7 @@ function FlightSearch() {
   };
 
   return (
-    <Container>
+    <Container flightOffers={flightOffers}>
       <OnewayCheckMenu>
         <label>
           <input
@@ -1134,6 +1136,12 @@ function FlightSearch() {
 
           <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
         </Form>
+        {flightOffers && (
+          <ResultFont>
+            {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
+            {flightOffers?.meta.count}개
+          </ResultFont>
+        )}
       </FormWrapper>
 
       {isLoading ? (
@@ -1156,53 +1164,58 @@ function FlightSearch() {
             airlineCodeOffers={airlineCodeOffers}
             isNonstop={isNonstop.search}
           />
-          <ResultFont>
-            {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
-            {flightOffers.meta.count}개
-          </ResultFont>
 
-          {flightOffers.data.slice(0, moreCount).map((offer: any) => (
-            <>
-              <FlightResult
-                key={offer.id}
-                offer={offer}
-                dictionaries={flightOffers.dictionaries}
-                airlineCodeOffers={airlineCodeOffers}
-                iataCodeOffers={iataCodeOffers}
-                showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                setShowTooltip={(field, index, value) =>
-                  setShowTooltip((prev) => ({
-                    ...prev,
-                    [offer.id]: {
-                      ...(prev[offer.id] || {}),
-                      [index]: {
-                        ...(prev[offer.id]?.[index] || {}),
-                        [field]: value,
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "85%",
+              margin: "0 auto",
+            }}
+          >
+            {flightOffers.data.slice(0, moreCount).map((offer: any) => (
+              <>
+                <FlightResult
+                  key={offer.id}
+                  offer={offer}
+                  dictionaries={flightOffers.dictionaries}
+                  airlineCodeOffers={airlineCodeOffers}
+                  iataCodeOffers={iataCodeOffers}
+                  showTooltip={showTooltip[offer.id] || {}} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                  setShowTooltip={(field, index, value) =>
+                    setShowTooltip((prev) => ({
+                      ...prev,
+                      [offer.id]: {
+                        ...(prev[offer.id] || {}),
+                        [index]: {
+                          ...(prev[offer.id]?.[index] || {}),
+                          [field]: value,
+                        },
                       },
-                    },
-                  }))
-                }
-                // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
-                // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
-                // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
-                // field는 내가 변경한 key, value는 내가 변경한 boolean
+                    }))
+                  }
+                  // ...prev :  offer.id로 구성된 모든 showTooltip을 가져오는 것. EX) 내가 offer.id : 3을 수정했어도 1,2,4~moreCount에 있는 offer.id 내부 정보를 모두 가져오는 것
+                  // ...(prev[offer.id] || {}) : 특정 offer.id 안에 있는 기존 [index] : value(departureDate : false, returnDate : false)의 각각 상태를 가져오는 것
+                  // ...(prev[offer.id]?.[index] || {}) : index 내부에 value(departureDate: false, returnDate: false)를 가져오는 것
+                  // field는 내가 변경한 key, value는 내가 변경한 boolean
 
-                isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
-                setIsWish={() =>
-                  setIsWish((prev) => ({
-                    ...prev,
-                    [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
-                  }))
-                } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
-                setWishReg={setWishReg} // 찜 데이터 추가 props
-              />
-            </>
-          ))}
-          {moreCount < flightOffers.meta.count && (
-            <MoreBtnField>
-              <MoreBtn onClick={loadMore}>더 보기</MoreBtn>
-            </MoreBtnField>
-          )}
+                  isWish={isWish[offer.id] || false} // 고유아이디인 offer.id로 key를 지정, offer.id가 없을 경우 {}로 대체
+                  setIsWish={() =>
+                    setIsWish((prev) => ({
+                      ...prev,
+                      [offer.id]: !prev[offer.id], // 특정 offer.id에 대한 값만 업데이트
+                    }))
+                  } // showTooltip과 다르게 단순히 특정 데이터(offer.id)에 대한 boolean 값만 스위칭 하기 때문에 매크로 function처럼 자식에게 보내고 나머지 처리는 여기서 진행한다.
+                  setWishReg={setWishReg} // 찜 데이터 추가 props
+                />
+              </>
+            ))}
+            {moreCount < flightOffers.meta.count && (
+              <MoreBtnField>
+                <MoreBtn onClick={loadMore}>더 보기</MoreBtn>
+              </MoreBtnField>
+            )}
+          </div>
         </ResultContainer>
       ) : (
         ""
