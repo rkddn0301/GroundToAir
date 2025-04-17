@@ -62,9 +62,12 @@ const FormWrapper = styled.div`
 
 // '직항만' 디자인 구성
 const NonStopWrapper = styled.div`
-  width: 47.5%;
+  width: 85%;
   display: flex;
   justify-content: flex-end;
+  // 입력란 최대 길이 920px ~ 1195px
+  max-width: 1080px;
+  min-width: 960px;
 `;
 
 // 폼 디자인 구성
@@ -73,7 +76,8 @@ const Form = styled.form`
   justify-content: center;
   align-items: center;
   gap: 10px;
-  width: 85%;
+  width: 100%;
+  // width: 85%;
 `;
 
 // Field 디자인 부분 구성
@@ -82,8 +86,10 @@ const FieldWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 25%;
+  width: 45%;
   gap: 10px;
+  min-width: 400px;
+  max-width: 500px;
 `;
 
 // 작성란 구분 디자인 구성
@@ -94,7 +100,10 @@ const Field = styled.div`
   display: flex;
   flex-direction: column;
   padding: 15px;
-  max-width: 200px; // 최대 크기 200px로 고정
+  min-width: 200px; // 최소 크기 200px로 고정
+  max-width: 250px; // 최대 크기 250px로 고정
+
+  min-height: 90px;
 `;
 
 // 출발지/도착지 전환 버튼 구성
@@ -140,6 +149,19 @@ const WriteInput = styled.input`
 // 달력 전체 디자인 구성
 const CalendarInput = styled.div`
   margin-top: 10px;
+
+  /* DatePicker 입력창 스타일 수정 */
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+
+  .react-datepicker__input-container {
+    input {
+      width: 100%;
+      min-width: 170px;
+      max-width: 220px;
+    }
+  }
 `;
 
 // 인원 및 좌석등급 버튼 디자인 구성
@@ -152,7 +174,8 @@ const TravelerButton = styled.button`
   border: 1px solid ${(props) => props.theme.white.font};
   cursor: pointer;
   width: 100%;
-  max-width: 150px; // 텍스트 초과 시 버튼 고정을 위해 설정
+  min-width: 150px;
+  max-width: 200px; // 텍스트 초과 시 버튼 고정을 위해 설정
   white-space: nowrap; // 텍스트 줄바꿈 방지
   overflow: hidden; // 숨김
   text-overflow: ellipsis; // 숨겨진 텍스트 ... 표시
@@ -162,7 +185,7 @@ const TravelerButton = styled.button`
 const SubmitBtn = styled.button`
   width: 10%;
   max-width: 200px;
-  min-height: 100px;
+  min-height: 90px;
   background-color: skyblue;
   color: ${(props) => props.theme.white.font};
   border: 1px solid ${(props) => props.theme.white.font};

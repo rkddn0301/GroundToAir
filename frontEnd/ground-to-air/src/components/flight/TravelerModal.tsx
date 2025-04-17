@@ -33,7 +33,7 @@ const Field = styled.div`
   display: flex;
   flex-direction: column;
   padding: 15px;
-  max-width: 200px; // 최대 크기 200px로 고정
+  //max-width: 200px; // 최대 크기 200px로 고정
 `;
 
 // 연령별 팁 관련 전체 디자인
@@ -86,7 +86,8 @@ const CounterButtonGroup = styled.div`
   width: 50%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 10px;
 `;
 
 // 인원 카운팅 버튼 디자인
