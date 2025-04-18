@@ -67,7 +67,12 @@ const NonStopWrapper = styled.div`
   justify-content: flex-end;
   // 입력란 최대 길이 920px ~ 1195px
   max-width: 1080px;
-  min-width: 960px;
+  min-width: 800px;
+
+  @media (max-width: 872px) {
+    max-width: 400px;
+    min-width: 200px;
+  }
 `;
 
 // 폼 디자인 구성
@@ -78,6 +83,11 @@ const Form = styled.form`
   gap: 10px;
   width: 100%;
   // width: 85%;
+
+  @media (max-width: 872px) {
+    flex-wrap: wrap;
+    width: 70%;
+  }
 `;
 
 // Field 디자인 부분 구성
@@ -174,8 +184,8 @@ const TravelerButton = styled.button`
   border: 1px solid ${(props) => props.theme.white.font};
   cursor: pointer;
   width: 100%;
-  min-width: 150px;
-  max-width: 200px; // 텍스트 초과 시 버튼 고정을 위해 설정
+  min-width: 170px;
+  max-width: 220px; // 텍스트 초과 시 버튼 고정을 위해 설정
   white-space: nowrap; // 텍스트 줄바꿈 방지
   overflow: hidden; // 숨김
   text-overflow: ellipsis; // 숨겨진 텍스트 ... 표시
@@ -196,6 +206,12 @@ const SubmitBtn = styled.button`
   &:hover {
     background-color: ${(props) => props.theme.black.bg};
     color: ${(props) => props.theme.black.font};
+  }
+
+  @media (max-width: 872px) {
+    min-width: 400px;
+    min-height: 50px;
+    //max-width: 600px;
   }
 `;
 

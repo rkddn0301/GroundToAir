@@ -66,5 +66,9 @@ export function formatDelayTime(arrivalTime?: string, departureTime?: string) {
 
   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)); // 시를 제외하고 분만 출력
 
+  if (diffMinutes === 0) {
+    return `${diffHours}시간`;
+  }
+
   return `${diffHours}시간 ${diffMinutes}분`;
 }

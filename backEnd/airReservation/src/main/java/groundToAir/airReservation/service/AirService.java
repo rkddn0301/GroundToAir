@@ -250,211 +250,222 @@ public class AirService {
         Map<String, Object> travelerData = (Map<String, Object>) flightDataMap.get("travelerData"); // 탑승자 정보 입력 데이터
         Map<String, Object> contactData = (Map<String, Object>) flightDataMap.get("contactData"); // 연락처 상세정보
 
-        // Flight Create Order API 호출하여 데이터를 가져옴. orders에 삽입
-        String flightOrderData = getFlightOrder(accessToken, flightPricing, travelerData, contactData);
-        log.info("flightOrderData : {}", flightOrderData);
-        reservationList.setOrders(flightOrderData);
+        try {
+            // Flight Create Order API 호출하여 데이터를 가져옴. orders에 삽입
+            String flightOrderData = getFlightOrder(accessToken, flightPricing, travelerData, contactData);
+            log.info("flightOrderData : {}", flightOrderData);
+            reservationList.setOrders(flightOrderData);
 
 
-        // flightOrderData를 다시 Map으로 변환
-        Map<String, Object> flightOrderMap = objectMapper.readValue(flightOrderData, new TypeReference<>() {});
-        log.info("flightOrderMap : {}", flightOrderMap);
+            // flightOrderData를 다시 Map으로 변환
+            Map<String, Object> flightOrderMap = objectMapper.readValue(flightOrderData, new TypeReference<>() {});
+            log.info("flightOrderMap : {}", flightOrderMap);
 
 
-        // 예약 코드 생성 및 입력 (GTA + 날짜 + 랜덤값)
-        String revCode = generateReservationCode();
-        // 생성된 예약코드가 이미 예약내역에 존재하는 경우 다시 변경
-        while ( reservationListRepository.findByRevCode(revCode).isPresent()) {
-            revCode = generateReservationCode();
-        }
-        log.info("revCode : " + revCode);
+            // 예약 코드 생성 및 입력 (GTA + 날짜 + 랜덤값)
+            String revCode = generateReservationCode();
+            // 생성된 예약코드가 이미 예약내역에 존재하는 경우 다시 변경
+            while ( reservationListRepository.findByRevCode(revCode).isPresent()) {
+                revCode = generateReservationCode();
+            }
+            log.info("revCode : " + revCode);
 
-        reservationList.setRevCode(revCode);
+            reservationList.setRevCode(revCode);
 
-        // userNo 추출 및 입력 (비회원인 경우 null로 설정)
-        int userNo = flightDataMap.get("userNo") != "" ? jwtUtil.extractUserNo((String) flightDataMap.get("userNo")) : 0;
-        log.info("userNo : {}", userNo);
-        if (userNo != 0) {
-            UserEntity user = new UserEntity();
-            user.setUserNo(userNo);
-            reservationList.setReservationListUser(user);
-        }
-
-        // 예약자명 추출 및 입력
-        String revName = (String) contactData.get("userName");
-        log.info("revName : {}", revName);
-        reservationList.setRevName(revName); // 예약자명
-
-        // flightOrderMap 모든 데이터 추출
-        Map<String, Object> data = flightOrderMap.get("data") != null ? (Map<String, Object>) flightOrderMap.get("data") : null;
-        Map<String, Object> flightOffers = data != null ? ((List<Map<String, Object>>) data.get("flightOffers")).stream().findFirst().orElse(null) : null;
-
-        if (flightOffers != null) {
-            // 가는편 정보
-
-            Map<String, Object> itineraries = ((List<Map<String, Object>>) flightOffers.get("itineraries")).stream().findFirst().orElse(null);
-
-            String airlinesIata = null, departureIata = null, arrivalIata = null,
-                    flightNo = null, turnaroundTime = null, stopLine = null;
-            LocalDateTime departureTime = null, arrivalTime = null;
-
-            List<Map<String, Object>> segments = itineraries != null ? (List<Map<String, Object>>) itineraries.get("segments") : null;
-            if (segments != null && !segments.isEmpty()) {
-                airlinesIata = (String) segments.get(0).get("carrierCode");
-                departureIata = (String) ((Map<String, Object>) segments.get(0).get("departure")).get("iataCode");
-                departureTime = Optional.ofNullable((String) ((Map<String, Object>) segments.get(0).get("departure")).get("at"))
-                        .filter(str -> !str.isEmpty())
-                        .map(LocalDateTime::parse)
-                        .orElse(null);
-
-                arrivalIata = (String) ((Map<String, Object>) segments.get(segments.size() - 1).get("arrival")).get("iataCode");
-                arrivalTime = Optional.ofNullable((String) ((Map<String, Object>) segments.get(segments.size() - 1).get("arrival")).get("at"))
-                        .filter(str -> !str.isEmpty())
-                        .map(LocalDateTime::parse)
-                        .orElse(null);
-                flightNo =  airlinesIata + segments.get(0).get("number");
-
-                // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
-                if (segments.size()-1 == 0) {
-                    turnaroundTime = (String) segments.get(0).get("duration");
-                } else if (departureTime != null && arrivalTime != null) {
-                    Duration duration = Duration.between(departureTime, arrivalTime);
-                    long hours = duration.toHours();
-                    long minutes = duration.toMinutesPart();
-                    if (minutes == 0) {
-                        turnaroundTime = String.format("PT%dH", hours);
-                    } else if (hours == 0) {
-                        turnaroundTime = String.format("PT%dM", minutes);
-                    } else {
-                        turnaroundTime = String.format("PT%dH%dM", hours, minutes);
-                    }
-                }
-
-                stopLine = segments.size()-1 == 0 ? "직항" : segments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
-                log.info("airlinesIata : {}", airlinesIata);
-                log.info("departureIata : {}", departureIata);
-                log.info("departureTime : {}", departureTime);
-                log.info("arrivalIata : {}", arrivalIata);
-                log.info("arrivalTime : {}", arrivalTime);
-                log.info("flightNo : {}", flightNo);
-                log.info("turnaroundTime : {}", turnaroundTime);
-                log.info("stopLine : {}", stopLine);
-
-                // 가는편 정보 입력
-                reservationList.setAirlinesIata(airlinesIata);
-                reservationList.setDepartureIata(departureIata);
-                reservationList.setDepartureTime(departureTime);
-                reservationList.setArrivalIata(arrivalIata);
-                reservationList.setArrivalTime(arrivalTime);
-                reservationList.setFlightNo(flightNo);
-                reservationList.setTurnaroundTime(turnaroundTime);
-                reservationList.setStopLine(stopLine);
+            // userNo 추출 및 입력 (비회원인 경우 null로 설정)
+            int userNo = flightDataMap.get("userNo") != "" ? jwtUtil.extractUserNo((String) flightDataMap.get("userNo")) : 0;
+            log.info("userNo : {}", userNo);
+            if (userNo != 0) {
+                UserEntity user = new UserEntity();
+                user.setUserNo(userNo);
+                reservationList.setReservationListUser(user);
             }
 
-            // 오는편 정보
-            Map<String, Object> reItineraries = ((List<Map<String, Object>>) flightOffers.get("itineraries")).stream().skip(1).findFirst().orElse(null);
+            // 예약자명 추출 및 입력
+            String revName = (String) contactData.get("userName");
+            log.info("revName : {}", revName);
+            reservationList.setRevName(revName); // 예약자명
 
-            List<Map<String, Object>> reSegments = reItineraries != null ? (List<Map<String, Object>>) reItineraries.get("segments") : null;
+            // flightOrderMap 모든 데이터 추출
+            Map<String, Object> data = flightOrderMap.get("data") != null ? (Map<String, Object>) flightOrderMap.get("data") : null;
+            Map<String, Object> flightOffers = data != null ? ((List<Map<String, Object>>) data.get("flightOffers")).stream().findFirst().orElse(null) : null;
 
-            String reAirlinesIata = null, reDepartureIata = null, reArrivalIata = null,
-                     reFlightNo = null, reTurnaroundTime = null, reStopLine = null;
+            if (flightOffers != null) {
+                // 가는편 정보
 
-            LocalDateTime reDepartureTime = null, reArrivalTime = null;
+                Map<String, Object> itineraries = ((List<Map<String, Object>>) flightOffers.get("itineraries")).stream().findFirst().orElse(null);
 
-            if (reSegments != null && !reSegments.isEmpty()) {
-                reAirlinesIata = (String) reSegments.get(0).get("carrierCode");
-                reDepartureIata = (String) ((Map<String, Object>) reSegments.get(0).get("departure")).get("iataCode");
-                reDepartureTime = Optional.ofNullable((String) ((Map<String, Object>) reSegments.get(0).get("departure")).get("at"))
-                        .filter(str -> !str.isEmpty())
-                        .map(LocalDateTime::parse)
-                        .orElse(null);
-                reArrivalIata = (String) ((Map<String, Object>) reSegments.get(reSegments.size() - 1).get("arrival")).get("iataCode");
-                reArrivalTime = Optional.ofNullable((String) ((Map<String, Object>) reSegments.get(reSegments.size() - 1).get("arrival")).get("at"))
-                        .filter(str -> !str.isEmpty())
-                        .map(LocalDateTime::parse)
-                        .orElse(null);
-                reFlightNo =  reAirlinesIata + reSegments.get(0).get("number");
+                String airlinesIata = null, departureIata = null, arrivalIata = null,
+                        flightNo = null, turnaroundTime = null, stopLine = null;
+                LocalDateTime departureTime = null, arrivalTime = null;
 
-                // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
-                if (reSegments.size()-1 == 0) {
-                    reTurnaroundTime = (String) reSegments.get(0).get("duration");
-                } else if (reDepartureTime != null && reArrivalTime != null) {
-                    Duration duration = Duration.between(reDepartureTime, reArrivalTime);
-                    long hours = duration.toHours();
-                    long minutes = duration.toMinutesPart();
-                    if (minutes == 0) {
-                        reTurnaroundTime = String.format("PT%dH", hours);
-                    } else if (hours == 0) {
-                        reTurnaroundTime = String.format("PT%dM", minutes);
-                    } else {
-                        reTurnaroundTime = String.format("PT%dH%dM", hours, minutes);
+                List<Map<String, Object>> segments = itineraries != null ? (List<Map<String, Object>>) itineraries.get("segments") : null;
+                if (segments != null && !segments.isEmpty()) {
+                    airlinesIata = (String) segments.get(0).get("carrierCode");
+                    departureIata = (String) ((Map<String, Object>) segments.get(0).get("departure")).get("iataCode");
+                    departureTime = Optional.ofNullable((String) ((Map<String, Object>) segments.get(0).get("departure")).get("at"))
+                            .filter(str -> !str.isEmpty())
+                            .map(LocalDateTime::parse)
+                            .orElse(null);
+
+                    arrivalIata = (String) ((Map<String, Object>) segments.get(segments.size() - 1).get("arrival")).get("iataCode");
+                    arrivalTime = Optional.ofNullable((String) ((Map<String, Object>) segments.get(segments.size() - 1).get("arrival")).get("at"))
+                            .filter(str -> !str.isEmpty())
+                            .map(LocalDateTime::parse)
+                            .orElse(null);
+                    flightNo =  airlinesIata + segments.get(0).get("number");
+
+                    // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
+                    if (segments.size()-1 == 0) {
+                        turnaroundTime = (String) segments.get(0).get("duration");
+                    } else if (departureTime != null && arrivalTime != null) {
+                        Duration duration = Duration.between(departureTime, arrivalTime);
+                        long hours = duration.toHours();
+                        long minutes = duration.toMinutesPart();
+                        if (minutes == 0) {
+                            turnaroundTime = String.format("PT%dH", hours);
+                        } else if (hours == 0) {
+                            turnaroundTime = String.format("PT%dM", minutes);
+                        } else {
+                            turnaroundTime = String.format("PT%dH%dM", hours, minutes);
+                        }
                     }
+
+                    stopLine = segments.size()-1 == 0 ? "직항" : segments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
+                    log.info("airlinesIata : {}", airlinesIata);
+                    log.info("departureIata : {}", departureIata);
+                    log.info("departureTime : {}", departureTime);
+                    log.info("arrivalIata : {}", arrivalIata);
+                    log.info("arrivalTime : {}", arrivalTime);
+                    log.info("flightNo : {}", flightNo);
+                    log.info("turnaroundTime : {}", turnaroundTime);
+                    log.info("stopLine : {}", stopLine);
+
+                    // 가는편 정보 입력
+                    reservationList.setAirlinesIata(airlinesIata);
+                    reservationList.setDepartureIata(departureIata);
+                    reservationList.setDepartureTime(departureTime);
+                    reservationList.setArrivalIata(arrivalIata);
+                    reservationList.setArrivalTime(arrivalTime);
+                    reservationList.setFlightNo(flightNo);
+                    reservationList.setTurnaroundTime(turnaroundTime);
+                    reservationList.setStopLine(stopLine);
                 }
 
-                reStopLine = reSegments.size()-1 == 0 ? "직항" : reSegments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
-                log.info("reAirlinesIata : {}", reAirlinesIata);
-                log.info("reDepartureIata : {}", reDepartureIata);
-                log.info("reDepartureTime : {}", reDepartureTime);
-                log.info("reArrivalIata : {}", reArrivalIata);
-                log.info("reArrivalTime : {}", reArrivalTime);
-                log.info("reFlightNo : {}", reFlightNo);
-                log.info("reTurnaroundTime : {}", reTurnaroundTime);
-                log.info("reStopLine : {}", reStopLine);
+                // 오는편 정보
+                Map<String, Object> reItineraries = ((List<Map<String, Object>>) flightOffers.get("itineraries")).stream().skip(1).findFirst().orElse(null);
 
-                // 오는편 정보 입력
-                reservationList.setReAirlinesIata(reAirlinesIata);
-                reservationList.setReDepartureIata(reDepartureIata);
-                reservationList.setReDepartureTime(reDepartureTime);
-                reservationList.setReArrivalIata(reArrivalIata);
-                reservationList.setReArrivalTime(reArrivalTime);
-                reservationList.setReFlightNo(reFlightNo);
-                reservationList.setReTurnaroundTime(reTurnaroundTime);
-                reservationList.setReStopLine(reStopLine);
-            }
+                List<Map<String, Object>> reSegments = reItineraries != null ? (List<Map<String, Object>>) reItineraries.get("segments") : null;
 
-            // 가격
-            int totalPrice = (int) Double.parseDouble((String) ((Map<String, Object>) flightOffers.get("price")).get("total"));
+                String reAirlinesIata = null, reDepartureIata = null, reArrivalIata = null,
+                        reFlightNo = null, reTurnaroundTime = null, reStopLine = null;
 
+                LocalDateTime reDepartureTime = null, reArrivalTime = null;
 
-            List<Map<String, Object>> travelerMap = ((List<Map<String, Object>>) flightOffers.get("travelerPricings"));
+                if (reSegments != null && !reSegments.isEmpty()) {
+                    reAirlinesIata = (String) reSegments.get(0).get("carrierCode");
+                    reDepartureIata = (String) ((Map<String, Object>) reSegments.get(0).get("departure")).get("iataCode");
+                    reDepartureTime = Optional.ofNullable((String) ((Map<String, Object>) reSegments.get(0).get("departure")).get("at"))
+                            .filter(str -> !str.isEmpty())
+                            .map(LocalDateTime::parse)
+                            .orElse(null);
+                    reArrivalIata = (String) ((Map<String, Object>) reSegments.get(reSegments.size() - 1).get("arrival")).get("iataCode");
+                    reArrivalTime = Optional.ofNullable((String) ((Map<String, Object>) reSegments.get(reSegments.size() - 1).get("arrival")).get("at"))
+                            .filter(str -> !str.isEmpty())
+                            .map(LocalDateTime::parse)
+                            .orElse(null);
+                    reFlightNo =  reAirlinesIata + reSegments.get(0).get("number");
 
-            // 인원 수, 좌석등급
-            int adults = 0, childrens = 0, infants = 0;
-            SeatClass seatClass = null;
-
-
-            if (travelerMap != null ) {
-                for (Map<String, Object> traveler : travelerMap) {
-                    String travelerType = (String) traveler.get("travelerType");
-                    if ("ADULT".equals(travelerType)) {
-                        adults++;
+                    // 총 소요시간 계산 (경유일 시 Duration 클래스를 사용하여 hours, minutes로 나누고 소요시간 양식에 맞게 삽입)
+                    if (reSegments.size()-1 == 0) {
+                        reTurnaroundTime = (String) reSegments.get(0).get("duration");
+                    } else if (reDepartureTime != null && reArrivalTime != null) {
+                        Duration duration = Duration.between(reDepartureTime, reArrivalTime);
+                        long hours = duration.toHours();
+                        long minutes = duration.toMinutesPart();
+                        if (minutes == 0) {
+                            reTurnaroundTime = String.format("PT%dH", hours);
+                        } else if (hours == 0) {
+                            reTurnaroundTime = String.format("PT%dM", minutes);
+                        } else {
+                            reTurnaroundTime = String.format("PT%dH%dM", hours, minutes);
+                        }
                     }
-                    if ("CHILD".equals(travelerType)) {
-                        childrens++;
-                    }
-                    if ("HELD_INFANT".equals(travelerType)) {
-                        infants++;
-                    }
+
+                    reStopLine = reSegments.size()-1 == 0 ? "직항" : reSegments.size()-1 == 1 ? "1회 경유" : "경유 2회 이상" ;
+                    log.info("reAirlinesIata : {}", reAirlinesIata);
+                    log.info("reDepartureIata : {}", reDepartureIata);
+                    log.info("reDepartureTime : {}", reDepartureTime);
+                    log.info("reArrivalIata : {}", reArrivalIata);
+                    log.info("reArrivalTime : {}", reArrivalTime);
+                    log.info("reFlightNo : {}", reFlightNo);
+                    log.info("reTurnaroundTime : {}", reTurnaroundTime);
+                    log.info("reStopLine : {}", reStopLine);
+
+                    // 오는편 정보 입력
+                    reservationList.setReAirlinesIata(reAirlinesIata);
+                    reservationList.setReDepartureIata(reDepartureIata);
+                    reservationList.setReDepartureTime(reDepartureTime);
+                    reservationList.setReArrivalIata(reArrivalIata);
+                    reservationList.setReArrivalTime(reArrivalTime);
+                    reservationList.setReFlightNo(reFlightNo);
+                    reservationList.setReTurnaroundTime(reTurnaroundTime);
+                    reservationList.setReStopLine(reStopLine);
                 }
 
-                seatClass = SeatClass.valueOf((String) ((List<Map<String,Object>>) travelerMap.get(0).get("fareDetailsBySegment")).get(0).get("cabin"));
+                // 가격
+                int totalPrice = (int) Double.parseDouble((String) ((Map<String, Object>) flightOffers.get("price")).get("total"));
 
+
+                List<Map<String, Object>> travelerMap = ((List<Map<String, Object>>) flightOffers.get("travelerPricings"));
+
+                // 인원 수, 좌석등급
+                int adults = 0, childrens = 0, infants = 0;
+                SeatClass seatClass = null;
+
+
+                if (travelerMap != null ) {
+                    for (Map<String, Object> traveler : travelerMap) {
+                        String travelerType = (String) traveler.get("travelerType");
+                        if ("ADULT".equals(travelerType)) {
+                            adults++;
+                        }
+                        if ("CHILD".equals(travelerType)) {
+                            childrens++;
+                        }
+                        if ("HELD_INFANT".equals(travelerType)) {
+                            infants++;
+                        }
+                    }
+
+                    seatClass = SeatClass.valueOf((String) ((List<Map<String,Object>>) travelerMap.get(0).get("fareDetailsBySegment")).get(0).get("cabin"));
+
+                }
+                log.info("peoples : adults={} childrens={} infants={} seatClass={} totalPrice={}", adults, childrens, infants, seatClass, totalPrice);
+
+                // 나머지 정보 입력 (유형별 인원 수, 좌석등급, 가격)
+                reservationList.setAdults(adults);
+                reservationList.setChildrens(childrens);
+                reservationList.setInfants(infants);
+                reservationList.setSeatClass(seatClass);
+                reservationList.setTotalPrice(totalPrice);
+
+                // 최종 저장
+                reservationListRepository.save(reservationList);
+                return objectMapper.convertValue(reservationList, new TypeReference<>() {});
+            } else { // 항공편 데이터가 없을 시
+                return null;
             }
-            log.info("peoples : adults={} childrens={} infants={} seatClass={} totalPrice={}", adults, childrens, infants, seatClass, totalPrice);
+        } catch (HttpClientErrorException e) {
+            String detail = new ObjectMapper()
+                    .readTree(e.getResponseBodyAsString())
+                    .get("errors").get(0).get("detail").asText();
+            Map<String, Object> errorMap = Map.of("error", detail);
+            return errorMap;
 
-            // 나머지 정보 입력 (유형별 인원 수, 좌석등급, 가격)
-            reservationList.setAdults(adults);
-            reservationList.setChildrens(childrens);
-            reservationList.setInfants(infants);
-            reservationList.setSeatClass(seatClass);
-            reservationList.setTotalPrice(totalPrice);
-
-            // 최종 저장
-            reservationListRepository.save(reservationList);
-            return objectMapper.convertValue(reservationList, new TypeReference<>() {});
-        } else { // 항공편 데이터가 없을 시
-            return null;
         }
+
+
     }
 
 

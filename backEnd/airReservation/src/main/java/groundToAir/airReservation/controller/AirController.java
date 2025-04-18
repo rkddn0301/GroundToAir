@@ -9,6 +9,7 @@ import groundToAir.airReservation.utils.AccessTokenUtil;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.Map;
@@ -93,8 +94,15 @@ public class AirController {
         log.info("flight Offers : {}", flightOffers);
 
         String accessToken = accessTokenUtil.checkAndRefreshToken();
-
-        return airService.getFlightPrice(accessToken, flightOffers);
+        try {
+            String response = airService.getFlightPrice(accessToken, flightOffers);
+            return response;
+        } catch (HttpClientErrorException e) {
+            String detail = new ObjectMapper()
+                    .readTree(e.getResponseBodyAsString())
+                    .get("errors").get(0).get("detail").asText();
+            return detail;
+        }
 
     }
 

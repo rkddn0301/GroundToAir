@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import FlightReservationResult from "./FlightReservationResult";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../../../utils/atom";
-import { Confirm } from "../../../utils/sweetAlert";
+import { Alert, Confirm } from "../../../utils/sweetAlert";
 import {
   fetchAirlineCodes,
   fetchIataCodes,
@@ -221,7 +221,15 @@ function FlightReservation() {
           flightOffers: data,
         }
       );
-      if (response.data) {
+      if (response.data === "No fare applicable") {
+        const errorAlert = await Alert(
+          "선택하신 조건에 맞는 항공편이 없습니다.<br>다른 항공편을 이용해주시길 바랍니다.",
+          "error"
+        );
+        if (errorAlert.isConfirmed || errorAlert.isDismissed) {
+          history.push("/");
+        }
+      } else {
         setFlightPrice(response.data);
       }
     } catch (error) {

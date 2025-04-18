@@ -18,6 +18,10 @@ const Nav = styled.nav`
   padding: 20px;
   background-color: ${(props) => props.theme.black.bg};
   color: ${(props) => props.theme.black.font};
+  @media (max-width: 602px) {
+    flex-direction: column;
+    padding: 8px;
+  }
 `;
 
 // 좌측 메뉴 구성란(메인 로고)
@@ -27,6 +31,9 @@ const LeftMenu = styled.div``;
 const RightMenu = styled.div`
   display: flex;
   gap: 15px;
+  @media (max-width: 602px) {
+    justify-content: center;
+  }
 `;
 
 // 선택 메뉴 구성

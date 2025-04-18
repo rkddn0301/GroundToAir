@@ -149,7 +149,17 @@ function PaymentResult() {
         }
       );
 
-      if (response.data !== null) {
+      if (response.data.error === "Could not sell segment 1") {
+        const errorAlert = await Alert(
+          "선택하신 항공편에 좌석이 없습니다.<br>다른 항공편을 확인해보시거나, 조건을 변경해 주세요.",
+          "error"
+        );
+        if (errorAlert.isConfirmed || errorAlert.isDismissed) {
+          setIsLoading(false);
+          removeStorage();
+          history.push("/");
+        }
+      } else if (response.data !== null) {
         console.log("예약 성공:", response.data);
         const successAlert = await Alert("예약이 완료되었습니다!", "success");
 
