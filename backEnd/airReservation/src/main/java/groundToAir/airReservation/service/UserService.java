@@ -10,8 +10,6 @@ import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +39,12 @@ public class UserService {
     private final ReservationListRepository reservationListRepository;
 
     // 이메일 이용
-    private JavaMailSender mailSender;
+    private final MailService mailService;
 
     // JSON 파싱 클래스 선언
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, JavaMailSender mailSender, ReservationListRepository reservationListRepository) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, ReservationListRepository reservationListRepository, MailService mailService) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,8 +53,8 @@ public class UserService {
         this.wishListRepository = wishListRepository;
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
-        this.mailSender = mailSender;
         this.reservationListRepository = reservationListRepository;
+        this.mailService = mailService;
     }
 
     // 아이디 중복 체크
@@ -415,26 +413,6 @@ public class UserService {
         }
     }
 
-    // 이메일 전송 메서드
-    private void sendEmail(String toEmail, String messageContent, String messageType) {
-        long startTime = System.currentTimeMillis();
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-
-        // 메시지 유형에 따라 제목과 내용을 다르게 설정
-        if ("idFind".equals(messageType)) {
-            message.setSubject("아이디 찾기");
-            message.setText("귀하의 아이디는 " + messageContent + " 입니다.");
-        } else if ("pwFind".equals(messageType)) {
-            message.setSubject("비밀번호 찾기");
-            message.setText("귀하의 임시 비밀번호는: " + messageContent + " 입니다.\n로그인 후 반드시 비밀번호를 변경해 주시기 바랍니다.");
-        }
-
-        mailSender.send(message);
-        long endTime = System.currentTimeMillis();
-        log.info("메일 전송 완료, 소요시간: " + (endTime - startTime) + "ms");
-    }
-
     // 아이디 찾기
     public boolean idFind(String userName,
                           String email) {
@@ -444,7 +422,7 @@ public class UserService {
 
         if (userId != null) {
             // 아이디가 존재할 경우 이메일로 전송
-            sendEmail(email, userId, "idFind");
+            mailService.sendIdOrPwEmail(email, userId, "idFind");
             return true;
         } else {
             // 아이디가 없을 경우
@@ -477,7 +455,7 @@ public class UserService {
         userRepository.save(user);
 
         // 이메일로 임시 비밀번호 전송
-        sendEmail(email, temporaryPassword, "pwFind");
+        mailService.sendIdOrPwEmail(email, temporaryPassword, "pwFind");
 
         return true;
     }

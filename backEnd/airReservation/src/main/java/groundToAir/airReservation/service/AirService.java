@@ -1,9 +1,7 @@
 package groundToAir.airReservation.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import groundToAir.airReservation.entity.*;
 import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.repository.AirlineCodeRepository;
@@ -13,9 +11,7 @@ import groundToAir.airReservation.repository.ReservationListRepository;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.springframework.core.ParameterizedTypeReference;
+
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -23,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +35,8 @@ public class AirService {
     private final AirlineCodeRepository airlineCodeRepository;
     private final JwtUtil jwtUtil;
 
+    private final MailService mailService;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
     static {
         // Java 8 날짜/시간 타입을 처리하기 위한 모듈 등록
@@ -50,11 +47,12 @@ public class AirService {
     private final CountryRepository countryRepository;
     private final ReservationListRepository reservationListRepository;
 
-    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository, AirlineCodeRepository airlineCodeRepository, JwtUtil jwtUtil, CountryRepository countryRepository, ReservationListRepository reservationListRepository) {
+    public AirService(RestTemplate restTemplate, IataCodeRepository iataCodeRepository, AirlineCodeRepository airlineCodeRepository, JwtUtil jwtUtil, MailService mailService, CountryRepository countryRepository, ReservationListRepository reservationListRepository) {
         this.restTemplate = restTemplate;
         this.iataCodeRepository = iataCodeRepository;
         this.airlineCodeRepository = airlineCodeRepository;
         this.jwtUtil = jwtUtil;
+        this.mailService = mailService;
         this.countryRepository = countryRepository;
         this.reservationListRepository = reservationListRepository;
     }
@@ -116,9 +114,14 @@ public class AirService {
     public String getFlightPrice(String accessToken, String flightOffers) {
         String url = "https://test.api.amadeus.com/v1/shopping/flight-offers/pricing";
 
+        log.info("flightOffers : " + flightOffers);
+
+
         // 가져온 데이터 중 필요없는 부분 제거
         String replacedFlightOffers = flightOffers.replace("{\"flightOffers\":", "[")
-                .replace("}]}]}", "}]}]}]}");
+                .replace("}]}]}]}", "}]}]}]}]}");
+
+        log.info("replacedFlightOffers: " + replacedFlightOffers);
 
 
         // flight offer price Body 양식에 맞게 JSON 형식으로 변환
@@ -452,6 +455,13 @@ public class AirService {
 
                 // 최종 저장
                 reservationListRepository.save(reservationList);
+
+                // 예약 완료 이메일 전송
+                String toEmail = ((Map<String, Object>) ((Map<String, Object>) ((List<?>) ((Map<String, Object>) flightOrderMap.get("data")).get("travelers")).get(0)).get("contact")).get("emailAddress").toString();
+                mailService.sendRevListCompleteEmail(toEmail, reservationList);
+
+
+
                 return objectMapper.convertValue(reservationList, new TypeReference<>() {});
             } else { // 항공편 데이터가 없을 시
                 return null;
