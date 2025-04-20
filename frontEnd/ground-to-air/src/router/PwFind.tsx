@@ -16,7 +16,7 @@ const Container = styled.div`
 
 // 강조 혹은 작성 오류 안내 메시지 디자인 구성
 const GuideLine = styled.div`
- color: ${(props) => props.theme.white.warning};
+  color: ${(props) => props.theme.white.warning};
   font-size: 11px;
   display: flex;
   justify-content: center;
@@ -91,7 +91,7 @@ const SubmitBtn = styled(motion.button)`
 // 로딩 중... 원형 디자인 구성
 const Spinner = styled(motion.div)`
   border: 4px solid ${(props) => props.theme.white.font};
-  border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
+  border-top: 4px solid ${(props) => props.theme.background}; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
   border-radius: 50%;
   width: 16px;
   height: 16px;

@@ -25,8 +25,9 @@ const Card = styled.div`
   background-color: ${(props) => props.theme.white.bg};
   border-radius: 5px;
   min-width: 80%;
-  min-height: 550px;
   margin: 0 auto;
+  gap: 10px;
+  padding: 10px;
 `;
 
 // 제목 구간 전체 구성
@@ -35,10 +36,11 @@ const Header = styled.div`
   justify-content: center;
 `;
 
-// 테이블 전체 구성
-const TableContainer = styled.div`
-  min-height: 450px;
-  margin: 0 auto;
+// 찜 내역 구성
+const WishLists = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 // 제목 디자인
@@ -50,18 +52,20 @@ const MainTitle = styled.h3`
   margin: 10px 0;
 `;
 
-// 테이블 전체
-const MainTable = styled.table`
-  border: 2px solid ${(props) => props.theme.white.font};
-  border-collapse: collapse;
-`;
-
-// 테이블 제목열
-const TableHeader = styled.th`
-  border-bottom: 2px solid ${(props) => props.theme.white.font};
-  border-right: 1px solid ${(props) => props.theme.white.font};
+// 요소 제목
+const ElementTitle = styled.div.withConfig({
+  shouldForwardProp: (prop) => !["isWidth"].includes(prop),
+})<{
+  isWidth: string;
+}>`
+  display: flex;
+  width: ${(props) => props.isWidth};
+  justify-content: center;
+  align-items: center;
   padding: 5px;
+  font-size: 12px;
   font-weight: 600;
+  border: 1px solid ${(props) => props.theme.white.font};
 `;
 
 // 페이지네이션 전체 구성
@@ -187,50 +191,41 @@ function WishList() {
         <Header>
           <MainTitle>찜 내역</MainTitle>
         </Header>
-        <TableContainer>
-          <MainTable>
-            <thead>
-              <tr>
-                <TableHeader>항공편</TableHeader>
-                <TableHeader>출국일/귀국일</TableHeader>
-                <TableHeader>인원/좌석등급</TableHeader>
-                <TableHeader>결제금액</TableHeader>
-                {getWish.length >= 1 && <TableHeader colSpan={2}></TableHeader>}
-              </tr>
-            </thead>
-            <tbody>
-              {getWish.length < 1 ? (
-                <tr>
-                  <td colSpan={4}>
-                    <div
-                      style={{
-                        height: "370px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        fontSize: "20px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      찜 내역이 존재하지 않습니다.
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <>
-                  {currentWishData.map((wish) => (
-                    <WishResult
-                      key={wish.wishNo}
-                      wish={wish}
-                      setGetWish={setGetWish}
-                      airlineCodeOffers={airlineCodeOffers}
-                    />
-                  ))}
-                </>
-              )}
-            </tbody>
-          </MainTable>
-        </TableContainer>
+        <WishLists>
+          <div style={{ display: "flex" }}>
+            <ElementTitle isWidth={"46%"}>항공편</ElementTitle>
+            <ElementTitle isWidth={"13%"}>출국일/귀국일</ElementTitle>
+            <ElementTitle isWidth={"15%"}>인원/좌석등급</ElementTitle>
+            <ElementTitle isWidth={"11%"}>결제금액</ElementTitle>
+            <ElementTitle isWidth={"10%"} />
+            <ElementTitle isWidth={"5%"} />
+          </div>
+          {getWish.length < 1 ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "370px",
+                fontSize: "20px",
+                fontWeight: "600",
+              }}
+            >
+              찜 내역이 존재하지 않습니다.
+            </div>
+          ) : (
+            <>
+              {currentWishData.map((wish) => (
+                <WishResult
+                  key={wish.wishNo}
+                  wish={wish}
+                  setGetWish={setGetWish}
+                  airlineCodeOffers={airlineCodeOffers}
+                />
+              ))}
+            </>
+          )}
+        </WishLists>
 
         {/* 페이지네이션 구간 */}
         <PagenationContainer>

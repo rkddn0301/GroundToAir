@@ -4,7 +4,48 @@ import { FlightWish } from "../../router/FlightSearch";
 import { AirlineCodes } from "../../utils/api";
 import { formatDuration, formatTime } from "../../utils/formatTime";
 import { Alert, Confirm } from "../../utils/sweetAlert";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import styled from "styled-components";
+
+// 요소 값
+const ElementValue = styled.div.withConfig({
+  shouldForwardProp: (prop) => !["isWidth"].includes(prop),
+})<{
+  isWidth: string;
+}>`
+  display: flex;
+  flex-direction: column;
+  width: ${(props) => props.isWidth};
+  justify-content: center;
+  align-items: center;
+  border: 1px solid ${(props) => props.theme.white.font};
+  gap: 10px;
+  font-size: 80%;
+  padding: 5px;
+  word-break: break-word;
+`;
+
+// 요소 버튼
+// shouldForwardProp : styled-components에서 특정 props가 DOM에 전달되지 않도록 필터링함(오류방지)
+const ElementButton = styled.button.withConfig({
+  shouldForwardProp: (prop) =>
+    !["fontSize", "backgroundColor", "hoverColor"].includes(prop),
+})<{
+  fontSize: string;
+  backgroundColor: string;
+  hoverColor: string;
+}>`
+  width: 100%;
+  height: 100%;
+  font-size: ${(props) => props.fontSize};
+  background-color: ${(props) => props.backgroundColor};
+  border: transparent;
+  cursor: pointer;
+  &:hover {
+    background-color: ${(props) => props.hoverColor};
+    color: ${(props) => props.theme.black.font};
+  }
+`;
 
 // 조회 결과 컴포넌트에 필요한 props
 interface WishResultProps {
@@ -14,6 +55,8 @@ interface WishResultProps {
 }
 
 function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
+  const history = useHistory();
+
   // 가는편
 
   const carrierCode =
@@ -58,154 +101,89 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
   };
 
   return (
-    <>
-      <tr>
-        {/* 항공편 */}
-        <td
-          style={{
-            borderBottom: "1px solid #595959",
-            padding: "5px",
-            textAlign: "center",
-            verticalAlign: "middle",
-          }}
-        >
-          {carrierCode}
-          {wish.departureIata}-{wish.arrivalIata}{" "}
+    <div style={{ display: "flex" }}>
+      {/* 항공편 */}
+      <ElementValue isWidth={"46%"}>
+        <span>
+          {carrierCode} {wish.departureIata}-{wish.arrivalIata}{" "}
           {formatTime(wish.departureTime)}~{formatTime(wish.arrivalTime)} (
           {formatDuration(wish.turnaroundTime)}){" "}
           <span style={{ color: "blue" }}>{wish.stopLine}</span>
-          {/* 왕복 여부 */}
-          {wish.reStopLine ? (
-            <>
-              <br />
-              <br />
-              {returnCarrierCode}
-              {wish.reDepartureIata}-{wish.reArrivalIata}{" "}
-              {formatTime(wish.reDepartureTime)}~
-              {formatTime(wish.reArrivalTime)} (
-              {formatDuration(wish.reTurnaroundTime)}){" "}
-              <span style={{ color: "blue" }}>{wish.reStopLine}</span>
-            </>
-          ) : (
-            ""
-          )}
-        </td>
+        </span>
+        {/* 왕복 여부 */}
+        {wish.reStopLine ? (
+          <span>
+            <br />
+            {returnCarrierCode}
+            {wish.reDepartureIata}-{wish.reArrivalIata}{" "}
+            {formatTime(wish.reDepartureTime)}~{formatTime(wish.reArrivalTime)}{" "}
+            ({formatDuration(wish.reTurnaroundTime)}){" "}
+            <span style={{ color: "blue" }}>{wish.reStopLine}</span>
+          </span>
+        ) : (
+          ""
+        )}
+      </ElementValue>
 
-        {/* 출국일/귀국일 */}
-        <td
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
-        >
-          {wish.departureTime.split("T")[0]}
-          {wish.reStopLine ? (
-            <>
-              <br />~<br />
-              {wish.reDepartureTime?.split("T")[0]}
-            </>
-          ) : (
-            ""
-          )}
-        </td>
+      {/* 출국일/귀국일 */}
+      <ElementValue isWidth={"13%"}>
+        {wish.departureTime.split("T")[0]}
+        {wish.reStopLine ? (
+          <>
+            <span>~</span>
+            {wish.reDepartureTime?.split("T")[0]}
+          </>
+        ) : (
+          ""
+        )}
+      </ElementValue>
 
-        {/* 인원/좌석등급 */}
-        <td
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
-        >
-          {(wish.adults ?? 0) + (wish.childrens ?? 0) + (wish.infants ?? 0)}명 /{" "}
-          {wish.seatClass === "FIRST"
-            ? "일등석"
-            : wish.seatClass === "BUSINESS"
-            ? "비즈니스석"
-            : wish.seatClass === "PREMIUM_ECONOMY"
-            ? "프리미엄 일반석"
-            : "일반석"}
-        </td>
+      {/* 인원/좌석등급 */}
+      <ElementValue isWidth={"15%"}>
+        {(wish.adults ?? 0) + (wish.childrens ?? 0) + (wish.infants ?? 0)}명 /{" "}
+        {wish.seatClass === "FIRST"
+          ? "일등석"
+          : wish.seatClass === "BUSINESS"
+          ? "비즈니스석"
+          : wish.seatClass === "PREMIUM_ECONOMY"
+          ? "프리미엄 일반석"
+          : "일반석"}
+      </ElementValue>
 
-        {/* 결제금액 */}
-        <td
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
-        >{`₩${wish.totalPrice.toLocaleString()}`}</td>
+      {/* 결제금액 */}
+      <ElementValue
+        isWidth={"11%"}
+      >{`₩${wish.totalPrice.toLocaleString()}`}</ElementValue>
 
-        {/* 버튼란 */}
-        <td
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
-        >
-          <Link
-            to={{
+      {/* 예약하기 */}
+      <ElementValue isWidth={"10%"} style={{ padding: "0px" }}>
+        <ElementButton
+          fontSize={"9px"}
+          backgroundColor={"skyblue"}
+          hoverColor={"#595959"}
+          onClick={() =>
+            history.push({
               pathname: `/flightReservation/${wish.offer?.id}`,
               state: { data: wish.offer },
-            }}
-          >
-            <button
-              style={{
-                backgroundColor: "skyblue",
-                border: "1px solid #595959",
-                color: "#595959",
-                borderRadius: "2px",
-                padding: "7px",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#595959";
-                e.currentTarget.style.color = "#f7fcfc";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "skyblue";
-                e.currentTarget.style.color = "#595959";
-              }}
-            >
-              예약하기
-            </button>
-          </Link>
-        </td>
-        <td
-          style={{
-            textAlign: "center",
-            verticalAlign: "middle",
-            border: "1px solid #595959",
-            padding: "5px",
-          }}
+            })
+          }
         >
-          <button
-            onClick={wishDelete}
-            style={{
-              backgroundColor: "#ff4d4f",
-              border: "1px solid #595959",
-              color: "#f7fcfc",
-              borderRadius: "2px",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#b03044")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#ff4d4f")
-            }
-          >
-            X
-          </button>
-        </td>
-      </tr>
-    </>
+          예약하기
+        </ElementButton>
+      </ElementValue>
+
+      {/* 삭제 */}
+      <ElementValue isWidth={"5%"} style={{ padding: "0px" }}>
+        <ElementButton
+          onClick={wishDelete}
+          fontSize={"12px"}
+          backgroundColor={"#ff4d4f"}
+          hoverColor={"#b03044"}
+        >
+          X
+        </ElementButton>
+      </ElementValue>
+    </div>
   );
 }
 

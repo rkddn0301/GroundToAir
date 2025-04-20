@@ -43,7 +43,7 @@ const OnewayCheckMenu = styled.div`
   ); // 135도 각도의 그라데이션 배경. 0%(props.theme.white.bg) ~ 100%(#f7f9fc)
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
-  border-right: 5px solid skyblue;
+  border-right: 5px solid ${(props) => props.theme.background};
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // 그림자 순서 : x축, y축, 흐림효과, 색상
 `;
 
@@ -227,7 +227,7 @@ const Loading = styled.div`
 // 로딩 중... 원형 디자인 구성
 const Spinner = styled(motion.div)`
   border: 4px solid ${(props) => props.theme.white.font};
-  border-top: 4px solid skyblue; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
+  border-top: 4px solid ${(props) => props.theme.background}; // 부분적으로만 색상을 바꿔 원이 돌아가는 것처럼 구현
   border-radius: 50%;
   width: 16px;
   height: 16px;

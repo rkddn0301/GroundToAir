@@ -3,7 +3,8 @@
 import { DefaultTheme } from "styled-components";
 
 export const theme: DefaultTheme = {
-  // 여기에 메인 색상 작성 예정
+  background: "rgb(79,129,171)",
+
   black: {
     bg: "#595959",
     font: "#f7fcfc",

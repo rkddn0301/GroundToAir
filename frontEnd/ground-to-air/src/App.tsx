@@ -29,10 +29,10 @@ import ReservationList from "./router/ReservationList";
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  background-color: skyblue;
-  padding-top: 114px;
-  //width: 100%;
   min-height: 100vh; // 페이지 최소 높이를 150vh로 변경
+  padding-top: 114px;
+  background: transparent;
+  background-image: none;
 `;
 
 // Layout, Footer 사이에 있는 Main div 태그
@@ -78,6 +78,23 @@ function App() {
 
   return (
     <Container>
+      {/* 배경화면 지정 */}
+      <video
+        src="/cloud.MOV"
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          objectFit: "cover",
+          zIndex: -1,
+        }}
+      />
       <Router>
         <Route
           path={[
