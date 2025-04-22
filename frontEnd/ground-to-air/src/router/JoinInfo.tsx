@@ -141,7 +141,7 @@ function JoinInfo() {
     passwordChk: "",
     userName: "",
     birth: "",
-    gender: "N",
+    gender: "M",
     email: "",
   }); // input 입력 state
 
@@ -537,16 +537,6 @@ function JoinInfo() {
                   onChange={genderChange}
                 />{" "}
                 여
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="N"
-                  onChange={genderChange}
-                  defaultChecked
-                />{" "}
-                비공개
               </label>
             </GenderMenu>
           </Field>

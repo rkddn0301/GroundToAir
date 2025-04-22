@@ -317,16 +317,6 @@ function TravelerInfoWrite({
               />{" "}
               여
             </label>
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="N"
-                onChange={handleChange}
-                checked={inputData.gender === "N"}
-              />{" "}
-              비공개
-            </label>
           </GenderMenu>
         </HalfField>
       </HalfFields>

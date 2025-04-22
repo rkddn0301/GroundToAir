@@ -30,7 +30,6 @@ public class UserService {
     private final UserPassportRepository userPassportRepository;
 
     private final PasswordEncoder passwordEncoder;
-    private final UserRoleRepository userRoleRepository;
 
     private final CountryRepository countryRepository;
     private final WishListRepository wishListRepository;
@@ -44,11 +43,10 @@ public class UserService {
     // JSON 파싱 클래스 선언
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, ReservationListRepository reservationListRepository, MailService mailService) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, ReservationListRepository reservationListRepository, MailService mailService) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
-        this.userRoleRepository = userRoleRepository;
         this.countryRepository = countryRepository;
         this.wishListRepository = wishListRepository;
         this.restTemplate = restTemplate;
@@ -196,17 +194,11 @@ public class UserService {
             } else {
                 // 새 사용자로 등록
 
-                // USER 권한 부여를 위해 UserRoleEntity 조회
-                UserRoleEntity userRole = userRoleRepository.findByRoleName("USER");
-
                 UserEntity userEntity = new UserEntity();
-                userEntity.setRoleName(userRole); // 권한 설정
                 userEntity.setSocialId(socialId);
                 userEntity.setSocialType(SocialType.KAKAO);
 
                 userRepository.save(userEntity);
-
-                userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
@@ -293,17 +285,11 @@ public class UserService {
             } else {
                 // 새 사용자로 등록
 
-                // USER 권한 부여를 위해 UserRoleEntity 조회
-                UserRoleEntity userRole = userRoleRepository.findByRoleName("USER");
-
                 UserEntity userEntity = new UserEntity();
-                userEntity.setRoleName(userRole); // 권한 설정
                 userEntity.setSocialId(socialId);
                 userEntity.setSocialType(SocialType.GOOGLE);
 
                 userRepository.save(userEntity);
-
-                userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
                 // 여권 정보를 위한 빈 UserPassportEntity 생성
                 UserPassportEntity userPassportEntity = new UserPassportEntity();
@@ -330,19 +316,12 @@ public class UserService {
         // birth String -> Date 변환
         LocalDate birthDay = LocalDate.parse(userEntity.getBirth().toString(), DateTimeFormatter.ISO_LOCAL_DATE);
 
-        // USER 권한 부여를 위해 UserRoleEntity 조회
-        UserRoleEntity userRole = userRoleRepository.findByRoleName("USER");
-
-
         // UserEntity에 설정
         userEntity.setPassword(encodedPassword); // 암호화된 비밀번호 설정
         userEntity.setBirth(birthDay); // 변환된 생일 설정
         userEntity.setSocialType(SocialType.DIRECT); // SocialType에서 DIRECT 설정
-        userEntity.setRoleName(userRole); // 권한 설정
 
         userRepository.save(userEntity);
-
-        userEntity.setTotalUserNo(userEntity.getUserNo()); // 연동번호는 생성된 회원번호와 동일하게 설정
 
         // 여권 정보를 위한 빈 UserPassportEntity 생성
         UserPassportEntity userPassportEntity = new UserPassportEntity();

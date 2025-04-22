@@ -76,7 +76,7 @@ function FlightReservationOptions({
   iataCodeOffers,
   nextSegment,
 }: FlightReservationOptionsProps) {
-  const operatingCode = segment.operating?.carrierCode; // 운항 항공사
+  const operatingCode = segment.operating?.carrierCode || segment.carrierCode; // 운항 항공사
   const validatingCode = segment.carrierCode; // 판매 항공사
 
   const carrierCode =

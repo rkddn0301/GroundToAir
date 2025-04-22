@@ -958,16 +958,6 @@ function MyInfo() {
                     />{" "}
                     여
                   </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="N"
-                      checked={inputData.gender === "N"}
-                      disabled
-                    />{" "}
-                    비공개
-                  </label>
                 </GenderMenu>
               </HalfField>
             </HalfFields>

@@ -118,15 +118,20 @@ public class AirService {
 
 
         // 가져온 데이터 중 필요없는 부분 제거
-        String replacedFlightOffers = flightOffers.replace("{\"flightOffers\":", "[")
-                .replace("}]}]}]}", "}]}]}]}]}");
+        String replacedFlightOffers = flightOffers.replace("{\"flightOffers\":", "[");
+               // .replace("}]}]}]}", "}]}]}]}]}");
+
+        if (replacedFlightOffers.endsWith("}")) {
+            replacedFlightOffers = replacedFlightOffers.substring(0, replacedFlightOffers.length() - 1) + "]";
+        }
+
 
         log.info("replacedFlightOffers: " + replacedFlightOffers);
 
 
         // flight offer price Body 양식에 맞게 JSON 형식으로 변환
         String requestBody = "{ \"data\": { \"type\": \"flight-offers-pricing\", " +
-                "\"flightOffers\": " + replacedFlightOffers;
+                "\"flightOffers\": " + replacedFlightOffers + "}}";
 
         log.info("requestBody: " + requestBody);
 

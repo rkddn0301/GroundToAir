@@ -18,9 +18,6 @@ public class UserEntity {
     @Column(name = "USER_NO")
     private int userNo;
 
-    @Column(name = "TOTAL_USER_NO", nullable = false)
-    private int totalUserNo;
-
     @Column(name = "USER_ID")
     private String userId;
 
@@ -52,12 +49,6 @@ public class UserEntity {
     public UserEntity() {
         this.regDate = LocalDate.now(); // 현재 날짜로 초기화
     }
-
-    // 외래키 설정 (ManyToOne: N:1 관계)
-    // fetch = FetchType.LAZY : 연관된 Entity를 실제로 사용할 때만 불러오도록 지연 로딩 설정.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ROLE_NAME", referencedColumnName = "ROLE_NAME", nullable = false)
-    private UserRoleEntity roleName;
 
     // 양방향 설정: UserEntity와 UserPassportEntity 간의 관계
     // CascadeType.ALL : UserEntity에 있는 데이터가 지워질 경우 UserPassportEntity에서 JoinColumn 과 일치하는 값을 찾아 같이 전부 지워버린다는 의미. (실제 DB에도 설정해놓았을 경우 여기다가 같이 써놓아야함)
