@@ -176,34 +176,49 @@ function PassportInfo() {
     airCodeFetch();
   }, []);
 
-  // 성(영문) 입력란 변경 시 동작
-  const userEngFNChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, ""); // 대문자로만 작성
-    setInputData({ ...inputData, userEngFN: value });
-  };
-
-  // 명(영문) 입력란 변경 시 동작
-  const userEngLNChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, ""); // 대문자로만 작성
-    setInputData({ ...inputData, userEngLN: value });
-  };
-
-  // 여권번호 입력란 변경 시 동작
-  const passportNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase();
-    setInputData((prevData) => ({
-      ...prevData,
-      passportNo: value,
-      nationality: value === "" ? "" : prevData.nationality,
-      passportExDate: value === "" ? "" : prevData.passportExDate,
-      passportCOI: value === "" ? "" : prevData.passportCOI,
+  // 정보 입력 함수
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInputData((prevState) => ({
+      ...prevState,
+      [name]: value,
     }));
+
+    // 성(영문) 입력
+    if (name === "userEngFN") {
+      setInputData((prevState) => ({
+        ...prevState,
+        userEngFN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+      }));
+    }
+
+    // 명(영문) 입력
+    else if (name === "userEngLN") {
+      setInputData((prevState) => ({
+        ...prevState,
+        userEngLN: value.toUpperCase().replace(/[^A-Z]/g, ""),
+      }));
+    }
+
+    // 여권번호 입력
+    else if (name === "passportNo") {
+      setInputData((prevState) => ({
+        ...prevState,
+        passportNo: value,
+        nationality: value === "" ? "" : prevState.nationality,
+        passportExDate: value === "" ? "" : prevState.passportExDate,
+        passportCOI: value === "" ? "" : prevState.passportCOI,
+      }));
+    }
   };
 
-  // 국적 선택란 변경 시 동작
+  // 국적, 여권발행국 선택란 변경 시 동작
   const nationalityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setInputData({ ...inputData, nationality: value });
+    const { name, value } = e.target;
+    setInputData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   // 여권만료일 달력 변경 시 동작
@@ -216,12 +231,6 @@ function PassportInfo() {
     } else {
       setInputData({ ...inputData, passportExDate: "" });
     }
-  };
-
-  // 여권발행국 선택란 변경 시 동작
-  const passportCOIChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setInputData({ ...inputData, passportCOI: value });
   };
 
   // 작성완료 버튼 클릭 시 동작
@@ -259,15 +268,6 @@ function PassportInfo() {
     }
 
     const engFullName = inputData.userEngFN + " " + inputData.userEngLN;
-
-    console.log(
-      userNoData,
-      inputData.passportNo,
-      engFullName,
-      inputData.nationality,
-      inputData.passportExDate,
-      inputData.passportCOI
-    );
 
     try {
       const response = await axios.post(
@@ -309,9 +309,10 @@ function PassportInfo() {
               <WriteInput
                 type="text"
                 id="userEngFN"
+                name="userEngFN"
                 placeholder="HONG"
                 value={inputData.userEngFN}
-                onChange={userEngFNChange}
+                onChange={handleChange}
                 minLength={1}
                 maxLength={10}
               />
@@ -321,9 +322,10 @@ function PassportInfo() {
               <WriteInput
                 type="text"
                 id="userEngLN"
+                name="userEngLN"
                 placeholder="GILDONG"
                 value={inputData.userEngLN}
-                onChange={userEngLNChange}
+                onChange={handleChange}
                 minLength={1}
                 maxLength={15}
               />
@@ -334,9 +336,10 @@ function PassportInfo() {
             <WriteInput
               type="text"
               id="passportNo"
+              name="passportNo"
               placeholder="A12345678"
               value={inputData.passportNo}
-              onChange={passportNoChange}
+              onChange={handleChange}
               minLength={6}
               maxLength={10}
             />
@@ -346,6 +349,7 @@ function PassportInfo() {
             <Label htmlFor="nationality">국적</Label>
             <SelectMenu>
               <SelectInput
+                name="nationality"
                 value={inputData.nationality}
                 onChange={nationalityChange}
                 disabled={!inputData.passportNo}
@@ -396,8 +400,9 @@ function PassportInfo() {
             <Label htmlFor="passportCOI">여권발행국</Label>
             <SelectMenu>
               <SelectInput
+                name="passportCOI"
                 value={inputData.passportCOI}
-                onChange={passportCOIChange}
+                onChange={nationalityChange}
                 disabled={!inputData.passportNo}
               >
                 <option value="">-- 국적을 선택해주세요. --</option>

@@ -112,34 +112,23 @@ function PwFind() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // 성명 입력란 변경 시 동작
-  const userNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 성명 입력 시 오류메시지 비활성화
+  // 정보 입력 함수
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInputData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+
     setErrorMsg({
       ...errorMsg,
-      userName: "",
+      [name]: "",
     });
-
-    const value = e.target.value;
-    setInputData({ ...inputData, userName: value });
-  };
-
-  // 이메일 입력란 변경 시 동작
-  const emailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 이메일 입력 시 오류메시지 비활성화
-    setErrorMsg({
-      ...errorMsg,
-      email: "",
-    });
-
-    const value = e.target.value;
-    setInputData({ ...inputData, email: value });
   };
 
   // 비밀번호 찾기 버튼 클릭 시 동작
   const infoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 새로고침 방지
-    console.log(inputData.userName, inputData.email);
 
     // 1. 작성란이 비어있을 경우
     if (!inputData.userName) {
@@ -165,7 +154,6 @@ function PwFind() {
           email: inputData.email,
         },
       });
-      console.log(response);
       if (response.data === true) {
         Alert("임시비밀번호가 이메일로 전송되었습니다", "success");
         history.push("/login");
@@ -190,9 +178,10 @@ function PwFind() {
             <WriteInput
               type="text"
               id="userName"
+              name="userName"
               placeholder="홍길동"
               value={inputData.userName}
-              onChange={userNameChange}
+              onChange={handleChange}
               minLength={1}
               maxLength={15}
             />
@@ -204,9 +193,10 @@ function PwFind() {
             <WriteInput
               type="email"
               id="email"
+              name="email"
               placeholder="gildong1231@email.com"
               value={inputData.email}
-              onChange={emailChange}
+              onChange={handleChange}
               minLength={1}
               maxLength={30}
             />

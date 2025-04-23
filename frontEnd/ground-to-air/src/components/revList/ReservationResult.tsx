@@ -7,6 +7,7 @@ import { formatTime } from "../../utils/formatTime";
 import { useHistory } from "react-router-dom";
 import { Alert, Confirm } from "../../utils/sweetAlert";
 import axios from "axios";
+import { SeatClass, seatKor } from "../../utils/seatClass";
 
 // 요소 값
 const ElementValue = styled.div.withConfig({
@@ -141,13 +142,7 @@ function ReservationResult({
       <ElementValue isWidth={"15%"}>
         <span>
           {(rev.adults ?? 0) + (rev.childrens ?? 0) + (rev.infants ?? 0)}명 /{" "}
-          {rev.seatClass === "FIRST"
-            ? "일등석"
-            : rev.seatClass === "BUSINESS"
-            ? "비즈니스석"
-            : rev.seatClass === "PREMIUM_ECONOMY"
-            ? "프리미엄 일반석"
-            : "일반석"}
+          {seatKor(rev.seatClass)}
         </span>
       </ElementValue>
       <ElementValue

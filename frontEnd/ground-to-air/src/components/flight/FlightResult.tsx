@@ -227,18 +227,6 @@ function FlightResult({
   const airlineCode = `${
     offer.itineraries?.[0]?.segments?.[0]?.carrierCode || ""
   }${offer.itineraries?.[0]?.segments?.[0]?.number || ""}`; // 항공편 번호
-  /*  const returnAirlineCode = `${
-    offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
-  }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`; */
-  /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
-  
-  `${
-    offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
-      ?.carrierCode
-  }${
-    offer.itineraries[0]?.segments[offer.itineraries[0]?.segments.length - 1]
-      ?.number
-  }`;  */
 
   const departureTime = formatTime(
     offer.itineraries[0]?.segments[0]?.departure?.at
@@ -280,15 +268,6 @@ function FlightResult({
   const returnAirlineCode = `${
     offer.itineraries?.[1]?.segments?.[0]?.carrierCode || ""
   }${offer.itineraries?.[1]?.segments?.[0]?.number || ""}`; // 항공편 번호
-  /* 최종 출발 항공편(경유지까지 고려한 코드로 나중에 필요 시 이용)
-  
-  `${
-    offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
-      ?.carrierCode
-  }${
-    offer.itineraries[1]?.segments[offer.itineraries[1]?.segments.length - 1]
-      ?.number
-  }`; */
 
   const returnDepartureTime = formatTime(
     offer.itineraries[1]?.segments[0]?.departure?.at
@@ -318,8 +297,18 @@ function FlightResult({
   const returnAirportStopover = offer.itineraries[1]; // 경유지 공항코드
 
   // 공통
-  // const numberOfBookableSeats = offer.numberOfBookableSeats; // 예약 가능한 좌석
   const totalPrice = offer.price.total; // 총 가격
+
+  const seatClass = offer.travelerPricings[0].fareDetailsBySegment[0].cabin; // 좌석등급
+  const adults = offer.travelerPricings.filter(
+    (tp) => tp.travelerType === "ADULT"
+  ).length; // 성인 수
+  const childrens = offer.travelerPricings.filter(
+    (tp) => tp.travelerType === "CHILD"
+  ).length; // 어린이 수
+  const infants = offer.travelerPricings.filter(
+    (tp) => tp.travelerType === "HELD_INFANT"
+  ).length; // 유아 수
 
   // 공동운항 툴팁
   const getAirlineTooltip = (carrierCode: string | undefined): string => {
@@ -405,6 +394,10 @@ function FlightResult({
 
         totalPrice: parseInt(totalPrice) || 0,
         offer: offer,
+        adults: adults,
+        childrens: childrens,
+        infants: infants,
+        seatClass: seatClass,
       }));
     } else {
       // 로그인 x
@@ -612,8 +605,6 @@ function FlightResult({
       </FlightInfoGroups>
 
       <ReservationDetails>
-        {/* <div style={{ fontSize: "12px" }}>{numberOfBookableSeats}석 남음</div> */}
-
         <ReservationBtnGroups>
           <Link
             to={{

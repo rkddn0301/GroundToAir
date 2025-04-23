@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { SeatClass } from "../../../router/FlightSearch";
 import styled from "styled-components";
+import { SeatClass, seatKor } from "../../../utils/seatClass";
 
 // 예약완료 페이지 전체 구성
 const Container = styled.div`
@@ -146,14 +146,7 @@ function FlightReservationComplete() {
   const childrens = data?.childrens || 0; // 어린이 수
   const infants = data?.infants || 0; // 유아 수
 
-  const seatClass =
-    data?.seatClass === "FIRST"
-      ? "일등석"
-      : data?.seatClass === "BUSINESS"
-      ? "비즈니스석"
-      : data?.seatClass === "PREMIUM_ECONOMY"
-      ? "프리미엄 일반석"
-      : "일반석"; // 좌석등급
+  const seatClass = seatKor(data?.seatClass); // 좌석등급
 
   const totalPrice = data?.totalPrice || 0; // 결제금액
 

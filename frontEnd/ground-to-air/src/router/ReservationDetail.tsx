@@ -15,6 +15,7 @@ import {
   fetchIataCodes,
 } from "../utils/useAirCodeData";
 import { formatDate, formatTime } from "../utils/formatTime";
+import { seatKor } from "../utils/seatClass";
 
 // 예약상세 전체 컴포넌트 구성
 const Container = styled.div`
@@ -445,13 +446,7 @@ function ReservationDetail() {
               )}
               <span>
                 <RevInfoElementTitle>좌석등급</RevInfoElementTitle> :{" "}
-                {revData.seatClass === "FIRST"
-                  ? "일등석"
-                  : revData.seatClass === "BUSINESS"
-                  ? "비즈니스석"
-                  : revData.seatClass === "PREMIUM_ECONOMY"
-                  ? "프리미엄 일반석"
-                  : "일반석"}
+                {seatKor(revData.seatClass)}
               </span>
             </RevInfoGroupsSpace>
           </RevInfo>

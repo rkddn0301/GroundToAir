@@ -206,7 +206,7 @@ function FlightFiltering({
 
   // 경유지 체크박스 적용 함수
   const stopoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
+    const { name } = e.target;
 
     if (name === "nonStop") {
       setNonStop((prev) => !prev);
@@ -219,7 +219,6 @@ function FlightFiltering({
     if (name === "multipleStops") {
       setMultipleStops((prev) => !prev);
     }
-    //console.log(name, checked);
   };
 
   /* 경유지 데이터 끝 */

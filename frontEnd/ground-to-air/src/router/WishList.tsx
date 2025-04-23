@@ -200,7 +200,18 @@ function WishList() {
             <ElementTitle isWidth={"10%"} />
             <ElementTitle isWidth={"5%"} />
           </div>
-          {getWish.length < 1 ? (
+          {getWish.length > 0 ? (
+            <>
+              {currentWishData.map((wish) => (
+                <WishResult
+                  key={wish.wishNo}
+                  wish={wish}
+                  setGetWish={setGetWish}
+                  airlineCodeOffers={airlineCodeOffers}
+                />
+              ))}
+            </>
+          ) : (
             <div
               style={{
                 display: "flex",
@@ -213,17 +224,6 @@ function WishList() {
             >
               찜 내역이 존재하지 않습니다.
             </div>
-          ) : (
-            <>
-              {currentWishData.map((wish) => (
-                <WishResult
-                  key={wish.wishNo}
-                  wish={wish}
-                  setGetWish={setGetWish}
-                  airlineCodeOffers={airlineCodeOffers}
-                />
-              ))}
-            </>
           )}
         </WishLists>
 

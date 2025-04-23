@@ -16,6 +16,7 @@ import { Alert } from "../utils/sweetAlert";
 
 import CryptoJS from "crypto-js";
 import { fetchAirlineCodes, fetchIataCodes } from "../utils/useAirCodeData";
+import { SeatClass, seatKor } from "../utils/seatClass";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div.withConfig({
@@ -53,7 +54,6 @@ const FormWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   background-color: ${(props) => props.theme.white.bg};
-  //height: 15vh;
   box-shadow: 5px 4px 2px rgba(0, 0, 0, 0.2);
   padding: 15px 0 30px 0;
   gap: 10px;
@@ -65,7 +65,6 @@ const NonStopWrapper = styled.div`
   width: 85%;
   display: flex;
   justify-content: flex-end;
-  // 입력란 최대 길이 920px ~ 1195px
   max-width: 1080px;
   min-width: 800px;
 
@@ -82,7 +81,6 @@ const Form = styled.form`
   align-items: center;
   gap: 10px;
   width: 100%;
-  // width: 85%;
 
   @media (max-width: 872px) {
     flex-wrap: wrap;
@@ -211,7 +209,6 @@ const SubmitBtn = styled.button`
   @media (max-width: 872px) {
     min-width: 400px;
     min-height: 50px;
-    //max-width: 600px;
   }
 `;
 
@@ -314,14 +311,6 @@ export interface FlightWish {
   childrens?: number;
   infants?: number;
   seatClass?: SeatClass;
-}
-
-// 좌석 클래스 enum
-export enum SeatClass {
-  ECONOMY = "ECONOMY", // 일반석
-  PREMIUM_ECONOMY = "PREMIUM_ECONOMY", // 프리미엄 일반석
-  BUSINESS = "BUSINESS", // 비즈니스석
-  FIRST = "FIRST", // 일등석
 }
 
 // AmadeusAPI(FlightOfferSearch) 호출 데이터 배열로 변환
@@ -574,12 +563,13 @@ function FlightSearch() {
     ]); // 출발지의 자동완성을 도착지에 할당
   };
 
-  // 출발지 입력 시 동작
-  const originChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData((prev) => ({ ...prev, originLocationCode: value }));
+  // 출발지/도착지 입력 시 동작
+  const handleRouteChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInputData((prev) => ({ ...prev, [name]: value }));
 
-    if (value.length > 1) {
+    // 출발지 입력
+    if (name === "originLocationCode" && value.length > 1) {
       try {
         const response = await axios.get(
           `http://localhost:8080/air/autoCompleteIataCodes`,
@@ -597,17 +587,12 @@ function FlightSearch() {
       } catch (error) {
         console.error("출발지 자동완성 오류 발생 : ", error);
       }
-    } else {
+    } else if (name === "originLocationCode" && value.length < 1) {
       setAutoCompleteOriginLocations([]);
     }
-  };
 
-  // 도착지 입력 시 동작
-  const destinationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData((prev) => ({ ...prev, destinationLocationCode: value }));
-
-    if (value.length > 1) {
+    // 도착지 입력
+    if (name === "destinationLocationCode" && value.length > 1) {
       try {
         const response = await axios.get(
           `http://localhost:8080/air/autoCompleteIataCodes`,
@@ -625,7 +610,7 @@ function FlightSearch() {
       } catch (error) {
         console.error("도착지 자동완성 오류 발생 : ", error);
       }
-    } else {
+    } else if (name === "destinationLocationCode" && value.length < 1) {
       setAutoCompleteDestinationLocations([]);
     }
   };
@@ -749,10 +734,6 @@ function FlightSearch() {
         `http://localhost:8080/user/wish`,
         {
           ...data, // wishList 데이터
-          adults: inputData.adults,
-          childrens: inputData.children,
-          infants: inputData.infants,
-          seatClass: inputData.travelClass,
         },
         {
           headers: {
@@ -859,17 +840,6 @@ function FlightSearch() {
       document.getElementById("departureDate")?.focus();
       return;
     }
-
-    /*  console.log(
-      searchOriginLocation,
-      searchDestinationLocation,
-      inputData.departureDate,
-      inputData.returnDate,
-      inputData.adults,
-      inputData.children,
-      inputData.infants,
-      inputData.travelClass
-    ); */
 
     setFlightOffers(null); // 기존에 검색된 항공 데이터 제거
 
@@ -987,6 +957,7 @@ function FlightSearch() {
 
   return (
     <Container flightOffers={flightOffers}>
+      {/* 왕복/편도 선택란 */}
       <OnewayCheckMenu>
         <label>
           <input
@@ -1008,7 +979,10 @@ function FlightSearch() {
           편도
         </label>
       </OnewayCheckMenu>
+
+      {/* 항공편 입력란 */}
       <FormWrapper>
+        {/* 직항만 선택란 */}
         <NonStopWrapper>
           <div>
             <input
@@ -1021,6 +995,7 @@ function FlightSearch() {
           </div>
         </NonStopWrapper>
         <Form>
+          {/* 출발지/도착지 입력 */}
           <FieldWrapper>
             <Field
               style={{ position: "relative", width: "50%" }}
@@ -1030,8 +1005,9 @@ function FlightSearch() {
               <WriteInput
                 type="search"
                 id="originLocation"
+                name="originLocationCode"
                 value={inputData.originLocationCode}
-                onChange={originChange}
+                onChange={handleRouteChange}
                 placeholder="도시 또는 공항명"
                 autoComplete="off"
               />
@@ -1070,8 +1046,9 @@ function FlightSearch() {
               <WriteInput
                 type="search"
                 id="destinationLocation"
+                name="destinationLocationCode"
                 value={inputData.destinationLocationCode}
-                onChange={destinationChange}
+                onChange={handleRouteChange}
                 placeholder="도시 또는 공항명"
                 autoComplete="off"
               />
@@ -1091,6 +1068,8 @@ function FlightSearch() {
                 )}
             </Field>
           </FieldWrapper>
+
+          {/* 가는날/오는날 달력 선택 */}
           {!onewayChecking && (
             <Field>
               <Label>가는날/오는날</Label>
@@ -1151,6 +1130,8 @@ function FlightSearch() {
               </CalendarInput>
             </Field>
           )}
+
+          {/* 인원 및 좌석 등급 선택 */}
           <Field style={{ position: "relative" }} ref={travelerModalRef}>
             <Label>인원 및 좌석 등급</Label>
             <TravelerButton onClick={travelerClick}>
@@ -1158,12 +1139,7 @@ function FlightSearch() {
               {Number(inputData.adults) +
                 Number(inputData.children) +
                 Number(inputData.infants)}
-              명 &nbsp;ㆍ{" "}
-              {inputData.travelClass === SeatClass.ECONOMY && "일반석"}
-              {inputData.travelClass === SeatClass.PREMIUM_ECONOMY &&
-                "프리미엄 일반석"}
-              {inputData.travelClass === SeatClass.BUSINESS && "비즈니스석"}
-              {inputData.travelClass === SeatClass.FIRST && "일등석"}
+              명 &nbsp;ㆍ {seatKor(inputData.travelClass)}
             </TravelerButton>
             {travelerBtnSw && (
               <TravelerModal
@@ -1175,6 +1151,7 @@ function FlightSearch() {
 
           <SubmitBtn onClick={flightSearch}>검색</SubmitBtn>
         </Form>
+        {/* 항공편 조회 수 */}
         {flightOffers && (
           <ResultFont>
             {onewayChecking ? "편도 " : "왕복 "}검색결과:{" "}
@@ -1197,6 +1174,7 @@ function FlightSearch() {
         </Loading>
       ) : flightOffers ? (
         <ResultContainer>
+          {/* 항공편 필터 */}
           <FlightFiltering
             flightOffers={flightOffers}
             setFlightOffers={setFlightOffers}
@@ -1204,6 +1182,7 @@ function FlightSearch() {
             isNonstop={isNonstop.search}
           />
 
+          {/* 항공편 */}
           <div
             style={{
               display: "flex",

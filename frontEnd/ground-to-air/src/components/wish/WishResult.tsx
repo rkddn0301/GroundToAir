@@ -6,6 +6,7 @@ import { formatDuration, formatTime } from "../../utils/formatTime";
 import { Alert, Confirm } from "../../utils/sweetAlert";
 import { Link, useHistory } from "react-router-dom";
 import styled from "styled-components";
+import { seatKor } from "../../utils/seatClass";
 
 // 요소 값
 const ElementValue = styled.div.withConfig({
@@ -141,13 +142,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
       {/* 인원/좌석등급 */}
       <ElementValue isWidth={"15%"}>
         {(wish.adults ?? 0) + (wish.childrens ?? 0) + (wish.infants ?? 0)}명 /{" "}
-        {wish.seatClass === "FIRST"
-          ? "일등석"
-          : wish.seatClass === "BUSINESS"
-          ? "비즈니스석"
-          : wish.seatClass === "PREMIUM_ECONOMY"
-          ? "프리미엄 일반석"
-          : "일반석"}
+        {seatKor(wish.seatClass)}
       </ElementValue>
 
       {/* 결제금액 */}

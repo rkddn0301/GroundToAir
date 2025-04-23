@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import styled from "styled-components";
-import { InputData, SeatClass } from "../../router/FlightSearch";
+import { InputData } from "../../router/FlightSearch";
+import { SeatClass, seatKor } from "../../utils/seatClass";
 
 // TravelerModal 전체 컴포넌트 구성
 const Container = styled.div`
@@ -426,10 +427,12 @@ function TravelerModal({ setInputData, setTravelerBtnSw }: TravelerModalProps) {
       <Field style={{ width: "100%" }}>
         <Label>좌석 등급</Label>
         <select value={tempData.travelClass} onChange={travelClassChange}>
-          <option value={SeatClass.ECONOMY}>일반석</option>
-          <option value={SeatClass.PREMIUM_ECONOMY}>프리미엄 일반석</option>
-          <option value={SeatClass.BUSINESS}>비즈니스석</option>
-          <option value={SeatClass.FIRST}>일등석</option>
+          {/* enum 타입인 SeatClass를 Object.values로 인해 순서대로 출력 */}
+          {Object.values(SeatClass).map((seat) => (
+            <option key={seat} value={seat}>
+              {seatKor(seat)}
+            </option>
+          ))}
         </select>
       </Field>
       <br />

@@ -30,7 +30,7 @@ time, mark, audio, video {
 	font: inherit;
 	vertical-align: baseline;
 }
-/* HTML5 display-role reset for older browsers */
+/* 구형 브라우저에서 HTML5의 display 역할을 초기화 */
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
 	display: block;
@@ -74,26 +74,18 @@ a {
     margin: 0 auto; // 아이콘 중앙 정렬
   }
 
-  
-
-    /* DatePicker 입력창 스타일 수정 */
+  /* DatePicker 입력창 스타일 수정 */
   .react-datepicker__input-container input {
-    //max-width: 170px;
     width: 100%;
     border: 1px solid ${(props) => props.theme.white.font}; 
     border-radius: 5px; /* 모서리 둥글게 */
     font-size: 12px; /* 폰트 크기 */
-    
-    
-    //text-align: center;
   }
 
   .react-datepicker__calendar-icon  {
     max-width : 10px;
     margin-top: -1.5%;
   }
-
-
 
 `;
 

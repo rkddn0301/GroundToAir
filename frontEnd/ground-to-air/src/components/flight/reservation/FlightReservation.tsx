@@ -18,6 +18,7 @@ import {
   fetchAirlineCodes,
   fetchIataCodes,
 } from "../../../utils/useAirCodeData";
+import { SeatClass, seatKor } from "../../../utils/seatClass";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -277,16 +278,9 @@ function FlightReservation() {
   ); // 목적지 레코드
   const peoples = pricing?.travelerPricings.length ?? 0; // 인원 수
   const isRoundTrip = pricing?.itineraries?.length ?? 0 > 1 ? "왕복" : "편도"; // 왕복여부
-  const seatClass =
-    pricing?.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin === "FIRST"
-      ? "일등석"
-      : pricing?.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ===
-        "BUSINESS"
-      ? "비즈니스석"
-      : pricing?.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ===
-        "PREMIUM_ECONOMY"
-      ? "프리미엄 일반석"
-      : "일반석"; // 좌석등급
+  const seatClass = seatKor(
+    pricing?.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin
+  ); // 좌석등급
 
   // 요금 관련
   // reduce는 첫 번째 매개변수로 누적값을 받고, 두 번째 매개변수로 배열의 각 요소를 처리해 누적값을 계산하며, 초기값은 숫자, 문자 등 어떤 값도 될 수 있음.

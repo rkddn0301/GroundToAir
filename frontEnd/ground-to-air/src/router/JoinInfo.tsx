@@ -166,108 +166,118 @@ function JoinInfo() {
 
   const history = useHistory();
 
-  // 아이디 입력란 변경 시 동작
-  const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 아이디 변경 시 기존 중복체크 내용은 자동으로 비활성화
-    setIdExisting(false);
-    setSuccessMsg({
-      ...successMsg,
-      userId: "",
-    });
+  // 정보 입력 함수
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInputData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
 
-    const value = e.target.value;
-    setInputData({ ...inputData, userId: value });
-
-    // 아이디 규칙 : 영문자 및 숫자, 길이 6~15
-    if (!/^[a-zA-Z0-9]{6,15}$/.test(value)) {
-      setErrorMsg({
-        ...errorMsg,
-        userId: "아이디는 영문자 및 숫자로 6~15자여야 합니다.",
+    // 아이디 입력란 변경 시 동작
+    if (name === "userId") {
+      setIdExisting(false);
+      setSuccessMsg({
+        ...successMsg,
+        userId: "",
       });
-    } else {
-      setErrorMsg({ ...errorMsg, userId: "" });
-    }
-  };
 
-  // 비밀번호 입력란 변경 시 동작
-  const passwordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData({ ...inputData, password: value });
-
-    // 비밀번호 규칙 : 영문자+숫자+특수문자, 길이 8~15자
-
-    if (value === "") {
-      // 1. 비밀번호가 비어 있을 시 password errorMsg 제거
-      setErrorMsg((prev) => ({ ...prev, password: "" }));
-      // 비밀번호 확인 창의 오류 유지
-      setErrorMsg((prev) => ({
-        // 3. 비밀번호가 비어있던 적혀있던 비밀번호 확인란이랑 일치하지 않으면 passwordChk에 errorMsg 표시
-        ...prev,
-        passwordChk:
-          inputData.passwordChk !== ""
-            ? "비밀번호가 일치하지 않습니다. 다시 확인해주세요."
-            : "",
-      }));
-    } else {
-      if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,15}$/.test(value)) {
-        // 2. 비밀번호가 적혀있을 때 규칙에 어긋나면 password에 erorrMsg를 표시
-        setErrorMsg((prev) => ({
-          ...prev,
-          password: "비밀번호는 영문자, 숫자, 특수문자로 8~15자여야 합니다.",
-        }));
+      // 아이디 규칙 : 영문자 및 숫자, 길이 6~15
+      if (!/^[a-zA-Z0-9]{6,15}$/.test(value)) {
+        setErrorMsg({
+          ...errorMsg,
+          userId: "아이디는 영문자 및 숫자로 6~15자여야 합니다.",
+        });
       } else {
+        setErrorMsg({ ...errorMsg, userId: "" });
+      }
+    }
+
+    // 비밀번호 입력란 변경 시 동작
+    if (name === "password") {
+      // 비밀번호 규칙 : 영문자+숫자+특수문자, 길이 8~15자
+
+      if (value === "") {
+        // 1. 비밀번호가 비어 있을 시 password errorMsg 제거
         setErrorMsg((prev) => ({ ...prev, password: "" }));
-      }
-
-      // 비밀번호 확인 체크
-      if (inputData.passwordChk !== value) {
+        // 비밀번호 확인 창의 오류 유지
         setErrorMsg((prev) => ({
+          // 3. 비밀번호가 비어있던 적혀있던 비밀번호 확인란이랑 일치하지 않으면 passwordChk에 errorMsg 표시
           ...prev,
-          passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+          passwordChk:
+            inputData.passwordChk !== ""
+              ? "비밀번호가 일치하지 않습니다. 다시 확인해주세요."
+              : "",
         }));
       } else {
-        setErrorMsg((prev) => ({ ...prev, passwordChk: "" }));
+        if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,15}$/.test(value)) {
+          // 2. 비밀번호가 적혀있을 때 규칙에 어긋나면 password에 erorrMsg를 표시
+          setErrorMsg((prev) => ({
+            ...prev,
+            password: "비밀번호는 영문자, 숫자, 특수문자로 8~15자여야 합니다.",
+          }));
+        } else {
+          setErrorMsg((prev) => ({ ...prev, password: "" }));
+        }
+
+        // 비밀번호 확인 체크
+        if (inputData.passwordChk !== value) {
+          setErrorMsg((prev) => ({
+            ...prev,
+            passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+          }));
+        } else {
+          setErrorMsg((prev) => ({ ...prev, passwordChk: "" }));
+        }
       }
     }
-  };
 
-  // 비밀번호 확인 입력란 변경 시 동작
-  const passwordChkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordChecking(false);
-    const value = e.target.value;
-    setInputData({ ...inputData, passwordChk: value });
+    // 비밀번호 확인 입력란 변경 시 동작
+    if (name === "passwordChk") {
+      setPasswordChecking(false);
+      if (inputData.password !== e.target.value) {
+        setErrorMsg({
+          ...errorMsg,
+          passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+        });
+      } else {
+        setPasswordChecking(true);
+        setErrorMsg({ ...errorMsg, passwordChk: "" });
+      }
+    }
 
-    if (inputData.password !== e.target.value) {
-      setErrorMsg({
-        ...errorMsg,
-        passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
+    // 성명 입력란 변경 시 동작
+    if (name === "userName") {
+      // 성명 규칙: 문자만, 길이 1~15
+      if (!/^[가-힣]{1,15}$/.test(value)) {
+        setErrorMsg((prev) => ({
+          ...prev,
+          userName: "성명은 1~15자의 한글만 입력 가능합니다.",
+        }));
+      } else {
+        setErrorMsg((prev) => ({ ...prev, userName: "" }));
+      }
+    }
+
+    // 이메일 입력란 변경 시 동작
+    if (name === "email") {
+      setEmailExisting(false);
+      setSuccessMsg({
+        ...successMsg,
+        email: "",
       });
-    } else {
-      setPasswordChecking(true);
-      setErrorMsg({ ...errorMsg, passwordChk: "" });
+
+      // 이메일 규칙: 이메일 형식
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        setErrorMsg((prev) => ({
+          ...prev,
+          email: "올바른 이메일 형식을 입력해주세요.",
+        }));
+      } else {
+        setErrorMsg((prev) => ({ ...prev, email: "" }));
+      }
     }
-  };
-
-  // 성명 입력란 변경 시 동작
-  const userNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData({ ...inputData, userName: value });
-
-    // 성명 규칙: 문자만, 길이 1~15
-    if (!/^[가-힣]{1,15}$/.test(value)) {
-      setErrorMsg((prev) => ({
-        ...prev,
-        userName: "성명은 1~15자의 한글만 입력 가능합니다.",
-      }));
-    } else {
-      setErrorMsg((prev) => ({ ...prev, userName: "" }));
-    }
-  };
-
-  // 성별 선택란 변경 시 동작
-  const genderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputData({ ...inputData, gender: value });
   };
 
   // 생년월일 달력 변경 시 동작
@@ -375,14 +385,6 @@ function JoinInfo() {
   // 회원가입 버튼 클릭 시 동작
   const infoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 새로고침 방지
-    console.log(
-      inputData.userId,
-      inputData.password,
-      inputData.userName,
-      inputData.birth,
-      inputData.gender,
-      inputData.email
-    );
 
     // 1. 작성란이 비어있을 경우 확인
     if (inputData.userId === "") {
@@ -465,9 +467,10 @@ function JoinInfo() {
             <WriteInput
               type="text"
               id="userId"
+              name="userId"
               placeholder="gildong1231"
               value={inputData.userId}
-              onChange={userIdChange}
+              onChange={handleChange}
               minLength={6}
               maxLength={15}
               onBlur={userIdBlur}
@@ -481,8 +484,9 @@ function JoinInfo() {
             <WriteInput
               type="password"
               id="password"
+              name="password"
               value={inputData.password}
-              onChange={passwordChange}
+              onChange={handleChange}
               minLength={8}
               maxLength={15}
             />
@@ -494,8 +498,9 @@ function JoinInfo() {
             <WriteInput
               type="password"
               id="passwordChk"
+              name="passwordChk"
               value={inputData.passwordChk}
-              onChange={passwordChkChange}
+              onChange={handleChange}
               minLength={8}
               maxLength={15}
             />
@@ -509,9 +514,10 @@ function JoinInfo() {
             <WriteInput
               type="text"
               id="userName"
+              name="userName"
               placeholder="홍길동"
               value={inputData.userName}
-              onChange={userNameChange}
+              onChange={handleChange}
               minLength={1}
               maxLength={15}
             />
@@ -525,7 +531,7 @@ function JoinInfo() {
                   type="radio"
                   name="gender"
                   value="M"
-                  onChange={genderChange}
+                  onChange={handleChange}
                 />{" "}
                 남
               </label>
@@ -534,7 +540,7 @@ function JoinInfo() {
                   type="radio"
                   name="gender"
                   value="F"
-                  onChange={genderChange}
+                  onChange={handleChange}
                 />{" "}
                 여
               </label>
@@ -567,9 +573,10 @@ function JoinInfo() {
             <WriteInput
               type="email"
               id="email"
+              name="email"
               placeholder="gildong1231@email.com"
               value={inputData.email}
-              onChange={emailChange}
+              onChange={handleChange}
               minLength={1}
               maxLength={30}
               onBlur={emailBlur}

@@ -6,9 +6,9 @@ import styled from "styled-components";
 import { isLoggedInState } from "../utils/atom";
 import { AirlineCodes, FlightOrder } from "../utils/api";
 import axios from "axios";
-import { SeatClass } from "./FlightSearch";
 import ReservationResult from "../components/revList/ReservationResult";
 import { fetchAirlineCodes } from "../utils/useAirCodeData";
+import { SeatClass } from "../utils/seatClass";
 
 // ReservationList 전체 컴포넌트 구성
 const Container = styled.div`

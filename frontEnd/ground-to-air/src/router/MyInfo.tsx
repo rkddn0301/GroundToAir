@@ -253,7 +253,6 @@ function MyInfo() {
   const [idExisting, setIdExisting] = useState(false); // 아이디 중복 여부 스위칭
   const [emailExisting, setEmailExisting] = useState(false); // 이메일 중복 여부 스위칭
   const [passwordExisting, setPasswordExisting] = useState(false); // 비밀번호 중복 여부 스위칭
-  const [passwordChecking, setPasswordChecking] = useState(false); // 비밀번호 체크 여부 스위칭
 
   // 개인정보 페이지 접속 시 기존 정보를 가져오기 위해 동작
   useEffect(() => {
@@ -411,14 +410,12 @@ function MyInfo() {
 
     // 비밀번호 확인 입력
     else if (name === "passwordChk") {
-      setPasswordChecking(false);
       if (inputData.password !== e.target.value) {
         setErrorMsg({
           ...errorMsg,
           passwordChk: "비밀번호가 일치하지 않습니다. 다시 확인해주세요.",
         });
       } else {
-        setPasswordChecking(true);
         setErrorMsg({ ...errorMsg, passwordChk: "" });
       }
     }

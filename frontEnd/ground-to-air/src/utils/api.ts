@@ -1,6 +1,6 @@
 // 공통적으로 쓰는 api 데이터 모음
 
-import { SeatClass } from "../router/FlightSearch";
+import { SeatClass } from "./seatClass";
 
 // 항공
 
@@ -45,6 +45,8 @@ export interface FlightOffer {
     // 가격 정보
     total: string;
   };
+
+  travelerPricings: TravelerPricings[];
   validatingAirlineCodes: string[]; // 판매 항공사
 }
 

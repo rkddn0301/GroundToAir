@@ -189,28 +189,17 @@ function Login() {
     }
   }, [isLoggedIn]);
 
-  // 아이디 입력란 변경 시 동작
-  const userIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 아이디 입력 시 오류메시지 비활성화
+  // 정보 입력 함수
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInputData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
     setErrorMsg({
       ...errorMsg,
-      userId: "",
+      [name]: "",
     });
-
-    const value = e.target.value;
-    setInputData({ ...inputData, userId: value });
-  };
-
-  // 비밀번호 입력란 변경 시 동작
-  const passwordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 비밀번호 입력 시 오류메시지 비활성화
-    setErrorMsg({
-      ...errorMsg,
-      password: "",
-    });
-
-    const value = e.target.value;
-    setInputData({ ...inputData, password: value });
   };
 
   // 로그인 버튼 클릭 시 동작
@@ -279,9 +268,10 @@ function Login() {
             <WriteInput
               type="text"
               id="userId"
+              name="userId"
               placeholder="gildong1231"
               value={inputData.userId}
-              onChange={userIdChange}
+              onChange={handleChange}
             />
           </Field>
           {errorMsg.userId && <GuideLine>{errorMsg.userId}</GuideLine>}
@@ -291,8 +281,9 @@ function Login() {
             <WriteInput
               type="password"
               id="password"
+              name="password"
               value={inputData.password}
-              onChange={passwordChange}
+              onChange={handleChange}
             />
           </Field>
           {errorMsg.password && <GuideLine>{errorMsg.password}</GuideLine>}
