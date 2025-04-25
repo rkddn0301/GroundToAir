@@ -1,20 +1,19 @@
 package groundToAir.airReservation.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import groundToAir.airReservation.entity.AirlineCodeEntity;
 import groundToAir.airReservation.entity.IataCodeEntity;
 import groundToAir.airReservation.service.AirService;
 import groundToAir.airReservation.utils.AccessTokenUtil;
-import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
-import java.util.Map;
 
 
+// 항공편 관련 Controller
+// 항공편 조회, 항공편 예약 데이터 조회
 @Slf4j
 @RestController
 @RequestMapping("/air")
@@ -22,12 +21,10 @@ public class AirController {
 
     private final AirService airService;
     private final AccessTokenUtil accessTokenUtil;
-    private final JwtUtil jwtUtil;
 
-    public AirController(AirService airService, AccessTokenUtil accessTokenUtil, JwtUtil jwtUtil) {
+    public AirController(AirService airService, AccessTokenUtil accessTokenUtil) {
         this.airService = airService;
         this.accessTokenUtil = accessTokenUtil;
-        this.jwtUtil = jwtUtil;
     }
 
     // React 연동 테스트
@@ -63,7 +60,6 @@ public class AirController {
                 originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode);
 
 
-
         String accessToken = accessTokenUtil.checkAndRefreshToken();
         return airService.getFlightOffers(accessToken, originLocationCode, destinationLocationCode, departureDate, returnDate, adults, children, infants, travelClass, currencyCode, excludedAirlineCodes);
     }
@@ -72,7 +68,7 @@ public class AirController {
     @GetMapping("/autoCompleteIataCodes")
     public List<IataCodeEntity> getAutoCompleteIataCode(
             @RequestParam("keyword") String keyword
-    ){
+    ) {
         return airService.getAutoCompleteIataCodes(keyword);
     }
 
@@ -88,7 +84,7 @@ public class AirController {
         return airService.getIataCodes();
     }
 
-    // 예약 상세 데이터 조회
+    // 항공편 예약 데이터 조회
     @PostMapping("/flightPrice")
     public String getFlightPrice(@RequestBody String flightOffers) throws Exception {
         log.info("flight Offers : {}", flightOffers);
@@ -105,21 +101,4 @@ public class AirController {
         }
 
     }
-
-    // 예약내역 등록
-    @PostMapping("/airReservation")
-    public Map<String, Object> airReservation(@RequestBody String flightData) throws Exception {
-
-        log.info("flightData : {}", flightData);
-
-        String accessToken = accessTokenUtil.checkAndRefreshToken();
-
-
-        return airService.airReservation(accessToken, flightData);
-
-
-    }
-
-
-
 }

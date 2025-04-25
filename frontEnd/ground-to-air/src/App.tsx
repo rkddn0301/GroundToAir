@@ -35,6 +35,17 @@ const Container = styled.div`
   background-image: none;
 `;
 
+// 비디오 컴포넌트
+const VideoContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: ${(props) => props.theme.background};
+  z-index: -2;
+`;
+
 // Layout, Footer 사이에 있는 Main div 태그
 const MainContent = styled.main`
   flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
@@ -79,6 +90,7 @@ function App() {
   return (
     <Container>
       {/* 배경화면 지정 */}
+      <VideoContainer />
       <video
         src="/cloud.MOV"
         autoPlay

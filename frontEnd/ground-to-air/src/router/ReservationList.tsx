@@ -241,7 +241,7 @@ function ReservationList() {
     if (accessToken) {
       try {
         const revResponse = await axios.post(
-          `http://localhost:8080/user/getRevList`,
+          `http://localhost:8080/reservation/getRevList`,
           {},
           {
             headers: {

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+// 결제 관련 Controller
+// 카카오페이, 토스페이먼츠 결제 준비/승인
 @RestController
 @Slf4j
 @RequestMapping("/payment")

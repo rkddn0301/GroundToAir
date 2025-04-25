@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+// 찜 내역 테이블
 @Entity
 @Data
 @Table(name ="WISH_LIST")

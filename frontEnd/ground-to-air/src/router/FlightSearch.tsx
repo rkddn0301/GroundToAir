@@ -654,7 +654,7 @@ function FlightSearch() {
     if (accessToken) {
       try {
         const wishResponse = await axios.post(
-          `http://localhost:8080/user/getWish`,
+          `http://localhost:8080/reservation/getWish`,
           {},
           {
             headers: {
@@ -731,7 +731,7 @@ function FlightSearch() {
       const accessToken = localStorage.getItem("accessToken"); // 로컬 스토리지에서 토큰 가져오기
 
       const response = await axios.post(
-        `http://localhost:8080/user/wish`,
+        `http://localhost:8080/reservation/wish`,
         {
           ...data, // wishList 데이터
         },

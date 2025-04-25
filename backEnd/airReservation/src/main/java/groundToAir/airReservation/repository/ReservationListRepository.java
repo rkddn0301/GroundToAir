@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+// 예약내역 관련 Repository
 public interface ReservationListRepository extends JpaRepository<ReservationListEntity, Integer> {
 
     // 생성된 예약코드가 기존 예약내역의 예약코드와 동일 할 경우 확인

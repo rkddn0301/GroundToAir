@@ -232,7 +232,7 @@ function ReservationDetail() {
       console.log("reservationDataExtraction");
       setIsLoading(true);
       const response = await axios.post(
-        `http://localhost:8080/user/reservationDetail`,
+        `http://localhost:8080/reservation/reservationDetail`,
         {
           revName: revName,
           revCode: revCode,
@@ -273,7 +273,7 @@ function ReservationDetail() {
     if (deleteConfirm.isConfirmed) {
       try {
         const response = await axios.post(
-          "http://localhost:8080/user/revDelete",
+          "http://localhost:8080/reservation/revDelete",
           {
             revId: revData?.revId,
           }

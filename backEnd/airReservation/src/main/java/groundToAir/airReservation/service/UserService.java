@@ -1,10 +1,6 @@
 package groundToAir.airReservation.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import groundToAir.airReservation.entity.*;
-import groundToAir.airReservation.enumType.SeatClass;
 import groundToAir.airReservation.enumType.SocialType;
 import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
@@ -16,12 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
 // 회원 정보 관련 Service
+// 회원가입, 로그인, 아이디/비밀번호 찾기, 개인정보, 회원탈퇴
 @Service
 @Slf4j
 public class UserService {
@@ -32,26 +28,20 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final CountryRepository countryRepository;
-    private final WishListRepository wishListRepository;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
-    private final ReservationListRepository reservationListRepository;
 
     // 이메일 이용
     private final MailService mailService;
 
-    // JSON 파싱 클래스 선언
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, CountryRepository countryRepository, WishListRepository wishListRepository, RestTemplate restTemplate, JwtUtil jwtUtil, ReservationListRepository reservationListRepository, MailService mailService) {
+    public UserService(UserRepository userRepository, UserPassportRepository userPassportRepository, PasswordEncoder passwordEncoder, CountryRepository countryRepository, RestTemplate restTemplate, JwtUtil jwtUtil, MailService mailService) {
         this.userRepository = userRepository;
         this.userPassportRepository = userPassportRepository;
         this.passwordEncoder = passwordEncoder;
         this.countryRepository = countryRepository;
-        this.wishListRepository = wishListRepository;
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
-        this.reservationListRepository = reservationListRepository;
         this.mailService = mailService;
     }
 
@@ -738,210 +728,6 @@ public class UserService {
         } catch (Exception e) {
             log.error("구글 연결 끊기 요청 중 예외 발생: {}", e.getMessage());
             return false;
-        }
-    }
-
-    // 찜 조회
-    public List<Map<String, Object>> getWish(int userNo) {
-        // ! wishListEntity의 offer 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
-        // DB에서 가져온 데이터
-        List<Map<String, Object>> wishList = wishListRepository.findWishList(userNo);
-
-        return parsingText(wishList, "offer");
-    }
-
-
-    // 찜 아이콘 클릭 스위칭
-    public boolean wish(int userNo, Map<String, Object> wishListData) {
-
-        // 사용자 번호를 WishListEntity에 추가
-        UserEntity user = new UserEntity();
-        user.setUserNo(userNo);
-
-        // LocalDateTime 형변환
-        String departureTimeStr = (String) wishListData.get("departureTime");
-        String arrivalTimeStr = (String) wishListData.get("arrivalTime");
-
-        LocalDateTime departureTime = !departureTimeStr.isEmpty() ? LocalDateTime.parse(departureTimeStr) : null;
-        LocalDateTime arrivalTime = !arrivalTimeStr.isEmpty() ? LocalDateTime.parse(arrivalTimeStr) : null;
-
-        // WishListEntity 생성 및 가는편에 해당하는 항공권 데이터 삽입
-        WishListEntity wishList = new WishListEntity();
-        wishList.setWishListUser(user);
-        wishList.setAirlinesIata((String) wishListData.get("airlinesIata"));
-        wishList.setDepartureIata((String) wishListData.get("departureIata"));
-        wishList.setDepartureTime(departureTime);
-        wishList.setArrivalIata((String) wishListData.get("arrivalIata"));
-        wishList.setArrivalTime(arrivalTime);
-        wishList.setFlightNo((String) wishListData.get("flightNo"));
-        wishList.setTurnaroundTime((String) wishListData.get("turnaroundTime"));
-        wishList.setStopLine((String) wishListData.get("stopLine"));
-
-        // 왕복인지 확인
-        if (!wishListData.get("reStopLine").toString().isEmpty()) {
-
-            String reDepartureTimeStr = (String) wishListData.get("reDepartureTime");
-            String reArrivalTimeStr = (String) wishListData.get("reArrivalTime");
-
-            LocalDateTime reDepartureTime = reDepartureTimeStr != null && !reDepartureTimeStr.isEmpty()
-                    ? LocalDateTime.parse(reDepartureTimeStr)
-                    : null;
-            LocalDateTime reArrivalTime = reArrivalTimeStr != null && !reArrivalTimeStr.isEmpty()
-                    ? LocalDateTime.parse(reArrivalTimeStr)
-                    : null;
-
-            wishList.setReAirlinesIata((String) wishListData.get("reAirlinesIata"));
-            wishList.setReDepartureIata((String) wishListData.get("reDepartureIata"));
-            wishList.setReDepartureTime(reDepartureTime);
-            wishList.setReArrivalIata((String) wishListData.get("reArrivalIata"));
-            wishList.setReArrivalTime(reArrivalTime);
-            wishList.setReFlightNo((String) wishListData.get("reFlightNo"));
-            wishList.setReTurnaroundTime((String) wishListData.get("reTurnaroundTime"));
-            wishList.setReStopLine((String) wishListData.get("reStopLine"));
-        }
-
-        // 인원 수 및 좌석 등급 등 추가 필드 설정
-        wishList.setAdults((Integer) wishListData.get("adults"));
-        wishList.setChildrens((Integer) wishListData.get("childrens"));
-        wishList.setInfants((Integer) wishListData.get("infants"));
-        wishList.setSeatClass(SeatClass.valueOf((String) wishListData.get("seatClass")));
-        wishList.setTotalPrice((Integer) wishListData.get("totalPrice"));
-
-        // 항공편 데이터를 문자열로 삽입하기 위해 변환
-        try {
-            Object offerData = wishListData.get("offer");
-
-            if (offerData instanceof LinkedHashMap) { // offer가 LinkedHashMap으로 가져 올 경우
-                String offerJson = objectMapper.writeValueAsString(offerData); // Java 객체 --> JSON 문자열 변환
-                wishList.setOffer(offerJson);
-            } else {
-                wishList.setOffer(null);
-            }
-        } catch (JsonProcessingException e) {
-            log.error("OFFER JSON --> TEXT 변환 중 오류 발생 : ", e);
-            wishList.setOffer(null);
-        }
-
-        // 사용자 번호와 여러 조건에 해당하는 찜 목록이 이미 존재하는지 확인
-        Optional<WishListEntity> existingWishList =
-                wishListRepository.findByWishListUser_UserNoAndFlightNoAndDepartureTimeAndArrivalTimeAndReFlightNoAndReDepartureTimeAndReArrivalTime(
-                        wishList.getWishListUser().getUserNo(),
-                        wishList.getFlightNo(),
-                        wishList.getDepartureTime(),
-                        wishList.getArrivalTime(),
-                        wishList.getReFlightNo(),
-                        wishList.getReDepartureTime(),
-                        wishList.getReArrivalTime()
-                );
-
-        if (existingWishList.isPresent()) {
-            // 찜 항목이 이미 존재하면 삭제
-            wishListRepository.delete(existingWishList.get());
-            return false; // 삭제되었으므로 false 리턴
-        } else {
-            // 찜 항목이 존재하지 않으면 추가
-            wishListRepository.save(wishList);
-            return true; // 추가되었으므로 true 리턴
-        }
-    }
-
-    // 찜 제거
-    public boolean wishDelete(int wishNo) {
-        // 기존 데이터 조회
-        WishListEntity existingWish = wishListRepository.findById(wishNo).orElse(null);
-        if (existingWish == null) {
-            log.warn("찜 데이터가 존재하지 않습니다: 찜번호 {}", wishNo);
-            return false; // 데이터가 없는 경우 업데이트 실패
-        }
-        try {
-            wishListRepository.deleteById(wishNo);
-            log.info("찜 데이터 삭제 성공: 찜번호 {}", wishNo);
-            return true;
-        } catch (Exception e) {
-            log.error("찜 데이터 삭제 실패: 찜번호 {}, 오류: {}", wishNo, e.getMessage());
-            return false;
-
-        }
-    }
-
-    // 예약내역 상세 데이터 호출
-    public List<Map<String, Object>> reservationDetail(Map<String, Object> reservationDetailInfo) {
-        if ("".equals(reservationDetailInfo.get("revName")) && "".equals(reservationDetailInfo.get("revCode"))) {
-            return null;
-        } else {
-            String revName = (String) reservationDetailInfo.get("revName"); // 예약자명
-            String revCode = (String) reservationDetailInfo.get("revCode"); // 예약코드
-
-            // 예약자명, 예약코드가 일치하는 상세 데이터 추출
-            List<Map<String, Object>> reservationList = reservationListRepository.findByRevNameAndRevCode(revName, revCode);
-
-            return parsingText(reservationList, "orders");
-                }
-            }
-
-    // 예약내역 조회
-    public List<Map<String, Object>> getRevList(int userNo) {
-        // ! ReservationListEntity의 order 속성을 JSON 문자열로 변환하여 DB에 저장했으므로, 예약 상세 페이지에서 이를 확인하기 위해 다시 Java 객체로 변환하는 과정이 필요하다.
-        // DB에서 가져온 데이터
-        List<Map<String, Object>> revList = reservationListRepository.findRevList(userNo);
-
-        return parsingText(revList, "orders");
-    }
-
-    // JSON 문자열 변환 메서드 (찜 내역, 예약내역, 예약상세)
-    private List<Map<String, Object>> parsingText(List<Map<String, Object>> parsingList, String containsKey) {
-        // containsKey 변환
-        for (Map<String, Object> item : parsingList) {
-            if (item.containsKey(containsKey)) {
-                try {
-                    // containsKeyString는 String으로 되어 있음
-                    String containsKeyString = (String) item.get(containsKey);
-
-                    // JSON 문자열 --> Java 객체 변환
-                    // ! TypeReference<>() : Map<String, Object> 타입으로 변환하도록 ObjectMapper 클래스에 요청한다.
-                    Map<String, Object> containsKeyData = objectMapper.readValue(containsKeyString, new TypeReference<>() {
-                    });
-
-                    // 수정 불가한 Map을 새로운 Map으로 덮어쓰기
-                    Map<String, Object> updatedItem = new HashMap<>(item);  // 새로운 Map을 생성
-                    updatedItem.put(containsKey, containsKeyData);  // 변환된 데이터를 새로운 Map에 추가
-
-                    // 기존 revItem을 새로운 Map으로 교체
-                    // List.indexOf(A) : List 안에서 A가 위치한 순번을 찾아줌.
-                    int index = parsingList.indexOf(item);
-                    parsingList.set(index, updatedItem); // parsingList에서 index 순번에 업데이트한 Item을 그대로 삽입한다.
-
-                } catch (JsonProcessingException e) {
-                    // 변환 실패 시 처리 방법
-                    log.error("emptyContainsKeys 변환 중 오류 발생: " + e.getMessage(), e);
-                    Map<String, Object> emptyContainsKeys = new HashMap<>();  // 빈 객체를 넣어주기
-                    item.put(containsKey, emptyContainsKeys);
-                }
-            }
-        }
-
-        // 변환 후의 parsingList 로그 출력
-        log.info("변환 완료된 parsingList 데이터: " + parsingList);
-
-        return parsingList;
-    }
-
-    // 예약내역 제거
-    public boolean revDelete(int revId) {
-        // 기존 데이터 조회
-        ReservationListEntity existingRev = reservationListRepository.findById(revId).orElse(null);
-        if (existingRev == null) {
-            log.warn("예약내역 데이터가 존재하지 않습니다: 예약번호 {}", revId);
-            return false; // 데이터가 없는 경우 업데이트 실패
-        }
-        try {
-            reservationListRepository.deleteById(revId);
-            log.info("예약내역 데이터 삭제 성공: 예약번호 {}", revId);
-            return true;
-        } catch (Exception e) {
-            log.error("예약내역 데이터 삭제 실패: 예약번호 {}, 오류: {}", revId, e.getMessage());
-            return false;
-
         }
     }
 

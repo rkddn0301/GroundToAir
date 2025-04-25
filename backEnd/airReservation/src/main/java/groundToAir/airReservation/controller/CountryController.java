@@ -1,7 +1,5 @@
 package groundToAir.airReservation.controller;
 
-// 국적 코드 관련 Controller
-
 import groundToAir.airReservation.entity.CountryEntity;
 import groundToAir.airReservation.service.CountryService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+// 국가 코드 관련 Controller
 @Slf4j
 @RestController
 @RequestMapping("/country")

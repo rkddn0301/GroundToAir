@@ -16,6 +16,7 @@ public class AccessTokenUtil {
     private long tokenExpiryTime; // 토큰 유지시간
 
     private final RestTemplate restTemplate;
+
     public AccessTokenUtil(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -52,33 +53,33 @@ public class AccessTokenUtil {
         return accessToken;
     }
 
-        // Amadeus API로 POST 요청
+    // Amadeus API로 POST 요청
     public String getAccessToken() {
 
-            String url = "https://test.api.amadeus.com/v1/security/oauth2/token";
+        String url = "https://test.api.amadeus.com/v1/security/oauth2/token";
 
-            // HTTP 요청의 헤더를 설정하며, 요청의 메타데이터를 포함함.
-            HttpHeaders headers = new HttpHeaders();
-            // 요청의 본문 데이터를 application/x-www.form-urlencoded 형식으로 설정한다.
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        // HTTP 요청의 헤더를 설정하며, 요청의 메타데이터를 포함함.
+        HttpHeaders headers = new HttpHeaders();
+        // 요청의 본문 데이터를 application/x-www.form-urlencoded 형식으로 설정한다.
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            // 요청 바디 데이터 설정
-            // MultiValueMap : 하나의 키 = 하나의 값만 표시되는 Map과 달리 하나의 키 = [여러 값]을 표시할 수 있는 collection이다.
-            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("grant_type", "client_credentials");
-            body.add("client_id", "oT8fZRGasGkulUIrTXVf7BHA6waUqPPO");
-            body.add("client_secret", "GVfy5Y6HGnW04qFB");
+        // 요청 바디 데이터 설정
+        // MultiValueMap : 하나의 키 = 하나의 값만 표시되는 Map과 달리 하나의 키 = [여러 값]을 표시할 수 있는 collection이다.
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+        body.add("client_id", "oT8fZRGasGkulUIrTXVf7BHA6waUqPPO");
+        body.add("client_secret", "GVfy5Y6HGnW04qFB");
 
-            // 요청의 headers, body를 함께 묶어 HttpEntity로 만듦
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        // 요청의 headers, body를 함께 묶어 HttpEntity로 만듦
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
-            // API에 POST 요청을 보내고 응답을 받아옴
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    request,
-                    String.class
-            );
-            return response.getBody();
-        }
+        // API에 POST 요청을 보내고 응답을 받아옴
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+        return response.getBody();
+    }
 }

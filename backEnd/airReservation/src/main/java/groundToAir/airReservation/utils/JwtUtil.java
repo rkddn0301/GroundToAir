@@ -16,10 +16,10 @@ import java.util.Map;
 public class JwtUtil {
 
     /*
-    * JWT의 구성
-    * 1. Headers : JWT의 유형과 해싱 알고리즘 정보를 포함
-    * 2. Payload : JWT 생성 시 전송하는 모든 구성요소를 의미한다.(클레임보다 더 큰 개념이므로 착각하지 말 것)
-    * 3. Signature : JWT 생성 시 Header와 Payload를 기반으로 비밀 키를 사용해 생성
+     * JWT의 구성
+     * 1. Headers : JWT의 유형과 해싱 알고리즘 정보를 포함
+     * 2. Payload : JWT 생성 시 전송하는 모든 구성요소를 의미한다.(클레임보다 더 큰 개념이므로 착각하지 말 것)
+     * 3. Signature : JWT 생성 시 Header와 Payload를 기반으로 비밀 키를 사용해 생성
      */
 
 

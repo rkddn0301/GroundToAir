@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.NumberFormat;
 
+// 메일 관련 Service
 @Service
 @Slf4j
 public class MailService {

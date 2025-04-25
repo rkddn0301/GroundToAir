@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// 국적 코드 관련 Service
+// 국가 코드 관련 Service
 @Service
 public class CountryService {
 
@@ -21,7 +21,6 @@ public class CountryService {
     public List<CountryEntity> getCountries() {
         return countryRepository.findAll(Sort.by("countryKor")); // 국적을 한국어 기준으로 오름차순 출력되도록 설정
     }
-
 
 
 }

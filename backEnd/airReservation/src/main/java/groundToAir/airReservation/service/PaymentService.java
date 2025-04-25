@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
+// 결제 관련 Service
+// 카카오페이, 토스페이먼츠 결제 준비/승인
 @Service
 @Slf4j
 public class PaymentService {
@@ -43,7 +45,6 @@ public class PaymentService {
             log.error("amount가 존재하지 않음");
             throw new IllegalArgumentException("amount가 존재하지 않음");
         }
-
 
 
         // 카카오페이 API 호출을 위한 헤더 설정

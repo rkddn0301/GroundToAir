@@ -157,7 +157,7 @@ function WishList() {
     if (accessToken) {
       try {
         const wishResponse = await axios.post(
-          `http://localhost:8080/user/getWish`,
+          `http://localhost:8080/reservation/getWish`,
           {},
           {
             headers: {

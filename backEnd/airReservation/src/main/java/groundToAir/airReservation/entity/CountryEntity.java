@@ -3,7 +3,7 @@ package groundToAir.airReservation.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-// 국가코드 테이블
+// 국가 코드 테이블
 @Data
 @Entity
 @Table(name = "COUNTRY_CODE")

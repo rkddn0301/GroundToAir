@@ -117,7 +117,7 @@ function PaymentResult() {
   const reservation = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/air/airReservation",
+        "http://localhost:8080/reservation/airReservation",
         {
           flightPricing: sessionStorage.getItem("pricing")
             ? JSON.parse(

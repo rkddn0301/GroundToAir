@@ -1,19 +1,16 @@
 package groundToAir.airReservation.controller;
 
-import groundToAir.airReservation.entity.ReservationListEntity;
 import groundToAir.airReservation.entity.UserEntity;
 import groundToAir.airReservation.entity.UserPassportEntity;
-import groundToAir.airReservation.entity.WishListEntity;
 import groundToAir.airReservation.service.UserService;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 // 회원 정보 관련 Controller
+// 회원가입, 로그인, 아이디/비밀번호 찾기, 개인정보, 회원탈퇴
 @RestController
 @Slf4j
 @RequestMapping("/user")
@@ -73,11 +70,8 @@ public class UserController {
                 userEntity.getBirth(),
                 userEntity.getGender(),
                 userEntity.getEmail()));
-
-
         return userService.registerUser(userEntity);  // UserEntity를 직접 서비스에 전달
     }
-
 
     // 여권정보 입력
     @PostMapping("/passportRegister")
@@ -92,7 +86,6 @@ public class UserController {
 
         userService.registerPassport(userPassportEntity);
     }
-
 
     // 로그인 진행
     @PostMapping("/login")
@@ -135,7 +128,6 @@ public class UserController {
     public boolean idFind(@RequestParam("userName") String userName,
                           @RequestParam("email") String email) {
         log.info("성명 : " + userName + ", 이메일 : " + email);
-
         return userService.idFind(userName, email);
 
 
@@ -146,7 +138,6 @@ public class UserController {
     public boolean pwFind(@RequestParam("userName") String userName,
                           @RequestParam("email") String email) {
         log.info("성명 : " + userName + ", 이메일 : " + email);
-
         return userService.pwFind(userName, email);
     }
 
@@ -160,8 +151,6 @@ public class UserController {
             accessToken = accessToken.substring(7);
         }
         int userNo = jwtUtil.extractUserNo(accessToken);
-
-
         return userService.myInfo(userNo);
     }
 
@@ -173,7 +162,6 @@ public class UserController {
                 userEntity.getUserId(),
                 userEntity.getPassword(),
                 userEntity.getEmail()));
-
         return userService.myInfoUpdate(userEntity);
     }
 
@@ -189,25 +177,19 @@ public class UserController {
                 , userPassportEntity.getCountryOfIssue()));
 
         return userService.passportInfoUpdate(userPassportEntity);
-
-
     }
 
     // 회원 탈퇴
     @PostMapping("/delete")
     public boolean deleteUser(@RequestBody UserEntity userEntity) {
         log.info(String.format("탈퇴 할 회원번호: %s", userEntity.getUserNo()));
-
-
         return userService.deleteUser(userEntity);
-
     }
 
     // 카카오 연결 끊기
     @PostMapping("/kakaoUnlink")
     public boolean kakaoUnlinkUser(@RequestBody Map<String, Object> userInfo) {
         log.info(userInfo.toString());
-
         return userService.kakaoUnlink(userInfo);
     }
 
@@ -215,84 +197,7 @@ public class UserController {
     @PostMapping("/googleUnlink")
     public boolean gogoleUnlinkUser(@RequestBody Map<String, Object> userInfo) {
         log.info(userInfo.toString());
-
         return userService.googleUnlink(userInfo);
-    }
-
-    // 찜 조회
-    @PostMapping("/getWish")
-    public ResponseEntity<List<Map<String, Object>>> getWish(@RequestHeader("Authorization") String accessToken) {
-        // Bearer 토큰에서 "Bearer " 부분 제거
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-        }
-
-        // 토큰에서 사용자 번호 추출
-        int userNo = jwtUtil.extractUserNo(accessToken);
-
-        // 사용자 번호로 찜 데이터 가져오기
-        List<Map<String, Object>> wishListDetails = userService.getWish(userNo);
-        return ResponseEntity.ok(wishListDetails);
-    }
-
-    // 찜 아이콘 클릭 스위칭
-    @PostMapping("/wish")
-    public boolean wish(@RequestHeader("Authorization") String accessToken, @RequestBody Map<String, Object> wishListData) {
-        // Bearer 토큰에서 "Bearer " 부분 제거
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-        }
-
-        // 토큰에서 사용자 번호 추출
-        int userNo = jwtUtil.extractUserNo(accessToken);
-
-
-        // 위시리스트 데이터 로깅
-        log.info("회원번호 : " + userNo + ", 찜 : " + wishListData);
-
-        return userService.wish(userNo, wishListData);
-    }
-
-    // 찜 제거
-    @PostMapping("/wishDelete")
-    public boolean wishDelete(@RequestBody WishListEntity wishListEntity) {
-        log.info("찜 번호 : " + wishListEntity.getWishNo());
-
-        return userService.wishDelete(wishListEntity.getWishNo());
-    }
-
-    // 예약내역 상세 데이터 호출
-    @PostMapping("/reservationDetail")
-    public ResponseEntity<List<Map<String, Object>>> reservationDetail(@RequestBody Map<String, Object> reservationDetailInfo) {
-        log.info("예약 상세 호출에 필요한 데이터 : {}", reservationDetailInfo);
-        // 예약내역 상세 데이터 확인
-        List<Map<String, Object>> response = userService.reservationDetail(reservationDetailInfo);
-        return ResponseEntity.ok(response);
-
-    }
-
-    // 예약내역 조회
-    @PostMapping("/getRevList")
-    public ResponseEntity<List<Map<String, Object>>> getRevList(@RequestHeader("Authorization") String accessToken) {
-        // Bearer 토큰에서 "Bearer " 부분 제거
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-        }
-
-        // 토큰에서 사용자 번호 추출
-        int userNo = jwtUtil.extractUserNo(accessToken);
-
-        // 사용자 번호로 찜 데이터 가져오기
-        List<Map<String, Object>> revListDetails = userService.getRevList(userNo);
-        return ResponseEntity.ok(revListDetails);
-    }
-
-    // 예약내역 제거
-    @PostMapping("/revDelete")
-    public boolean revDelete(@RequestBody ReservationListEntity reservationListEntity) {
-        log.info("예약 번호 : " + reservationListEntity.getRevId());
-
-        return userService.revDelete(reservationListEntity.getRevId());
     }
 
 

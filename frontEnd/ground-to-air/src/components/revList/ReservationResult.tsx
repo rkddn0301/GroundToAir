@@ -86,7 +86,7 @@ function ReservationResult({
     if (deleteConfirm.isConfirmed) {
       try {
         const response = await axios.post(
-          "http://localhost:8080/user/revDelete",
+          "http://localhost:8080/reservation/revDelete",
           {
             revId: rev.revId,
           }

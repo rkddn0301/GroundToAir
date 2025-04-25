@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+// 찜 내역 관련 Repository
 public interface WishListRepository extends JpaRepository<WishListEntity, Integer> {
 
     // 찜 내역에 로그인 된 회원과 일치하는 데이터 추출

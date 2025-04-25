@@ -17,11 +17,15 @@ public class AirConfig {
 
     // API Token을 추출하기 위해 선언한 클래스
     @Bean
-    public AccessTokenUtil accessTokenUtil(RestTemplate restTemplate) { return new AccessTokenUtil(restTemplate);}
+    public AccessTokenUtil accessTokenUtil(RestTemplate restTemplate) {
+        return new AccessTokenUtil(restTemplate);
+    }
 
     // 세션 토큰(JWT)을 추출하기 위해 선언한 클래스
     @Bean
-    public JwtUtil jwtUtil() {return new JwtUtil();}
+    public JwtUtil jwtUtil() {
+        return new JwtUtil();
+    }
 
 
 }
