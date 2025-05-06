@@ -60,6 +60,26 @@
 
 ---
 
+## 📸 작품 화면
+### 항공편 조회
+![01  항공편 조회](https://github.com/user-attachments/assets/2a47352e-f468-43a6-a189-ebadcea8cdf4)
+
+
+### 항공편 정보 확인
+![03  항공편 정보 확인](https://github.com/user-attachments/assets/a31062ef-9977-44ab-bc4c-41147cecdfb5)
+
+
+### 탑승자 정보 입력
+![04  탑승자 정보 입력(연락처 수정)](https://github.com/user-attachments/assets/6328cc6e-b58d-4a74-89a9-a54e6eed5e8f) 
+![04-1  탑승자 정보 입력](https://github.com/user-attachments/assets/8646a742-6bff-4226-ab41-f2161a1a20c7)
+
+
+### 예약 완료
+![07-1  예약완료 내역](https://github.com/user-attachments/assets/c9ab7039-6369-4dc9-876e-7c24ddafbf6c)
+
+
+---
+
 ## 📂 프로젝트 구조  
 
 ### 💠 React
@@ -93,6 +113,9 @@
 │       └── application.properties   # 환경 설정
 └── test                           # 테스트 코드
 </code></pre>
+
+---
+
 ## 🗂️ ERD (Entity-Relationship Diagram)  
 
 - **GROUND_TO_AIR_USER** : 회원 정보
@@ -101,4 +124,5 @@
 - **WORLD_AIRPORT_CODE** : 세계 공항 코드
 - **COUNTRY_CODE** : 국가 코드
 - **WISH_LIST** : 찜 내역
-- **RESERVATION_LIST** : 예약 내역   
+- **RESERVATION_LIST** : 예약 내역
+
