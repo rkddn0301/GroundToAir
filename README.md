@@ -10,7 +10,7 @@
 - **Frontend**: React, TypeScript, Styled-components, FramerMotion, EncryptJS, Recoil, SweetAlert2
 - **Backend**: Spring Boot, Spring Security, JPA, JWT, Lombok
 - **Infra**: MariaDB, Ubuntu
-- **API**: Amadeus API, Kakao API, TossPayments API
+- **API**: Amadeus API, Kakao API, TossPayments API, Google API
 - **Tools**: Git, GitHub, Notion, Postman  
 
 ---
