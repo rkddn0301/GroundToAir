@@ -19,6 +19,7 @@ import {
   fetchIataCodes,
 } from "../../../utils/useAirCodeData";
 import { SeatClass, seatKor } from "../../../utils/seatClass";
+import { errors, log } from "../../../utils/logger";
 
 // FlightReservation 전체 컴포넌트 구성
 const Container = styled.div`
@@ -199,7 +200,7 @@ function FlightReservation() {
 
   useEffect(() => {
     if (data) {
-      console.log(data);
+      log(data);
       // 항공편 데이터 추출
       const airCodeFetch = async () => {
         const airlineCodes = await fetchAirlineCodes();
@@ -234,7 +235,7 @@ function FlightReservation() {
         setFlightPrice(response.data);
       }
     } catch (error) {
-      console.error("예약 상세 데이터 가져오기 실패 : ", error);
+      errors("예약 상세 데이터 가져오기 실패 : ", error);
     } finally {
       setIsLoading(false);
     }

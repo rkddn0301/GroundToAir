@@ -17,6 +17,7 @@ import { Alert } from "../utils/sweetAlert";
 import CryptoJS from "crypto-js";
 import { fetchAirlineCodes, fetchIataCodes } from "../utils/useAirCodeData";
 import { SeatClass, seatKor } from "../utils/seatClass";
+import { errors, log } from "../utils/logger";
 
 // FlightSearch 전체 컴포넌트 구성
 const Container = styled.div.withConfig({
@@ -585,7 +586,7 @@ function FlightSearch() {
           setAutoCompleteOriginLocations([]);
         }
       } catch (error) {
-        console.error("출발지 자동완성 오류 발생 : ", error);
+        errors("출발지 자동완성 오류 발생 : ", error);
       }
     } else if (name === "originLocationCode" && value.length < 1) {
       setAutoCompleteOriginLocations([]);
@@ -608,7 +609,7 @@ function FlightSearch() {
           setAutoCompleteDestinationLocations([]);
         }
       } catch (error) {
-        console.error("도착지 자동완성 오류 발생 : ", error);
+        errors("도착지 자동완성 오류 발생 : ", error);
       }
     } else if (name === "destinationLocationCode" && value.length < 1) {
       setAutoCompleteDestinationLocations([]);
@@ -665,7 +666,7 @@ function FlightSearch() {
 
         setGetWish(wishResponse.data);
       } catch (error) {
-        console.error("위시리스트 데이터 가져오기 실패 : ", error);
+        errors("위시리스트 데이터 가져오기 실패 : ", error);
       }
     }
   };
@@ -748,7 +749,7 @@ function FlightSearch() {
 
       // console.log(response.data);
     } catch (e) {
-      console.error(e);
+      errors(e);
     }
   };
 
@@ -878,7 +879,7 @@ function FlightSearch() {
           },
         }
       );
-      console.log(response.data);
+      log(response.data);
 
       /* 
       - 검색결과는 아래 조건대로 출력됨.
@@ -949,7 +950,7 @@ function FlightSearch() {
 
       wishListData(); // 찜 데이터 가져오기
     } catch (error) {
-      console.error("항공 검색 도중 오류 발생 : ", error);
+      errors("항공 검색 도중 오류 발생 : ", error);
     } finally {
       setIsLoading(false);
     }

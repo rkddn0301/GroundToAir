@@ -17,6 +17,7 @@ import { ko } from "date-fns/locale";
 import { format } from "date-fns";
 import { fetchCountryCodes } from "../utils/useAirCodeData";
 import { CountryCodes } from "../utils/api";
+import { errors, log } from "../utils/logger";
 
 // MyInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -266,14 +267,14 @@ function MyInfo() {
   }, []);
 
   useEffect(() => {
-    console.log(defaultSocialId);
-    console.log(defaultFederationAccessToken);
+    log(defaultSocialId);
+    log(defaultFederationAccessToken);
   }, [defaultFederationAccessToken]);
 
   const defaultMyInfoHandler = async () => {
-    console.log("개인정보 가져옴");
+    log("개인정보 가져옴");
     const refreshToken = localStorage.getItem("refreshToken");
-    console.log(refreshToken);
+    log(refreshToken);
     if (!refreshToken) return; // 기존 리프레시 토큰이 없으면 로그아웃
 
     try {
@@ -302,7 +303,7 @@ function MyInfo() {
         }
       );
 
-      console.log(response.data);
+      log(response.data);
 
       // 입력용 데이터 삽입
       setInputData((prevState) => ({
@@ -338,7 +339,7 @@ function MyInfo() {
         socialType: response.data.socialType || "",
       }));
     } catch (error) {
-      console.error("개인정보 추출 실패:", error);
+      errors("개인정보 추출 실패:", error);
     }
   };
 
@@ -535,7 +536,7 @@ function MyInfo() {
   // 비밀번호 입력란 벗어날 시 동작
   const passwordBlur = async () => {
     if (inputData.password && !passwordExisting && !errorMsg.password) {
-      console.log("비밀번호 입력란 띄움");
+      log("비밀번호 입력란 띄움");
       const response = await axios.get(`http://localhost:8080/user/pwCheck`, {
         params: {
           userNo: defaultData.userNo,
@@ -602,8 +603,8 @@ function MyInfo() {
   // 개인정보 수정
   const myInfoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("개인정보 수정");
-    console.log(
+    log("개인정보 수정");
+    log(
       defaultData.userNo,
       inputData.userId,
       inputData.password,
@@ -669,7 +670,7 @@ function MyInfo() {
         Alert("변경내역이 존재하지 않습니다.", "info");
       }
     } catch (error) {
-      console.error("개인정보 수정 실패", error);
+      errors("개인정보 수정 실패", error);
       Alert(
         "알 수 없는 오류로 인하여 개인정보 수정에 실패하였습니다.",
         "error"
@@ -680,10 +681,10 @@ function MyInfo() {
   // 여권정보 수정
   const passportInfoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("여권정보 수정");
+    log("여권정보 수정");
 
     const engFullName = inputData.userEngFN + " " + inputData.userEngLN;
-    console.log(
+    log(
       defaultData.userNo,
       inputData.passportNo,
       engFullName,
@@ -720,7 +721,7 @@ function MyInfo() {
             inputData.passportCOI === "" ? null : inputData.passportCOI,
         }
       );
-      console.log(response.data);
+      log(response.data);
       if (response.data) {
         const successAlert = await Alert(
           "여권정보 수정이 완료되었습니다.",
@@ -734,7 +735,7 @@ function MyInfo() {
         Alert("변경내역이 존재하지 않습니다.", "info");
       }
     } catch (error) {
-      console.error("여권정보 수정 실패", error);
+      errors("여권정보 수정 실패", error);
       Alert(
         "알 수 없는 오류로 인하여 여권정보 수정에 실패하였습니다.",
         "error"
@@ -787,7 +788,7 @@ function MyInfo() {
   // 회원탈퇴
   const memberDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("회원 탈퇴 클릭");
+    log("회원 탈퇴 클릭");
 
     const deleteConfirm = await Confirm(
       "회원탈퇴를 진행하시겠습니까?<br>진행하시면 더 이상 되돌리실 수 없습니다.",
@@ -805,7 +806,7 @@ function MyInfo() {
         const response = await axios.post("http://localhost:8080/user/delete", {
           userNo: defaultData.userNo,
         });
-        console.log(response.data);
+        log(response.data);
 
         if (response.data) {
           const successAlert = await Alert(
@@ -822,7 +823,7 @@ function MyInfo() {
           }
         }
       } catch (error) {
-        console.error("회원탈퇴 실패 : ", error);
+        errors("회원탈퇴 실패 : ", error);
         Alert("회원 탈퇴하는 도중 오류가 발생하였습니다.", "error");
       }
     }
@@ -841,10 +842,10 @@ function MyInfo() {
       );
 
       if (response.data) {
-        console.log("연결 끊기 성공");
+        log("연결 끊기 성공");
       }
     } catch (error) {
-      console.error("카카오 연결 끊기 실패", error);
+      errors("카카오 연결 끊기 실패", error);
     }
   };
 
@@ -859,10 +860,10 @@ function MyInfo() {
       );
 
       if (response.data) {
-        console.log("연결 끊기 성공");
+        log("연결 끊기 성공");
       }
     } catch (error) {
-      console.error("구글 연결 끊기 실패", error);
+      errors("구글 연결 끊기 실패", error);
     }
   };
 

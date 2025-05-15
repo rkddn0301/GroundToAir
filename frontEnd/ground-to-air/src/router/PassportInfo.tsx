@@ -13,6 +13,7 @@ import { JoinUserNo } from "../utils/atom";
 import { Alert, Confirm } from "../utils/sweetAlert";
 import { fetchCountryCodes } from "../utils/useAirCodeData";
 import { CountryCodes } from "../utils/api";
+import { errors, log } from "../utils/logger";
 
 // PassportInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -283,11 +284,11 @@ function PassportInfo() {
             inputData.passportCOI === "" ? null : inputData.passportCOI,
         }
       );
-      console.log(response.data);
+      log(response.data);
       Alert("여권정보 입력이 완료되었습니다.", "success");
       history.push("/login");
     } catch (error) {
-      console.error("여권정보 입력 실패: ", error);
+      errors("여권정보 입력 실패: ", error);
       Alert(
         "알 수 없는 오류로 인하여 여권정보 입력에 실패하였습니다.",
         "error"

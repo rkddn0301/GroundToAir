@@ -16,6 +16,7 @@ import {
 } from "../utils/useAirCodeData";
 import { formatDate, formatTime } from "../utils/formatTime";
 import { seatKor } from "../utils/seatClass";
+import { errors, log } from "../utils/logger";
 
 // 예약상세 전체 컴포넌트 구성
 const Container = styled.div`
@@ -229,7 +230,7 @@ function ReservationDetail() {
     revCode: string
   ) => {
     try {
-      console.log("reservationDataExtraction");
+      log("reservationDataExtraction");
       setIsLoading(true);
       const response = await axios.post(
         `http://localhost:8080/reservation/reservationDetail`,
@@ -253,13 +254,13 @@ function ReservationDetail() {
         setRevData(response.data[0]);
       }
     } catch (error) {
-      console.error("예약 상세 데이터 가져오기 실패 : ", error);
+      errors("예약 상세 데이터 가져오기 실패 : ", error);
     }
   };
 
   useEffect(() => {
     if (revData && iataCodeOffers.length > 0 && airlineCodeOffers.length > 0) {
-      console.log(revData);
+      log(revData);
       setIsLoading(false);
     }
   }, [revData, iataCodeOffers, airlineCodeOffers]);
@@ -278,7 +279,7 @@ function ReservationDetail() {
             revId: revData?.revId,
           }
         );
-        console.log(response.data);
+        log(response.data);
         if (response.data) {
           const successAlert = await Alert("삭제가 완료되었습니다.", "success");
 
@@ -287,7 +288,7 @@ function ReservationDetail() {
           }
         }
       } catch (error) {
-        console.error("예약내역 삭제 실패 : ", error);
+        errors("예약내역 삭제 실패 : ", error);
         Alert("삭제 도중 오류가 발생하였습니다.", "error");
       }
     }

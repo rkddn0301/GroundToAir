@@ -24,6 +24,7 @@ import FlightReservationComplete from "./components/flight/reservation/FlightRes
 import ReservationDetail from "./router/ReservationDetail";
 import GuestReservationList from "./router/GuestReservationList";
 import ReservationList from "./router/ReservationList";
+import { log } from "./utils/logger";
 
 // 전체 컴포넌트를 구성
 const Container = styled.div`
@@ -74,7 +75,7 @@ function App() {
         );
       }, 2000); // 2초 후 리셋
 
-      console.log("동작");
+      log("동작");
     };
 
     // 이벤트 리스너 추가

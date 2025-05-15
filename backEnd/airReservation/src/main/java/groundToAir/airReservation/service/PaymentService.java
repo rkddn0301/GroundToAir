@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Base64;
 import java.util.Map;
 
 // 결제 관련 Service
@@ -22,18 +24,20 @@ public class PaymentService {
         this.restTemplate = restTemplate;
     }
 
+    // 카카오 페이 Secret Key
+    @Value("${kakaopay.dev-secret}")
+    private String kakaoPayDevSecret;
+
+    // 토스 페이 Secret Key
+    @Value("${tosspay.secret}")
+    private String tossPaySecret;
+
 
     // 카카오페이 결제 준비 페이지 이동
     public String kakaoPaymentReady(Map<String, Object> paymentInfo, HttpSession session) {
         String url = "https://open-api.kakaopay.com/online/v1/payment/ready"; // 카카오페이 요청 URL
 
         // 가져온 데이터 선언 구간
-        String secretKey = (String) paymentInfo.get("secretKey");
-        if (secretKey == null) {
-            log.error("secretKey가 존재하지 않음");
-            throw new IllegalArgumentException("secretKey가 존재하지 않음");
-        }
-
         String itemName = (String) paymentInfo.get("itemName");
         if (itemName == null) {
             log.error("itemName가 존재하지 않음");
@@ -49,7 +53,7 @@ public class PaymentService {
 
         // 카카오페이 API 호출을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "SECRET_KEY " + secretKey);  // 카카오페이의 API Key 사용
+        headers.set("Authorization", "SECRET_KEY " + kakaoPayDevSecret);  // 카카오페이의 API Key 사용
         headers.set("Content-Type", "application/json");
 
         // 요청 할 데이터 입력
@@ -69,7 +73,7 @@ public class PaymentService {
         );
 
         log.info("전송 할 데이터 : {}", requestPayload);
-        log.info("헤더 : {}", secretKey);  // 헤더 정보 로그
+        log.info("헤더 : {}", kakaoPayDevSecret);  // 헤더 정보 로그
 
         HttpEntity<String> requestEntity = new HttpEntity<>(requestPayload, headers);
 
@@ -108,12 +112,6 @@ public class PaymentService {
         String url = "https://open-api.kakaopay.com/online/v1/payment/approve"; // 카카오페이 승인 URL
 
         // 가져온 데이터 선언 구간
-        String secretKey = (String) paymentInfo.get("secretKey");
-        if (secretKey == null) {
-            log.error("secretKey가 존재하지 않음");
-            throw new IllegalArgumentException("secretKey가 존재하지 않음");
-        }
-
         String pgToken = (String) paymentInfo.get("pgToken");
         if (pgToken == null) {
             log.error("pgToken 존재하지 않음");
@@ -141,7 +139,7 @@ public class PaymentService {
         // 카카오페이 API 호출을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "SECRET_KEY " + secretKey);
+        headers.set("Authorization", "SECRET_KEY " + kakaoPayDevSecret);
 
         // 요청 후 응답을 받아옴
         HttpEntity<String> requestEntity = new HttpEntity<>(requestPayload, headers);
@@ -161,12 +159,6 @@ public class PaymentService {
         String url = "https://api.tosspayments.com/v1/payments/confirm"; // 토스페이먼츠 승인 URL
 
         // 가져온 데이터 선언 구간
-        String secretKey = (String) paymentInfo.get("secretKey");
-        if (secretKey == null) {
-            log.error("secretKey가 존재하지 않음");
-            throw new IllegalArgumentException("secretKey가 존재하지 않음");
-        }
-
         String paymentKey = (String) paymentInfo.get("paymentKey");
         if (paymentKey == null) {
             log.error("paymentKey가 존재하지 않음");
@@ -187,7 +179,7 @@ public class PaymentService {
 
         // 토스페이먼츠 API 호출을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", secretKey);  // 토스페이먼츠의 API Key 사용
+        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((tossPaySecret + ":").getBytes()));  // 토스페이먼츠의 API Key 사용
         headers.set("Content-Type", "application/json");
 
         String body = "{\"paymentKey\":\"" + paymentKey + "\",\"amount\":\"" + amount + "\",\"orderId\":\"" + orderId + "\"}";

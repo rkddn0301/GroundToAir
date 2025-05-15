@@ -2,6 +2,7 @@
 
 import { loadTossPayments } from "@tosspayments/payment-sdk";
 import axios from "axios";
+import { errors, log } from "../../utils/logger";
 
 // 카카오페이
 export const KakaoPayments = async (total: number) => {
@@ -11,16 +12,15 @@ export const KakaoPayments = async (total: number) => {
       {
         itemName: "항공편 예약", // 상품명
         amount: total, // 결제할 금액
-        secretKey: process.env.REACT_APP_KAKAOPAY_SECRET_DEV_KEY,
       },
       { withCredentials: true }
     );
 
-    console.log(response.data);
+    log(response.data);
     const { redirectUrl } = response.data;
     window.location.href = redirectUrl; // 카카오페이 결제창으로 이동
   } catch (error) {
-    console.error("결제 요청 실패 : ", error);
+    errors("결제 요청 실패 : ", error);
   }
 };
 
@@ -49,7 +49,7 @@ export const TossPayments = async (
       sendPhoneNumber
     );
   } catch (error) {
-    console.error("TossPayments 로딩 또는 결제 처리 실패:", error);
+    errors("TossPayments 로딩 또는 결제 처리 실패:", error);
   }
 };
 
@@ -63,7 +63,7 @@ const tossSDKLoading = async (clientKey: string) => {
     const payments = await loadTossPayments(clientKey);
     return payments; // payments 값을 return
   } catch (error) {
-    console.error("토스 결제 SDK 로딩 오류 : ", error);
+    errors("토스 결제 SDK 로딩 오류 : ", error);
   }
 };
 
@@ -111,6 +111,6 @@ const requestPayment = async (
       customerMobilePhone: value.customerMobilePhone, //  [선택] 구매자 휴대폰 번호
     });
   } catch (error) {
-    console.error("결제 요청 실패:", error);
+    errors("결제 요청 실패:", error);
   }
 };

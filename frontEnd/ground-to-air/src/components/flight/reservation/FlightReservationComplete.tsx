@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { SeatClass, seatKor } from "../../../utils/seatClass";
+import { log } from "../../../utils/logger";
 
 // 예약완료 페이지 전체 구성
 const Container = styled.div`
@@ -116,7 +117,7 @@ function FlightReservationComplete() {
       sessionStorage.removeItem("redirection");
     }
     if (data) {
-      console.log(data);
+      log(data);
     }
   }, [data]);
 

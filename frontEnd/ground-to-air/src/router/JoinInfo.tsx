@@ -13,6 +13,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useSetRecoilState } from "recoil";
 import { JoinUserNo } from "../utils/atom";
 import { Alert } from "../utils/sweetAlert";
+import { errors } from "../utils/logger";
 
 // JoinInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -451,7 +452,7 @@ function JoinInfo() {
       setUserNo(response.data);
       history.push("/join/info/passportInfo");
     } catch (error) {
-      console.error("회원가입 실패: ", error);
+      errors("회원가입 실패: ", error);
       Alert("알 수 없는 오류로 인하여 회원가입에 실패하였습니다.", "error");
     }
   };

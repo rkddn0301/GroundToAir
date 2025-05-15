@@ -8,6 +8,7 @@ import styled from "styled-components";
 import { Alert } from "../../utils/sweetAlert";
 import { encryptionKey } from "../../router/FlightSearch";
 import CryptoJS from "crypto-js";
+import { errors, log } from "../../utils/logger";
 
 // 항공편 로딩 중 전체 디자인 구성
 const Loading = styled.div`
@@ -43,9 +44,6 @@ function PaymentResult() {
   const paymentKey = query.get("paymentKey");
   const orderId = query.get("orderId");
   const amount = query.get("amount");
-  const authHeader = `Basic ${btoa(
-    `${process.env.REACT_APP_TOSSPAY_SECRET_KEY}:`
-  )}`;
 
   // sessionStorage 자동 삭제 함수
   const removeStorage = () => {
@@ -63,17 +61,16 @@ function PaymentResult() {
             "http://localhost:8080/payment/kakaopayApprove",
             {
               pgToken,
-              secretKey: process.env.REACT_APP_KAKAOPAY_SECRET_DEV_KEY,
             },
             { withCredentials: true }
           );
 
           if (response.data) {
-            console.log("결제 승인 성공:", response.data);
+            log("결제 승인 성공:", response.data);
             reservation();
           }
         } catch (error) {
-          console.error("결제 승인 실패:", error);
+          errors("결제 승인 실패:", error);
           setIsLoading(false);
           removeStorage();
           Alert("결제 승인 중 오류 발생", "error");
@@ -85,16 +82,15 @@ function PaymentResult() {
           const res = await axios.post(
             "http://localhost:8080/payment/tosspayApprove",
             {
-              secretKey: authHeader,
               paymentKey,
               orderId,
               amount,
             }
           );
-          console.log("결제 승인 성공:", res.data);
+          log("결제 승인 성공:", res.data);
           reservation();
         } catch (error) {
-          console.error("결제 승인 실패:", error);
+          errors("결제 승인 실패:", error);
           setIsLoading(false);
           removeStorage();
           Alert("결제 승인 중 오류 발생", "error");
@@ -160,7 +156,7 @@ function PaymentResult() {
           history.push("/");
         }
       } else if (response.data !== null) {
-        console.log("예약 성공:", response.data);
+        log("예약 성공:", response.data);
         const successAlert = await Alert("예약이 완료되었습니다!", "success");
 
         if (successAlert.isConfirmed || successAlert.isDismissed) {
@@ -178,7 +174,7 @@ function PaymentResult() {
         }
       }
     } catch (error) {
-      console.error("예약 도중 오류 발생 : ", error);
+      errors("예약 도중 오류 발생 : ", error);
     } finally {
       setIsLoading(false);
       removeStorage();

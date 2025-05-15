@@ -9,6 +9,7 @@ import axios from "axios";
 import ReservationResult from "../components/revList/ReservationResult";
 import { fetchAirlineCodes } from "../utils/useAirCodeData";
 import { SeatClass } from "../utils/seatClass";
+import { errors, log } from "../utils/logger";
 
 // ReservationList 전체 컴포넌트 구성
 const Container = styled.div`
@@ -205,7 +206,7 @@ function ReservationList() {
     (currentIndex - 1) * revPageCount,
     currentIndex * revPageCount
   ); // 선택한 페이지네이션 번호에 따라 보여주는 예약내역 데이터 순서
-  console.log(currentRevData);
+  log(currentRevData);
 
   // 페이지네이션 클릭 시 동작
   const pagenationClick = (
@@ -249,10 +250,10 @@ function ReservationList() {
             },
           }
         );
-        console.log(revResponse.data);
+        log(revResponse.data);
         setGetRevList(revResponse.data);
       } catch (error) {
-        console.error("예약내역 데이터 가져오기 실패 : ", error);
+        errors("예약내역 데이터 가져오기 실패 : ", error);
       }
     }
   };
@@ -273,7 +274,7 @@ function ReservationList() {
 
   useEffect(() => {
     if (getRevList.length > 0) {
-      console.log(getRevList);
+      log(getRevList);
     }
   }, [getRevList]);
 

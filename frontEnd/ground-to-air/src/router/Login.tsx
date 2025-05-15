@@ -14,6 +14,7 @@ import CryptoJS from "crypto-js";
 import KakaoAuth from "../components/auth/KakaoAuth";
 import GoogleAuth from "../components/auth/GoogleAuth";
 import { encryptionKey } from "./FlightSearch";
+import { log } from "../utils/logger";
 
 // Login 전체 컴포넌트 구성
 const Container = styled.div`
@@ -205,7 +206,7 @@ function Login() {
   // 로그인 버튼 클릭 시 동작
   const infoSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 새로고침 방지
-    console.log(inputData.userId, inputData.password);
+    log(inputData.userId, inputData.password);
 
     // 1. 작성란이 비어있을 경우
     if (!inputData.userId) {

@@ -14,6 +14,7 @@ import TossPayImg from "../../../img/Toss_Logo_Primary.png";
 import { encryptionKey } from "../../../router/FlightSearch";
 import CryptoJS from "crypto-js";
 import { fetchCountryCodes } from "../../../utils/useAirCodeData";
+import { errors, log } from "../../../utils/logger";
 
 // TravelerInfo 전체 컴포넌트 구성
 const Container = styled.div`
@@ -331,7 +332,7 @@ function TravelerInfo() {
   // data가 존재할 시 초기 인원 수에 맞게 데이터 초기화
   useEffect(() => {
     if (data) {
-      console.log(data);
+      log(data);
       const travelerPricings = data?.data.flightOffers[0].travelerPricings; // 인원 수
 
       // inputData를 배열로 초기화
@@ -429,7 +430,7 @@ function TravelerInfo() {
         }
       );
 
-      console.log(response.data);
+      log(response.data);
 
       // 입력용 데이터 삽입
       setInputData((prevState) => ({
@@ -448,7 +449,7 @@ function TravelerInfo() {
         },
       }));
     } catch (error) {
-      console.error("개인정보 추출 실패 : ", error);
+      errors("개인정보 추출 실패 : ", error);
     }
   };
 
@@ -850,13 +851,13 @@ function TravelerInfo() {
         ).toString()
       );
     } catch (error) {
-      console.error("결제 진행 실패 : ", error);
+      errors("결제 진행 실패 : ", error);
     }
   };
 
   useEffect(() => {
     if (errorMsg) {
-      console.log(errorMsg);
+      log(errorMsg);
     }
   }, [errorMsg]);
 
@@ -868,7 +869,7 @@ function TravelerInfo() {
   ); // 총 요금
 
   useEffect(() => {
-    console.log(isAgreed, isPaymentMethod);
+    log(isAgreed, isPaymentMethod);
   }, [isAgreed, isPaymentMethod]);
 
   return (

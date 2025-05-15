@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import axios from "axios";
 import { Alert } from "../utils/sweetAlert";
 import { motion } from "framer-motion";
+import { errors } from "../utils/logger";
 
 // IdFind 전체 컴포넌트 구성
 const Container = styled.div`
@@ -157,7 +158,7 @@ function IdFind() {
         Alert("성명 혹은 이메일이 일치하지 않습니다.", "warning");
       }
     } catch (error) {
-      console.error("아이디 찾기 오류: ", error);
+      errors("아이디 찾기 오류: ", error);
       Alert("아이디 찾기 요청에 실패하였습니다.", "error");
     } finally {
       setIsLoading(false); // 어떤일이 발생하든 동작이 끝나면 로딩 해제

@@ -12,6 +12,7 @@ import {
 import { startSessionTimeout } from "../../utils/jwtActivityTimer";
 import { encryptionKey } from "../../router/FlightSearch";
 import CryptoJS from "crypto-js";
+import { errors, log } from "../../utils/logger";
 
 // GoogleAuth 전체 컴포넌트 구성
 const Btn = styled.button<{
@@ -55,7 +56,7 @@ function GoogleAuth(props: {
     const code = urlParams.get("code");
     const state = urlParams.get("state");
     if (code && state === "google") {
-      console.log("인가 코드:", code);
+      log("인가 코드:", code);
       googleAuthentication(code);
     }
   }, []);
@@ -70,7 +71,6 @@ function GoogleAuth(props: {
       const response = await axios.post("http://localhost:8080/user/google", {
         access_token_url: process.env.REACT_APP_GOOGLE_ACCESS_TOKEN_URL,
         grant_type: "authorization_code",
-        client_secret: process.env.REACT_APP_GOOGLE_SECRET,
         client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
         redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`,
         code: code,
@@ -95,7 +95,7 @@ function GoogleAuth(props: {
         startSessionTimeout(expirationTime);
       }
     } catch (error) {
-      console.error("인증 도중 오류: ", error);
+      errors("인증 도중 오류: ", error);
     }
   };
 

@@ -7,6 +7,7 @@ import { Alert, Confirm } from "../../utils/sweetAlert";
 import { Link, useHistory } from "react-router-dom";
 import styled from "styled-components";
 import { seatKor } from "../../utils/seatClass";
+import { errors, log } from "../../utils/logger";
 
 // 요소 값
 const ElementValue = styled.div.withConfig({
@@ -83,7 +84,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
             wishNo: wish.wishNo,
           }
         );
-        console.log(response.data);
+        log(response.data);
 
         if (response.data) {
           const successAlert = await Alert("삭제가 완료되었습니다.", "success");
@@ -95,7 +96,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
           }
         }
       } catch (error) {
-        console.error("위시리스트 삭제 실패 : ", error);
+        errors("위시리스트 삭제 실패 : ", error);
         Alert("삭제 도중 오류가 발생하였습니다.", "error");
       }
     }

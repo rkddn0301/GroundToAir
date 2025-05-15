@@ -8,6 +8,7 @@ import { FlightWish } from "./FlightSearch";
 import { AirlineCodes } from "../utils/api";
 import WishResult from "../components/wish/WishResult";
 import { fetchAirlineCodes } from "../utils/useAirCodeData";
+import { errors } from "../utils/logger";
 
 // WishList 전체 컴포넌트 구성
 const Container = styled.div`
@@ -167,7 +168,7 @@ function WishList() {
         );
         setGetWish(wishResponse.data);
       } catch (error) {
-        console.error("위시리스트 데이터 가져오기 실패 : ", error);
+        errors("위시리스트 데이터 가져오기 실패 : ", error);
       }
     }
   };

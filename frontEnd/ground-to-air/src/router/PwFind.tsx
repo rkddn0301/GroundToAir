@@ -8,6 +8,7 @@ import { Alert } from "../utils/sweetAlert";
 import InfoBox from "../components/InfoBox";
 import Title from "../components/Title";
 import { motion } from "framer-motion";
+import { errors } from "../utils/logger";
 
 // PwFind 전체 컴포넌트 구성
 const Container = styled.div`
@@ -161,7 +162,7 @@ function PwFind() {
         Alert("성명 혹은 이메일이 일치하지 않습니다.", "warning");
       }
     } catch (error) {
-      console.error("비밀번호 찾기 오류: ", error);
+      errors("비밀번호 찾기 오류: ", error);
       Alert("비밀번호 찾기 요청에 실패하였습니다.", "error");
     } finally {
       setIsLoading(false);

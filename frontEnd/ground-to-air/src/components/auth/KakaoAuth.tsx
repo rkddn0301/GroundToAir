@@ -12,6 +12,7 @@ import {
 import { startSessionTimeout } from "../../utils/jwtActivityTimer";
 import { encryptionKey } from "../../router/FlightSearch";
 import CryptoJS from "crypto-js";
+import { errors, log } from "../../utils/logger";
 
 // KakaoAuth 전체 컴포넌트 구성
 const Btn = styled.button<{
@@ -55,7 +56,7 @@ function KakaoAuth(props: {
     const code = urlParams.get("code");
     const state = urlParams.get("state");
     if (code && state === "kakao") {
-      console.log("인가 코드:", code);
+      log("인가 코드:", code);
       kakaoAuthentication(code);
     }
   }, []);
@@ -95,7 +96,7 @@ function KakaoAuth(props: {
         startSessionTimeout(expirationTime);
       }
     } catch (error) {
-      console.error("인증 도중 오류:", error);
+      errors("인증 도중 오류:", error);
     }
   };
 

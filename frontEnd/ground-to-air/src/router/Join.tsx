@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { encryptionKey } from "./FlightSearch";
 import { useRecoilValue } from "recoil";
 import { isLoggedInState } from "../utils/atom";
+import { log } from "../utils/logger";
 
 // Join 전체 컴포넌트 구성
 const Container = styled.div`
@@ -85,7 +86,7 @@ function Join() {
           encryptionKey
         ).toString(CryptoJS.enc.Utf8) || "/";
 
-      console.log(redirectTo);
+      log(redirectTo);
       const storedData = CryptoJS.AES.decrypt(
         localStorage.getItem("data") || "",
         encryptionKey

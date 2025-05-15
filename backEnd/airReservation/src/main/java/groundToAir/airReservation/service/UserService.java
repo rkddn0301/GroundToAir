@@ -5,6 +5,7 @@ import groundToAir.airReservation.enumType.SocialType;
 import groundToAir.airReservation.repository.*;
 import groundToAir.airReservation.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,10 @@ public class UserService {
         this.jwtUtil = jwtUtil;
         this.mailService = mailService;
     }
+
+    // 구글 Secret Key
+    @Value("${google.client-secret}")
+    private String googleClientSecret;
 
     // 아이디 중복 체크
     public int idCheck(String userId) {
@@ -209,7 +214,7 @@ public class UserService {
         // 요청에 필요한 파라미터 설정
         String requestBody = "grant_type=" + userInfo.get("grant_type") +
                 "&client_id=" + userInfo.get("client_id") +
-                "&client_secret=" + userInfo.get("client_secret") +
+                "&client_secret=" + googleClientSecret +
                 "&redirect_uri=" + userInfo.get("redirect_uri") +
                 "&code=" + userInfo.get("code");
 
