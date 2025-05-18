@@ -34,7 +34,7 @@ export const refreshAccessToken = async () => {
       accessToken: string;
       refreshToken: string;
     }>(
-      "http://localhost:8080/user/refresh",
+      `${process.env.REACT_APP_SPRINGBOOT_URL}/user/refresh`,
       {},
       {
         headers: {

@@ -58,7 +58,7 @@ function PaymentResult() {
       if (pathname.includes("/reservationResult/success") && pgToken) {
         try {
           const response = await axios.post(
-            "http://localhost:8080/payment/kakaopayApprove",
+            `${process.env.REACT_APP_SPRINGBOOT_URL}/payment/kakaopayApprove`,
             {
               pgToken,
             },
@@ -80,7 +80,7 @@ function PaymentResult() {
       else if (pathname.includes("/reservationResult/success") && paymentKey) {
         try {
           const res = await axios.post(
-            "http://localhost:8080/payment/tosspayApprove",
+            `${process.env.REACT_APP_SPRINGBOOT_URL}/payment/tosspayApprove`,
             {
               paymentKey,
               orderId,
@@ -113,7 +113,7 @@ function PaymentResult() {
   const reservation = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/reservation/airReservation",
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/airReservation`,
         {
           flightPricing: sessionStorage.getItem("pricing")
             ? JSON.parse(

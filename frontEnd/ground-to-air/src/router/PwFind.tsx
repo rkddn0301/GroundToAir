@@ -149,12 +149,15 @@ function PwFind() {
     setIsLoading(true);
 
     try {
-      const response = await axios.get(`http://localhost:8080/user/pwFind`, {
-        params: {
-          userName: inputData.userName,
-          email: inputData.email,
-        },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/pwFind`,
+        {
+          params: {
+            userName: inputData.userName,
+            email: inputData.email,
+          },
+        }
+      );
       if (response.data === true) {
         Alert("임시비밀번호가 이메일로 전송되었습니다", "success");
         history.push("/login");

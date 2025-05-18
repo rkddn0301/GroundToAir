@@ -68,13 +68,16 @@ function KakaoAuth(props: {
 
   const kakaoAuthentication = async (code: string) => {
     try {
-      const response = await axios.post("http://localhost:8080/user/kakao", {
-        access_token_url: process.env.REACT_APP_KAKAO_ACCESS_TOKEN_URL, // 액세스 토큰 요청 URL
-        grant_type: "authorization_code", // grant_type
-        client_id: process.env.REACT_APP_KAKAO_REST_API_KEY, // REST API 키
-        redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`, // 리다이렉트 URI
-        code: code, // 인가 코드
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/kakao`,
+        {
+          access_token_url: process.env.REACT_APP_KAKAO_ACCESS_TOKEN_URL, // 액세스 토큰 요청 URL
+          grant_type: "authorization_code", // grant_type
+          client_id: process.env.REACT_APP_KAKAO_REST_API_KEY, // REST API 키
+          redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`, // 리다이렉트 URI
+          code: code, // 인가 코드
+        }
+      );
 
       if (response.data) {
         console.log(response.data);

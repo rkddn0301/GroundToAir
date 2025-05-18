@@ -8,7 +8,7 @@ import { errors, log } from "../../utils/logger";
 export const KakaoPayments = async (total: number) => {
   try {
     const response = await axios.post(
-      `http://localhost:8080/payment/kakaopayReady`,
+      `${process.env.REACT_APP_SPRINGBOOT_URL}/payment/kakaopayReady`,
       {
         itemName: "항공편 예약", // 상품명
         amount: total, // 결제할 금액

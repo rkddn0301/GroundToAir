@@ -233,7 +233,7 @@ function ReservationDetail() {
       log("reservationDataExtraction");
       setIsLoading(true);
       const response = await axios.post(
-        `http://localhost:8080/reservation/reservationDetail`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/reservationDetail`,
         {
           revName: revName,
           revCode: revCode,
@@ -274,7 +274,7 @@ function ReservationDetail() {
     if (deleteConfirm.isConfirmed) {
       try {
         const response = await axios.post(
-          "http://localhost:8080/reservation/revDelete",
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/revDelete`,
           {
             revId: revData?.revId,
           }

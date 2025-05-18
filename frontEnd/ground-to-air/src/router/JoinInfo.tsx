@@ -315,11 +315,14 @@ function JoinInfo() {
   // 아이디 입력란 벗어날 시 동작
   const userIdBlur = async () => {
     if (inputData.userId && !idExisting && !errorMsg.userId) {
-      const response = await axios.get(`http://localhost:8080/user/idCheck`, {
-        params: {
-          userId: inputData.userId,
-        },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/idCheck`,
+        {
+          params: {
+            userId: inputData.userId,
+          },
+        }
+      );
 
       if (response.data > 0) {
         setIdExisting(true);
@@ -351,7 +354,7 @@ function JoinInfo() {
   const emailBlur = async () => {
     if (inputData.email && !emailExisting && !errorMsg.email) {
       const response = await axios.get(
-        `http://localhost:8080/user/emailCheck`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/emailCheck`,
         {
           params: {
             email: inputData.email,
@@ -440,14 +443,17 @@ function JoinInfo() {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8080/user/register`, {
-        userId: inputData.userId,
-        password: inputData.password,
-        userName: inputData.userName,
-        birth: inputData.birth,
-        gender: inputData.gender,
-        email: inputData.email,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/register`,
+        {
+          userId: inputData.userId,
+          password: inputData.password,
+          userName: inputData.userName,
+          birth: inputData.birth,
+          gender: inputData.gender,
+          email: inputData.email,
+        }
+      );
       Alert("회원가입이 완료되었습니다.", "success");
       setUserNo(response.data);
       history.push("/join/info/passportInfo");

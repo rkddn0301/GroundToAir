@@ -158,7 +158,7 @@ function WishList() {
     if (accessToken) {
       try {
         const wishResponse = await axios.post(
-          `http://localhost:8080/reservation/getWish`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/getWish`,
           {},
           {
             headers: {

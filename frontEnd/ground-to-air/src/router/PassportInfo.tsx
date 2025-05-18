@@ -272,7 +272,7 @@ function PassportInfo() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/user/passportRegister`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/passportRegister`,
         {
           userNo: userNoData,
           passportNo: inputData.passportNo,

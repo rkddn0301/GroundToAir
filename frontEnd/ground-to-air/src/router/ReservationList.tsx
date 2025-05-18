@@ -242,7 +242,7 @@ function ReservationList() {
     if (accessToken) {
       try {
         const revResponse = await axios.post(
-          `http://localhost:8080/reservation/getRevList`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/getRevList`,
           {},
           {
             headers: {

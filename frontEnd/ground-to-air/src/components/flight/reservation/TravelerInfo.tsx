@@ -421,7 +421,7 @@ function TravelerInfo() {
 
         socialType: string;
       }>(
-        "http://localhost:8080/user/myInfo",
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/myInfo`,
         {},
         {
           headers: {

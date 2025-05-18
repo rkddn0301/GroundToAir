@@ -225,10 +225,13 @@ function Login() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/user/login", {
-        userId: inputData.userId,
-        password: inputData.password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/login`,
+        {
+          userId: inputData.userId,
+          password: inputData.password,
+        }
+      );
       if (response.data) {
         Alert("로그인 되었습니다.", "success");
         const { accessToken, accessTokenExpiration, refreshToken } =

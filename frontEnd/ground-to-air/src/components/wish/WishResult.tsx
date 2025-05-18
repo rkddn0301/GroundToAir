@@ -79,7 +79,7 @@ function WishResult({ wish, airlineCodeOffers, setGetWish }: WishResultProps) {
     if (deleteConfirm.isConfirmed) {
       try {
         const response = await axios.post(
-          "http://localhost:8080/reservation/wishDelete",
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/wishDelete`,
           {
             wishNo: wish.wishNo,
           }

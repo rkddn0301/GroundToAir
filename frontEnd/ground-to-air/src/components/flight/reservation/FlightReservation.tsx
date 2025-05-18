@@ -218,7 +218,7 @@ function FlightReservation() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `http://localhost:8080/air/flightPrice`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/air/flightPrice`,
         {
           flightOffers: data,
         }

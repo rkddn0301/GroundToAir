@@ -573,7 +573,7 @@ function FlightSearch() {
     if (name === "originLocationCode" && value.length > 1) {
       try {
         const response = await axios.get(
-          `http://localhost:8080/air/autoCompleteIataCodes`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/air/autoCompleteIataCodes`,
           {
             params: { keyword: value },
           }
@@ -596,7 +596,7 @@ function FlightSearch() {
     if (name === "destinationLocationCode" && value.length > 1) {
       try {
         const response = await axios.get(
-          `http://localhost:8080/air/autoCompleteIataCodes`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/air/autoCompleteIataCodes`,
           {
             params: { keyword: value },
           }
@@ -655,7 +655,7 @@ function FlightSearch() {
     if (accessToken) {
       try {
         const wishResponse = await axios.post(
-          `http://localhost:8080/reservation/getWish`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/getWish`,
           {},
           {
             headers: {
@@ -732,7 +732,7 @@ function FlightSearch() {
       const accessToken = localStorage.getItem("accessToken"); // 로컬 스토리지에서 토큰 가져오기
 
       const response = await axios.post(
-        `http://localhost:8080/reservation/wish`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/reservation/wish`,
         {
           ...data, // wishList 데이터
         },
@@ -863,7 +863,7 @@ function FlightSearch() {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/air/flightOffers`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/air/flightOffers`,
         {
           params: {
             originLocationCode: searchOriginLocation,

@@ -9,7 +9,7 @@ module.exports = function (app: any) {
   app.use(
     ["/air", "/user", "/reservation", "/country", "/payment"],
     createProxyMiddleware({
-      target: "http://localhost:8080",
+      target: process.env.REACT_APP_SPRINGBOOT_URL,
       changeOrigin: true,
     })
   );

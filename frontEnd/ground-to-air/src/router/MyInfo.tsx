@@ -294,7 +294,7 @@ function MyInfo() {
 
         socialType: string;
       }>(
-        "http://localhost:8080/user/myInfo",
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/myInfo`,
         {},
         {
           headers: {
@@ -500,11 +500,14 @@ function MyInfo() {
     // 기존 아이디와 동일하면 동작 할 필요 없음
     if (inputData.userId !== defaultData.userId) {
       if (inputData.userId && !idExisting && !errorMsg.userId) {
-        const response = await axios.get(`http://localhost:8080/user/idCheck`, {
-          params: {
-            userId: inputData.userId,
-          },
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/user/idCheck`,
+          {
+            params: {
+              userId: inputData.userId,
+            },
+          }
+        );
 
         if (response.data > 0) {
           setIdExisting(true);
@@ -537,12 +540,15 @@ function MyInfo() {
   const passwordBlur = async () => {
     if (inputData.password && !passwordExisting && !errorMsg.password) {
       log("비밀번호 입력란 띄움");
-      const response = await axios.get(`http://localhost:8080/user/pwCheck`, {
-        params: {
-          userNo: defaultData.userNo,
-          password: inputData.password,
-        },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/pwCheck`,
+        {
+          params: {
+            userNo: defaultData.userNo,
+            password: inputData.password,
+          },
+        }
+      );
 
       if (response.data > 0) {
         setPasswordExisting(true);
@@ -567,7 +573,7 @@ function MyInfo() {
     if (inputData.email !== defaultData.email) {
       if (inputData.email && !emailExisting && !errorMsg.email) {
         const response = await axios.get(
-          `http://localhost:8080/user/emailCheck`,
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/user/emailCheck`,
           {
             params: {
               email: inputData.email,
@@ -643,7 +649,7 @@ function MyInfo() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/user/myInfoUpdate`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/myInfoUpdate`,
         {
           userNo: defaultData.userNo,
           userId: inputData.userId,
@@ -709,7 +715,7 @@ function MyInfo() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/user/passportInfoUpdate`,
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/passportInfoUpdate`,
         {
           userNo: defaultData.userNo,
           passportNo: inputData.passportNo,
@@ -803,9 +809,12 @@ function MyInfo() {
       }
 
       try {
-        const response = await axios.post("http://localhost:8080/user/delete", {
-          userNo: defaultData.userNo,
-        });
+        const response = await axios.post(
+          `${process.env.REACT_APP_SPRINGBOOT_URL}/user/delete`,
+          {
+            userNo: defaultData.userNo,
+          }
+        );
         log(response.data);
 
         if (response.data) {
@@ -833,7 +842,7 @@ function MyInfo() {
   const kakaoUnlink = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/user/kakaoUnlink",
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/kakaoUnlink`,
         {
           target_id_type: "user_id",
           target_id: defaultSocialId,
@@ -853,7 +862,7 @@ function MyInfo() {
   const googleUnlink = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/user/googleUnlink",
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/googleUnlink`,
         {
           accessToken: defaultFederationAccessToken,
         }
