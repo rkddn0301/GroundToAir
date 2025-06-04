@@ -9,7 +9,7 @@
 
 - **Frontend**: React, TypeScript, Styled-components, FramerMotion, EncryptJS, Recoil, SweetAlert2
 - **Backend**: Spring Boot, Spring Security, JPA, JWT, Lombok
-- **Infra**: MariaDB, Ubuntu
+- **Infra**: AWS, MariaDB, Ubuntu
 - **API**: Amadeus API, Kakao API, TossPayments API, Google API
 - **Tools**: Git, GitHub, Notion, Postman  
 
@@ -33,10 +33,11 @@
 - JWT (JSON Web Token) : 인증된 사용자임을 증명하기 위한 토큰 기반 인증 방식
 - Lombok : 반복되는 getter/setter, 생성자 코드 작성을 줄여주는 코드 자동 생성 라이브러리
 
-### 인프라  
+### 인프라
+- AWS (Amazon Web Service) : EC2에서 Ubuntu 서버 운영과 RDS로 MariaDB 데이터베이스 관리
 - MariaDB: 사용자, 여권 정보, 항공편, 찜/예약 내역 등 핵심 데이터를 저장 및 관리
-- Ubuntu: Oracle VM에 구성된 리눅스 서버 환경으로, MariaDB 운영 및 관리 용도
-
+- Ubuntu: EC2 인스턴스 운영체제로 Docker, Nginx 설치 및 SpringBoot 배포, Let's Encrypt SSL 인증서 적용
+  
 ---
 
 ## 🛠️ 주요 기능  
