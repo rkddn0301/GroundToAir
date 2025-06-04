@@ -85,6 +85,6 @@ export const logout = async () => {
     localStorage.removeItem("flightOffers");
     localStorage.removeItem("expirationTime");
 
-    window.location.href = "/";
+    window.location.href = process.env.PUBLIC_URL + "/";
   }
 };

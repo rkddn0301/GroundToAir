@@ -103,8 +103,8 @@ const requestPayment = async (
       amount: value.amount, // [필수] 결제 금액 정보 (value : 결제 금액, currency : 결제 통화)
       orderId: orderId, // [필수] 고유 주문번호
       orderName: value.orderName, // [필수] 구매 상품명
-      successUrl: `${window.location.origin}/reservationResult/success`, // [선택] 결제 성공 시 리다이렉트 되는 URL
-      failUrl: `${window.location.origin}/reservationResult/fail`, // [선택] 결제 실패 시 리다이렉트 되는 URL
+      successUrl: `${process.env.REACT_APP_REDIRECT_URI}/reservationResult/success`, // [선택] 결제 성공 시 리다이렉트 되는 URL
+      failUrl: `${process.env.REACT_APP_REDIRECT_URI}/reservationResult/fail`, // [선택] 결제 실패 시 리다이렉트 되는 URL
       customerKey, // 구매자 고유 키
       customerEmail: value.email, // [선택] 구매자 이메일
       customerName: value.customerName, // [선택] 구매자 명

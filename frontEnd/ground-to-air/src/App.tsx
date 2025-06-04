@@ -93,7 +93,7 @@ function App() {
       {/* 배경화면 지정 */}
       <VideoContainer />
       <video
-        src="/cloud.MOV"
+        src={`${process.env.PUBLIC_URL}/cloud.MOV`}
         autoPlay
         loop
         muted
@@ -108,7 +108,7 @@ function App() {
           zIndex: -1,
         }}
       />
-      <Router>
+      <Router basename={process.env.PUBLIC_URL}>
         <Route
           path={[
             "/",

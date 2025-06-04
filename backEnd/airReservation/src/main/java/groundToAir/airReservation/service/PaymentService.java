@@ -32,6 +32,10 @@ public class PaymentService {
     @Value("${tosspay.secret}")
     private String tossPaySecret;
 
+    // 결제 후 리다이렉트 URL
+    @Value("${app.redirect.base-url}")
+    private String redirectBaseUrl;
+
 
     // 카카오페이 결제 준비 페이지 이동
     public String kakaoPaymentReady(Map<String, Object> paymentInfo, HttpSession session) {
@@ -66,10 +70,10 @@ public class PaymentService {
                         + "\"quantity\": 1," // [필수] 구매 수량
                         + "\"total_amount\": \"%d\"," // [필수] 총 결제 금액
                         + "\"tax_free_amount\": 0," // [필수] 비과세 금액
-                        + "\"approval_url\": \"http://localhost:3000/reservationResult/success\"," // [필수] 결제 성공 시의 url
-                        + "\"fail_url\": \"http://localhost:3000/reservationResult/fail\"," // [필수] 결제 실패 시의 url
-                        + "\"cancel_url\": \"http://localhost:3000/reservationResult/cancel\"" // [필수] 결제 취소 시의 url
-                        + "}", itemName, amount
+                        + "\"approval_url\": \"%s/reservationResult/success\"," // [필수] 결제 성공 시의 url
+                        + "\"fail_url\": \"%s/reservationResult/fail\"," // [필수] 결제 실패 시의 url
+                        + "\"cancel_url\": \"%s/reservationResult/cancel\"" // [필수] 결제 취소 시의 url
+                        + "}", itemName, amount, redirectBaseUrl,redirectBaseUrl,redirectBaseUrl
         );
 
         log.info("전송 할 데이터 : {}", requestPayload);

@@ -36,5 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
-# 비밀 프로퍼티
+# 비밀 프로퍼티(환경 설정 파일 무시)
 /src/main/resources/application-secret.properties
+/src/main/resources/application-dev.properties
+/src/main/resources/application-prod.properties

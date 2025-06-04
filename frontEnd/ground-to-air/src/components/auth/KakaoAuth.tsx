@@ -80,7 +80,7 @@ function KakaoAuth(props: {
       );
 
       if (response.data) {
-        console.log(response.data);
+        log(response.data);
         const { accessToken, refreshToken, accessTokenExpiration } =
           response.data;
         localStorage.setItem("accessToken", accessToken);

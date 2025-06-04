@@ -68,16 +68,19 @@ function GoogleAuth(props: {
 
   const googleAuthentication = async (code: string) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_SPRINGBOOT_URL}/user/google`, {
-        access_token_url: process.env.REACT_APP_GOOGLE_ACCESS_TOKEN_URL,
-        grant_type: "authorization_code",
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`,
-        code: code,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_SPRINGBOOT_URL}/user/google`,
+        {
+          access_token_url: process.env.REACT_APP_GOOGLE_ACCESS_TOKEN_URL,
+          grant_type: "authorization_code",
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          redirect_uri: `${process.env.REACT_APP_REDIRECT_URI}${props.redirectRoute}`,
+          code: code,
+        }
+      );
 
       if (response.data) {
-        console.log(response.data);
+        log(response.data);
         const { accessToken, refreshToken, accessTokenExpiration } =
           response.data;
         localStorage.setItem("accessToken", accessToken);
